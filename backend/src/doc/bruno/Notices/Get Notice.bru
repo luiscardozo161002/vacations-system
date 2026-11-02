@@ -1,0 +1,19 @@
+meta {
+  name: Get Notice
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/api/v1/notices/:noticeId
+  body: none
+  auth: none
+}
+
+params:path {
+  noticeId: 1
+}
+
+docs {
+  404 `NOTICE_NOT_FOUND` si el id no existe.
+}

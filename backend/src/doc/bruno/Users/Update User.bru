@@ -1,0 +1,29 @@
+meta {
+  name: Update User
+  type: http
+  seq: 4
+}
+
+patch {
+  url: {{baseUrl}}/api/v1/users/:userId
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+params:path {
+  userId: 1
+}
+
+body:json {
+  {
+    "email": "nuevo.correo@example.com"
+  }
+}
+
+docs {
+  Tambien acepta `password` para resetear la contraseña directamente (se re-hashea antes de guardar). No hay chequeo de autorizacion todavia: cualquiera que pueda llamar este endpoint puede resetear la password de cualquier usuario — ver la nota de autenticacion en el README.
+}

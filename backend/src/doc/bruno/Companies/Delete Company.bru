@@ -1,0 +1,19 @@
+meta {
+  name: Delete Company
+  type: http
+  seq: 5
+}
+
+delete {
+  url: {{baseUrl}}/api/v1/companies/:companyId
+  body: none
+  auth: none
+}
+
+params:path {
+  companyId: 1
+}
+
+docs {
+  Borrado fisico: elimina el registro. 204 sin contenido. Si la empresa tiene departamentos asociados, responde `409 RELATED_RECORDS`.
+}

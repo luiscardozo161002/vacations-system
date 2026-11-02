@@ -1,0 +1,19 @@
+meta {
+  name: Get User
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/api/v1/users/:userId
+  body: none
+  auth: none
+}
+
+params:path {
+  userId: 1
+}
+
+docs {
+  404 `USER_NOT_FOUND` si el id no existe.
+}

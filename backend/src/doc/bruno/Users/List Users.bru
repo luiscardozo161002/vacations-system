@@ -1,0 +1,23 @@
+meta {
+  name: List Users
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/v1/users?page=1&pageSize=20
+  body: none
+  auth: none
+}
+
+params:query {
+  page: 1
+  pageSize: 20
+  ~role_id: 1
+  ~status: active
+  ~employee_id: 1
+}
+
+docs {
+  Nunca devuelve `password_hash`.
+}

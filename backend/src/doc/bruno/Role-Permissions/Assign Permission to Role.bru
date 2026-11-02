@@ -1,0 +1,28 @@
+meta {
+  name: Assign Permission to Role
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/api/v1/role-permissions
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "role_id": 3,
+    "permission_id": 6
+  }
+}
+
+docs {
+  Sin PATCH: la relacion solo se crea o se borra, no tiene campos propios para actualizar.
+
+  Errores: `422 INVALID_ROLE` / `INVALID_PERMISSION` si los ids no existen; `409 ROLE_PERMISSION_EXISTS` si ya estaba asignado.
+}

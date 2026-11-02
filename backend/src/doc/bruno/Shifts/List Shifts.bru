@@ -1,0 +1,21 @@
+meta {
+  name: List Shifts
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/v1/shifts?status=active&page=1&pageSize=20
+  body: none
+  auth: none
+}
+
+params:query {
+  status: active
+  page: 1
+  pageSize: 20
+}
+
+docs {
+  Lista turnos paginada. Filtro opcional: `status` (`active`/`inactive`).
+}

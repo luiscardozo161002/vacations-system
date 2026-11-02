@@ -1,0 +1,19 @@
+meta {
+  name: Delete Department
+  type: http
+  seq: 5
+}
+
+delete {
+  url: {{baseUrl}}/api/v1/departments/:departmentId
+  body: none
+  auth: none
+}
+
+params:path {
+  departmentId: 1
+}
+
+docs {
+  Borrado fisico: elimina el registro. 204 sin contenido. Si el departamento tiene empleados asociados, responde `409 RELATED_RECORDS`.
+}

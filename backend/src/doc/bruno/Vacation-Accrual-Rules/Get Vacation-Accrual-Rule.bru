@@ -1,0 +1,19 @@
+meta {
+  name: Get Vacation-Accrual-Rule
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/api/v1/vacation-accrual-rules/:ruleId
+  body: none
+  auth: none
+}
+
+params:path {
+  ruleId: 1
+}
+
+docs {
+  404 `VACATION_RULE_NOT_FOUND` si el id no existe.
+}

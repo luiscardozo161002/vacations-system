@@ -1,0 +1,29 @@
+meta {
+  name: Update Shift
+  type: http
+  seq: 4
+}
+
+patch {
+  url: {{baseUrl}}/api/v1/shifts/:shiftId
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+params:path {
+  shiftId: 1
+}
+
+body:json {
+  {
+    "shift_name": "Turno Matutino Actualizado"
+  }
+}
+
+docs {
+  Actualizacion parcial: solo se envian los campos a modificar (al menos uno). Mismo codigo de error 409 que la creacion.
+}

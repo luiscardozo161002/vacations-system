@@ -1,0 +1,18 @@
+meta {
+  name: List Vacation-Entitlements
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/v1/vacation-entitlements?employee_id=1&page=1&pageSize=20
+  body: none
+  auth: none
+}
+
+params:query {
+  employee_id: 1
+  page: 1
+  pageSize: 20
+  ~period_year: 2026
+}

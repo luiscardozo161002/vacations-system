@@ -1,0 +1,19 @@
+meta {
+  name: Get Vacation-Entitlement
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/api/v1/vacation-entitlements/:entitlementId
+  body: none
+  auth: none
+}
+
+params:path {
+  entitlementId: 1
+}
+
+docs {
+  404 `VACATION_ENTITLEMENT_NOT_FOUND` si el id no existe. `remaining_days` es una columna generada por la base (`total_days - used_days`), no se puede enviar en el body.
+}

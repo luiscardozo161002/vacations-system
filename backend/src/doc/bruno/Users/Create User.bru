@@ -1,0 +1,30 @@
+meta {
+  name: Create User
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/api/v1/users
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "role_id": 3,
+    "username": "test.user",
+    "email": "test.user@example.com",
+    "password": "Password123"
+  }
+}
+
+docs {
+  Requeridos: `role_id`, `username` (unico), `email` (unico), `password` (minimo 8 caracteres, se hashea con bcrypt antes de guardar). `employee_id` opcional (unico si se manda: un empleado solo puede tener un usuario). `status` opcional (default `active`).
+
+  Errores: `409 USERNAME_EXISTS` / `EMAIL_EXISTS` / `USER_ALREADY_LINKED`; `422 INVALID_ROLE` / `INVALID_EMPLOYEE` si los ids no existen.
+}

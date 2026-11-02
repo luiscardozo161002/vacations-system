@@ -1,0 +1,29 @@
+meta {
+  name: Update Department
+  type: http
+  seq: 4
+}
+
+patch {
+  url: {{baseUrl}}/api/v1/departments/:departmentId
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+params:path {
+  departmentId: 1
+}
+
+body:json {
+  {
+    "department_name": "Recursos Humanos y Nomina"
+  }
+}
+
+docs {
+  Actualizacion parcial: solo se envian los campos a modificar (al menos uno). Mismos codigos de error 422/409 que la creacion.
+}

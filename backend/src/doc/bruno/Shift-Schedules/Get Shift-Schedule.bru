@@ -1,0 +1,19 @@
+meta {
+  name: Get Shift-Schedule
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/api/v1/shift-schedules/:scheduleId
+  body: none
+  auth: none
+}
+
+params:path {
+  scheduleId: 1
+}
+
+docs {
+  404 `SHIFT_SCHEDULE_NOT_FOUND` si el id no existe.
+}

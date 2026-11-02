@@ -1,0 +1,31 @@
+meta {
+  name: Create Vacation-Entitlement
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/api/v1/vacation-entitlements
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "employee_id": 2,
+    "period_year": 2030,
+    "years_of_service": 2,
+    "rule_id": 2,
+    "total_days": 14
+  }
+}
+
+docs {
+  Requeridos: `employee_id`, `period_year`, `years_of_service`, `rule_id`, `total_days`. `used_days` opcional (default 0).
+
+  Errores: `422 INVALID_EMPLOYEE` / `INVALID_RULE` si los ids no existen; `409 VACATION_ENTITLEMENT_EXISTS` si ya existe un saldo para ese empleado en ese periodo.
+}

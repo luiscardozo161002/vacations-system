@@ -1,0 +1,27 @@
+meta {
+  name: Refresh
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/api/v1/auth/refresh
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "refreshToken": "pegar-aca-el-refreshToken-del-login"
+  }
+}
+
+docs {
+  Rota el refresh token: revoca el que se mando y devuelve uno nuevo junto con un accessToken nuevo. El token viejo deja de servir de inmediato (si se reutiliza, responde 401).
+
+  Errores: `401 INVALID_REFRESH_TOKEN` si no existe, ya se uso, esta revocado o expiro.
+}

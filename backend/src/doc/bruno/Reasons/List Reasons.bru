@@ -1,0 +1,18 @@
+meta {
+  name: List Reasons
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/v1/reasons?page=1&pageSize=20
+  body: none
+  auth: none
+}
+
+params:query {
+  page: 1
+  pageSize: 20
+  ~requires_approval: true
+  ~affects_vacation_balance: true
+}

@@ -1,0 +1,18 @@
+meta {
+  name: List Vacation-Accrual-Rules
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/v1/vacation-accrual-rules?status=active&page=1&pageSize=20
+  body: none
+  auth: none
+}
+
+params:query {
+  status: active
+  page: 1
+  pageSize: 20
+  ~effective_year: 2023
+}

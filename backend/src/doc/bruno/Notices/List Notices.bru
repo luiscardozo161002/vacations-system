@@ -1,0 +1,23 @@
+meta {
+  name: List Notices
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/v1/notices?status=pending&page=1&pageSize=20
+  body: none
+  auth: none
+}
+
+params:query {
+  status: pending
+  page: 1
+  pageSize: 20
+  ~employee_id: 1
+  ~reason_id: 1
+}
+
+docs {
+  Ordena por `request_date` descendente (los mas recientes primero).
+}

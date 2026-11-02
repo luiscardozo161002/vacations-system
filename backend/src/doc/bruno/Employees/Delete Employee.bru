@@ -1,0 +1,19 @@
+meta {
+  name: Delete Employee
+  type: http
+  seq: 5
+}
+
+delete {
+  url: {{baseUrl}}/api/v1/employees/:employeeId
+  body: none
+  auth: none
+}
+
+params:path {
+  employeeId: 10
+}
+
+docs {
+  Borrado fisico: elimina el registro. 204 sin contenido. Si el empleado tiene vacaciones, avisos o un usuario asociados, responde `409 RELATED_RECORDS`.
+}

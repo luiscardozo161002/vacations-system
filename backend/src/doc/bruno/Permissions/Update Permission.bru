@@ -1,0 +1,25 @@
+meta {
+  name: Update Permission
+  type: http
+  seq: 4
+}
+
+patch {
+  url: {{baseUrl}}/api/v1/permissions/:permissionId
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+params:path {
+  permissionId: 1
+}
+
+body:json {
+  {
+    "description": "Crear avisos de ausencia propios (actualizado)"
+  }
+}

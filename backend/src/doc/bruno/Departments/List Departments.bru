@@ -1,0 +1,22 @@
+meta {
+  name: List Departments
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/v1/departments?status=active&page=1&pageSize=20
+  body: none
+  auth: none
+}
+
+params:query {
+  status: active
+  page: 1
+  pageSize: 20
+  ~company_id: 1
+}
+
+docs {
+  Lista departamentos paginada. Filtros opcionales: `company_id`, `status` (`active`/`inactive`).
+}

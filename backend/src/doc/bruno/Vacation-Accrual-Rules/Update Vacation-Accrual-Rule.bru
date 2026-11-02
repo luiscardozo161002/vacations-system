@@ -1,0 +1,25 @@
+meta {
+  name: Update Vacation-Accrual-Rule
+  type: http
+  seq: 4
+}
+
+patch {
+  url: {{baseUrl}}/api/v1/vacation-accrual-rules/:ruleId
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+params:path {
+  ruleId: 1
+}
+
+body:json {
+  {
+    "vacation_days": 13
+  }
+}

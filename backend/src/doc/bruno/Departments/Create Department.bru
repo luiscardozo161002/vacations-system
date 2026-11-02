@@ -1,0 +1,31 @@
+meta {
+  name: Create Department
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/api/v1/departments
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "company_id": 1,
+    "code": "DEP-01",
+    "department_name": "Recursos Humanos",
+    "manager_employee_id": null,
+    "status": "active"
+  }
+}
+
+docs {
+  Requeridos: `company_id`, `code`, `department_name`. `manager_employee_id` es opcional (acepta `null`). `status` es opcional (default `active`).
+
+  Errores: `422 INVALID_COMPANY` / `INVALID_MANAGER` si los ids no existen; `409 DEPARTMENT_CODE_EXISTS` si `code` ya esta en uso dentro de la empresa.
+}

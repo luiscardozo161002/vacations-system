@@ -1,0 +1,71 @@
+'use strict';
+
+const service = require('./service');
+const schemas = require('./schemas');
+
+const shiftsPlugin = {
+  name: 'shifts-plugin',
+  version: '1.0.0',
+  register: (server) => {
+    server.route([
+      {
+        method: 'GET',
+        path: '/api/v1/shifts',
+        options: {
+          description: 'List shifts with pagination and optional filter by status',
+          tags: ['api', 'shifts'],
+          validate: { query: schemas.list },
+        },
+        handler: (request) => service.list(request.query),
+      },
+      {
+        method: 'GET',
+        path: '/api/v1/shifts/{shiftId}',
+        options: {
+          description: 'Get a single shift by ID',
+          tags: ['api', 'shifts'],
+          validate: { params: schemas.params },
+        },
+        handler: (request) => service.findById(request.params.shiftId),
+      },
+      {
+        method: 'POST',
+        path: '/api/v1/shifts',
+        options: {
+          description: 'Create a new shift',
+          tags: ['api', 'shifts'],
+          validate: { payload: schemas.create },
+        },
+        handler: async (request, h) => {
+          const shift = await service.create(request.payload);
+          return h.response(shift).code(201);
+        },
+      },
+      {
+        method: 'PATCH',
+        path: '/api/v1/shifts/{shiftId}',
+        options: {
+          description: 'Update an existing shift',
+          tags: ['api', 'shifts'],
+          validate: { params: schemas.params, payload: schemas.update },
+        },
+        handler: (request) => service.update(request.params.shiftId, request.payload),
+      },
+      {
+        method: 'DELETE',
+        path: '/api/v1/shifts/{shiftId}',
+        options: {
+          description: 'Permanently delete an existing shift',
+          tags: ['api', 'shifts'],
+          validate: { params: schemas.params },
+        },
+        handler: async (request, h) => {
+          await service.remove(request.params.shiftId);
+          return h.response().code(204);
+        },
+      },
+    ]);
+  },
+};
+
+module.exports = shiftsPlugin;

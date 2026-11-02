@@ -1,0 +1,25 @@
+meta {
+  name: Update Company
+  type: http
+  seq: 4
+}
+
+patch {
+  url: {{baseUrl}}/api/v1/companies/:companyId
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+params:path {
+  companyId: 1
+}
+
+body:json {
+  {
+    "company_name": "Empresa Actualizada"
+  }
+}

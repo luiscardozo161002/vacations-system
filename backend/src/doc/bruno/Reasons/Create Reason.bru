@@ -1,0 +1,29 @@
+meta {
+  name: Create Reason
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/api/v1/reasons
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "description": "Motivo De Prueba",
+    "requires_approval": true,
+    "affects_vacation_balance": false
+  }
+}
+
+docs {
+  Requerido: `description` (unico). `requires_approval` (default `true`) y `affects_vacation_balance` (default `false`) son opcionales.
+
+  Errores: `409 REASON_DESCRIPTION_EXISTS` si `description` ya esta en uso.
+}

@@ -1,0 +1,29 @@
+meta {
+  name: Create Company
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/api/v1/companies
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "folio": "TEST_CO",
+    "company_name": "Empresa de Prueba",
+    "company_branch": "Hidalgo"
+  }
+}
+
+docs {
+  Requeridos: `folio`, `company_name`. `company_branch` opcional. `status` opcional (default `active`).
+
+  Errores: `409 COMPANY_FOLIO_EXISTS` si `folio` ya esta en uso.
+}

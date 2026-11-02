@@ -1,0 +1,19 @@
+meta {
+  name: Delete Shift-Schedule
+  type: http
+  seq: 5
+}
+
+delete {
+  url: {{baseUrl}}/api/v1/shift-schedules/:scheduleId
+  body: none
+  auth: none
+}
+
+params:path {
+  scheduleId: 1
+}
+
+docs {
+  Borrado fisico (esta tabla no tiene columna `status`). 204 sin contenido.
+}

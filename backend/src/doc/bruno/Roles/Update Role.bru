@@ -1,0 +1,25 @@
+meta {
+  name: Update Role
+  type: http
+  seq: 4
+}
+
+patch {
+  url: {{baseUrl}}/api/v1/roles/:roleId
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+params:path {
+  roleId: 1
+}
+
+body:json {
+  {
+    "description": "Administrador del sistema (actualizado)"
+  }
+}

@@ -1,0 +1,19 @@
+meta {
+  name: Get Auth-Audit-Log Entry
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/api/v1/auth-audit-log/:logId
+  body: none
+  auth: none
+}
+
+params:path {
+  logId: 1
+}
+
+docs {
+  404 `AUTH_LOG_NOT_FOUND` si el id no existe.
+}

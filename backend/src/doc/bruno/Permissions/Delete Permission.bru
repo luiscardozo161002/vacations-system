@@ -1,0 +1,19 @@
+meta {
+  name: Delete Permission
+  type: http
+  seq: 5
+}
+
+delete {
+  url: {{baseUrl}}/api/v1/permissions/:permissionId
+  body: none
+  auth: none
+}
+
+params:path {
+  permissionId: 1
+}
+
+docs {
+  Borrado fisico (esta tabla no tiene columna `status`). 204 sin contenido.
+}

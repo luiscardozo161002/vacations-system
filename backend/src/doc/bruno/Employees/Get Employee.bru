@@ -1,0 +1,19 @@
+meta {
+  name: Get Employee
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/api/v1/employees/:employeeId
+  body: none
+  auth: none
+}
+
+params:path {
+  employeeId: 10
+}
+
+docs {
+  404 `EMPLOYEE_NOT_FOUND` si el id no existe.
+}

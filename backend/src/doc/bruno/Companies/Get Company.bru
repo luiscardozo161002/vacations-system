@@ -1,0 +1,19 @@
+meta {
+  name: Get Company
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/api/v1/companies/:companyId
+  body: none
+  auth: none
+}
+
+params:path {
+  companyId: 1
+}
+
+docs {
+  404 `COMPANY_NOT_FOUND` si el id no existe.
+}

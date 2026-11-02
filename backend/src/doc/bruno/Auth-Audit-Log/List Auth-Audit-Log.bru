@@ -1,0 +1,22 @@
+meta {
+  name: List Auth-Audit-Log
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/v1/auth-audit-log?page=1&pageSize=20
+  body: none
+  auth: none
+}
+
+params:query {
+  page: 1
+  pageSize: 20
+  ~user_id: 1
+  ~event_type: LOGIN_SUCCESS
+}
+
+docs {
+  Solo lectura: no hay POST/PATCH/DELETE. Lo escriben unicamente los endpoints de /api/v1/auth/*. Ordena por `created_at` descendente.
+}

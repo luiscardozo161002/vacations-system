@@ -1,0 +1,20 @@
+meta {
+  name: Remove Permission from Role
+  type: http
+  seq: 4
+}
+
+delete {
+  url: {{baseUrl}}/api/v1/role-permissions/:roleId/:permissionId
+  body: none
+  auth: none
+}
+
+params:path {
+  roleId: 3
+  permissionId: 6
+}
+
+docs {
+  Borrado fisico (es una tabla de relacion, no tiene columna `status`). 204 sin contenido.
+}

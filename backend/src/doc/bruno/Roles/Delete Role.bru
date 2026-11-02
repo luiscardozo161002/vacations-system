@@ -1,0 +1,19 @@
+meta {
+  name: Delete Role
+  type: http
+  seq: 5
+}
+
+delete {
+  url: {{baseUrl}}/api/v1/roles/:roleId
+  body: none
+  auth: none
+}
+
+params:path {
+  roleId: 1
+}
+
+docs {
+  Borrado fisico: elimina el registro. 204 sin contenido. Si el rol tiene permisos o usuarios asociados, responde `409 RELATED_RECORDS`.
+}

@@ -1,0 +1,30 @@
+meta {
+  name: Create Shift
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/api/v1/shifts
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "code": "SHF-01",
+    "shift_name": "Turno Matutino",
+    "number_days": 5,
+    "status": "active"
+  }
+}
+
+docs {
+  Requeridos: `code`, `shift_name`, `number_days` (entero entre 1 y 7). `status` es opcional (default `active`).
+
+  Errores: `409 SHIFT_CODE_EXISTS` si `code` ya esta en uso.
+}

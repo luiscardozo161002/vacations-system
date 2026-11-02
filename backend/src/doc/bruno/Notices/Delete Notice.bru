@@ -1,0 +1,19 @@
+meta {
+  name: Delete Notice
+  type: http
+  seq: 5
+}
+
+delete {
+  url: {{baseUrl}}/api/v1/notices/:noticeId
+  body: none
+  auth: none
+}
+
+params:path {
+  noticeId: 1
+}
+
+docs {
+  Borrado fisico: elimina el registro. 204 sin contenido.
+}

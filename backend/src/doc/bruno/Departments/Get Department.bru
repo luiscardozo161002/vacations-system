@@ -1,0 +1,19 @@
+meta {
+  name: Get Department
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/api/v1/departments/:departmentId
+  body: none
+  auth: none
+}
+
+params:path {
+  departmentId: 1
+}
+
+docs {
+  404 `DEPARTMENT_NOT_FOUND` si el id no existe.
+}

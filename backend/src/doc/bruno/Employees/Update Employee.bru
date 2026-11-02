@@ -1,0 +1,29 @@
+meta {
+  name: Update Employee
+  type: http
+  seq: 4
+}
+
+patch {
+  url: {{baseUrl}}/api/v1/employees/:employeeId
+  body: json
+  auth: none
+}
+
+params:path {
+  employeeId: 10
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "employee_name": "Juan Perez Cruz"
+  }
+}
+
+docs {
+  Actualizacion parcial: solo se envian los campos a modificar (al menos uno). Mismos codigos de error 422/409 que la creacion.
+}

@@ -1,0 +1,18 @@
+meta {
+  name: List Shift-Schedules
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/v1/shift-schedules?shift_id=1&page=1&pageSize=20
+  body: none
+  auth: none
+}
+
+params:query {
+  shift_id: 1
+  page: 1
+  pageSize: 20
+  ~day_of_week: 1
+}

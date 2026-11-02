@@ -1,0 +1,31 @@
+meta {
+  name: Create Notice
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/api/v1/notices
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "employee_id": 1,
+    "reason_id": 1,
+    "absence_start_date": "2026-12-01",
+    "absence_end_date": "2026-12-01",
+    "remarks": "Prueba desde Bruno"
+  }
+}
+
+docs {
+  Requeridos: `employee_id`, `reason_id`, `absence_start_date`, `absence_end_date`. `status` opcional (default `pending`).
+
+  Errores: `422 INVALID_EMPLOYEE` / `INVALID_REASON` / `INVALID_APPROVER` si los ids no existen. La base valida con un CHECK que `absence_end_date >= absence_start_date` (400 generico si se incumple).
+}

@@ -1,0 +1,30 @@
+meta {
+  name: Approve Notice
+  type: http
+  seq: 4
+}
+
+patch {
+  url: {{baseUrl}}/api/v1/notices/:noticeId
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+params:path {
+  noticeId: 1
+}
+
+body:json {
+  {
+    "status": "approved",
+    "approved_by": 2
+  }
+}
+
+docs {
+  Actualizacion parcial generica: tambien sirve para rechazar (`"status": "rejected"`) o cualquier otro campo. No hay una regla de negocio que valide la transicion de estados (por ejemplo, aprobar un aviso ya rechazado): queda a criterio de quien llama.
+}

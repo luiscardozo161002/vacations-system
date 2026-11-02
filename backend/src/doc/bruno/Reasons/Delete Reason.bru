@@ -1,0 +1,19 @@
+meta {
+  name: Delete Reason
+  type: http
+  seq: 5
+}
+
+delete {
+  url: {{baseUrl}}/api/v1/reasons/:reasonId
+  body: none
+  auth: none
+}
+
+params:path {
+  reasonId: 1
+}
+
+docs {
+  Borrado fisico (esta tabla no tiene columna `status`). 204 sin contenido.
+}

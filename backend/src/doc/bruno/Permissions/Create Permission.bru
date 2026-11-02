@@ -1,0 +1,28 @@
+meta {
+  name: Create Permission
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/api/v1/permissions
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "permission_code": "TEST_PERM",
+    "description": "Permiso de prueba"
+  }
+}
+
+docs {
+  Requeridos: `permission_code` (unico), `description`.
+
+  Errores: `409 PERMISSION_CODE_EXISTS` si `permission_code` ya esta en uso.
+}

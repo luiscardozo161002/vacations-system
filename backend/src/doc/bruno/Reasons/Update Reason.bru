@@ -1,0 +1,25 @@
+meta {
+  name: Update Reason
+  type: http
+  seq: 4
+}
+
+patch {
+  url: {{baseUrl}}/api/v1/reasons/:reasonId
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+params:path {
+  reasonId: 1
+}
+
+body:json {
+  {
+    "requires_approval": false
+  }
+}

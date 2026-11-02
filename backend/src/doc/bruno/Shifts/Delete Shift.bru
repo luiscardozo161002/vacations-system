@@ -1,0 +1,19 @@
+meta {
+  name: Delete Shift
+  type: http
+  seq: 5
+}
+
+delete {
+  url: {{baseUrl}}/api/v1/shifts/:shiftId
+  body: none
+  auth: none
+}
+
+params:path {
+  shiftId: 1
+}
+
+docs {
+  Borrado fisico: elimina el registro. 204 sin contenido. Si el turno tiene empleados u horarios asociados, responde `409 RELATED_RECORDS`.
+}

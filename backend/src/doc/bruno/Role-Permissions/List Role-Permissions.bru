@@ -1,0 +1,22 @@
+meta {
+  name: List Role-Permissions
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/v1/role-permissions?role_id=1&page=1&pageSize=50
+  body: none
+  auth: none
+}
+
+params:query {
+  role_id: 1
+  page: 1
+  pageSize: 50
+  ~permission_id: 1
+}
+
+docs {
+  Lista asignaciones rol-permiso. Filtros opcionales: `role_id`, `permission_id`.
+}

@@ -1,0 +1,28 @@
+meta {
+  name: Create Role
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/api/v1/roles
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "role_code": "TEST_ROLE",
+    "description": "Rol de prueba"
+  }
+}
+
+docs {
+  Requeridos: `role_code` (unico), `description`. `status` opcional (default `active`).
+
+  Errores: `409 ROLE_CODE_EXISTS` si `role_code` ya esta en uso.
+}

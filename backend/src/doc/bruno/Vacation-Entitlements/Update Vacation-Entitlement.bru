@@ -1,0 +1,25 @@
+meta {
+  name: Update Vacation-Entitlement
+  type: http
+  seq: 4
+}
+
+patch {
+  url: {{baseUrl}}/api/v1/vacation-entitlements/:entitlementId
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+params:path {
+  entitlementId: 1
+}
+
+body:json {
+  {
+    "used_days": 6
+  }
+}
