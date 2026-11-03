@@ -12,7 +12,7 @@ const companyPlugin = {
         method: 'GET',
         path: '/api/v1/companies',
         options: {
-          description: 'List companies with pagination and optional status filter',
+          description: 'List companies',
           tags: ['api', 'companies'],
           validate: { query: schemas.list },
         },
@@ -22,7 +22,7 @@ const companyPlugin = {
         method: 'GET',
         path: '/api/v1/companies/{companyId}',
         options: {
-          description: 'Get a single company by ID',
+          description: 'Get a company by ID',
           tags: ['api', 'companies'],
           validate: { params: schemas.params },
         },
@@ -32,7 +32,7 @@ const companyPlugin = {
         method: 'POST',
         path: '/api/v1/companies',
         options: {
-          description: 'Create a new company',
+          description: 'Create a company',
           tags: ['api', 'companies'],
           validate: { payload: schemas.create },
         },
@@ -45,7 +45,7 @@ const companyPlugin = {
         method: 'PATCH',
         path: '/api/v1/companies/{companyId}',
         options: {
-          description: 'Update an existing company',
+          description: 'Update a company',
           tags: ['api', 'companies'],
           validate: { params: schemas.params, payload: schemas.update },
         },
@@ -55,7 +55,7 @@ const companyPlugin = {
         method: 'DELETE',
         path: '/api/v1/companies/{companyId}',
         options: {
-          description: 'Permanently delete an existing company',
+          description: 'Deactivate a company',
           tags: ['api', 'companies'],
           validate: { params: schemas.params },
         },

@@ -23,7 +23,7 @@ const update = async (roleId, data) => {
 };
 
 const remove = async (roleId) => {
-  const role = await Role.query().deleteById(roleId).returning(COLUMNS);
+  const [role] = await Role.query().where('role_id', roleId).patch({ status: 'inactive' }).returning(COLUMNS);
   return role || null;
 };
 

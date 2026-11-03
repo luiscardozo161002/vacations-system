@@ -17,7 +17,7 @@ const authPlugin = {
         method: 'POST',
         path: '/api/v1/auth/login',
         options: {
-          description: 'Log in with username and password; returns an access token (JWT) and a refresh token',
+          description: 'Log in with username and password',
           tags: ['api', 'auth'],
           validate: { payload: schemas.login },
         },
@@ -27,7 +27,7 @@ const authPlugin = {
         method: 'POST',
         path: '/api/v1/auth/refresh',
         options: {
-          description: 'Exchange a refresh token for a new access token (rotates the refresh token)',
+          description: 'Exchange a refresh token for a new access token',
           tags: ['api', 'auth'],
           validate: { payload: schemas.refresh },
         },
@@ -37,7 +37,7 @@ const authPlugin = {
         method: 'POST',
         path: '/api/v1/auth/logout',
         options: {
-          description: 'Revoke a refresh token (ends that session)',
+          description: 'Revoke a refresh token',
           tags: ['api', 'auth'],
           validate: { payload: schemas.logout },
         },
@@ -50,8 +50,7 @@ const authPlugin = {
         method: 'POST',
         path: '/api/v1/auth/password-reset/request',
         options: {
-          description:
-            'Request a password reset token for an email (always responds the same way, to avoid leaking which emails are registered)',
+          description: 'Request a password reset token for an email',
           tags: ['api', 'auth'],
           validate: { payload: schemas.passwordResetRequest },
         },
@@ -61,7 +60,7 @@ const authPlugin = {
         method: 'POST',
         path: '/api/v1/auth/password-reset/confirm',
         options: {
-          description: 'Confirm a password reset with the token and set a new password',
+          description: 'Confirm a password reset with a new password',
           tags: ['api', 'auth'],
           validate: { payload: schemas.passwordResetConfirm },
         },

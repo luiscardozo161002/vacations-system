@@ -12,7 +12,7 @@ const rolesPlugin = {
         method: 'GET',
         path: '/api/v1/roles',
         options: {
-          description: 'List roles with pagination and optional status filter',
+          description: 'List roles',
           tags: ['api', 'roles'],
           validate: { query: schemas.list },
         },
@@ -22,7 +22,7 @@ const rolesPlugin = {
         method: 'GET',
         path: '/api/v1/roles/{roleId}',
         options: {
-          description: 'Get a single role by ID',
+          description: 'Get a role by ID',
           tags: ['api', 'roles'],
           validate: { params: schemas.params },
         },
@@ -32,7 +32,7 @@ const rolesPlugin = {
         method: 'POST',
         path: '/api/v1/roles',
         options: {
-          description: 'Create a new role',
+          description: 'Create a role',
           tags: ['api', 'roles'],
           validate: { payload: schemas.create },
         },
@@ -45,7 +45,7 @@ const rolesPlugin = {
         method: 'PATCH',
         path: '/api/v1/roles/{roleId}',
         options: {
-          description: 'Update an existing role',
+          description: 'Update a role',
           tags: ['api', 'roles'],
           validate: { params: schemas.params, payload: schemas.update },
         },
@@ -55,7 +55,7 @@ const rolesPlugin = {
         method: 'DELETE',
         path: '/api/v1/roles/{roleId}',
         options: {
-          description: 'Permanently delete an existing role',
+          description: 'Deactivate a role',
           tags: ['api', 'roles'],
           validate: { params: schemas.params },
         },

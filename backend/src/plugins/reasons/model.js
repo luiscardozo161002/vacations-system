@@ -21,6 +21,7 @@ class Reason extends Model {
         description: { type: 'string', maxLength: 100 },
         requires_approval: { type: 'boolean' },
         affects_vacation_balance: { type: 'boolean' },
+        status: { type: 'string', enum: ['active', 'inactive'] },
       },
     };
   }

@@ -12,7 +12,7 @@ const rolePermissionsPlugin = {
         method: 'GET',
         path: '/api/v1/role-permissions',
         options: {
-          description: 'List role-permission assignments, with pagination and optional filters by role or permission',
+          description: 'List role-permission assignments',
           tags: ['api', 'role-permissions'],
           validate: { query: schemas.list },
         },
@@ -45,7 +45,7 @@ const rolePermissionsPlugin = {
         method: 'DELETE',
         path: '/api/v1/role-permissions/{roleId}/{permissionId}',
         options: {
-          description: 'Remove a permission from a role',
+          description: 'Deactivate a role-permission assignment',
           tags: ['api', 'role-permissions'],
           validate: { params: schemas.params },
         },

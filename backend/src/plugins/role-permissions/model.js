@@ -19,6 +19,7 @@ class RolePermission extends Model {
       properties: {
         role_id: { type: 'integer' },
         permission_id: { type: 'integer' },
+        status: { type: 'string', enum: ['active', 'inactive'] },
       },
     };
   }

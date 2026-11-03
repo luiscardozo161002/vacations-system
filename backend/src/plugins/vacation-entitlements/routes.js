@@ -12,7 +12,7 @@ const vacationEntitlementsPlugin = {
         method: 'GET',
         path: '/api/v1/vacation-entitlements',
         options: {
-          description: 'List vacation entitlements with pagination and optional filters by employee and period',
+          description: 'List vacation entitlements',
           tags: ['api', 'vacation-entitlements'],
           validate: { query: schemas.list },
         },
@@ -22,7 +22,7 @@ const vacationEntitlementsPlugin = {
         method: 'GET',
         path: '/api/v1/vacation-entitlements/{entitlementId}',
         options: {
-          description: 'Get a single vacation entitlement by ID',
+          description: 'Get a vacation entitlement by ID',
           tags: ['api', 'vacation-entitlements'],
           validate: { params: schemas.params },
         },
@@ -32,7 +32,7 @@ const vacationEntitlementsPlugin = {
         method: 'POST',
         path: '/api/v1/vacation-entitlements',
         options: {
-          description: 'Create a new vacation entitlement for an employee and period',
+          description: 'Create a vacation entitlement',
           tags: ['api', 'vacation-entitlements'],
           validate: { payload: schemas.create },
         },
@@ -45,7 +45,7 @@ const vacationEntitlementsPlugin = {
         method: 'PATCH',
         path: '/api/v1/vacation-entitlements/{entitlementId}',
         options: {
-          description: 'Update an existing vacation entitlement',
+          description: 'Update a vacation entitlement',
           tags: ['api', 'vacation-entitlements'],
           validate: { params: schemas.params, payload: schemas.update },
         },
@@ -55,7 +55,7 @@ const vacationEntitlementsPlugin = {
         method: 'DELETE',
         path: '/api/v1/vacation-entitlements/{entitlementId}',
         options: {
-          description: 'Permanently delete a vacation entitlement (no soft delete: this table has no status column)',
+          description: 'Deactivate a vacation entitlement',
           tags: ['api', 'vacation-entitlements'],
           validate: { params: schemas.params },
         },

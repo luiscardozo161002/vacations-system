@@ -12,7 +12,7 @@ const reasonsPlugin = {
         method: 'GET',
         path: '/api/v1/reasons',
         options: {
-          description: 'List absence reasons with pagination',
+          description: 'List absence reasons',
           tags: ['api', 'reasons'],
           validate: { query: schemas.list },
         },
@@ -22,7 +22,7 @@ const reasonsPlugin = {
         method: 'GET',
         path: '/api/v1/reasons/{reasonId}',
         options: {
-          description: 'Get a single reason by ID',
+          description: 'Get a reason by ID',
           tags: ['api', 'reasons'],
           validate: { params: schemas.params },
         },
@@ -32,7 +32,7 @@ const reasonsPlugin = {
         method: 'POST',
         path: '/api/v1/reasons',
         options: {
-          description: 'Create a new reason',
+          description: 'Create a reason',
           tags: ['api', 'reasons'],
           validate: { payload: schemas.create },
         },
@@ -45,7 +45,7 @@ const reasonsPlugin = {
         method: 'PATCH',
         path: '/api/v1/reasons/{reasonId}',
         options: {
-          description: 'Update an existing reason',
+          description: 'Update a reason',
           tags: ['api', 'reasons'],
           validate: { params: schemas.params, payload: schemas.update },
         },
@@ -55,7 +55,7 @@ const reasonsPlugin = {
         method: 'DELETE',
         path: '/api/v1/reasons/{reasonId}',
         options: {
-          description: 'Permanently delete a reason (no soft delete: this catalog has no status column)',
+          description: 'Deactivate a reason',
           tags: ['api', 'reasons'],
           validate: { params: schemas.params },
         },

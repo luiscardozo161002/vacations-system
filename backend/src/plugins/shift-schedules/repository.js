@@ -3,11 +3,12 @@
 const ShiftSchedule = require('./model');
 const { COLUMNS } = require('./fields');
 
-const list = async ({ shift_id, day_of_week, page = 1, pageSize = 20 }) => {
+const list = async ({ shift_id, day_of_week, status, page = 1, pageSize = 20 }) => {
   const query = ShiftSchedule.query().select(COLUMNS).orderBy(['shift_id', 'day_of_week']);
 
   if (shift_id !== undefined) query.where('shift_id', shift_id);
   if (day_of_week !== undefined) query.where('day_of_week', day_of_week);
+  if (status !== undefined) query.where('status', status);
 
   const { results, total } = await query.page(page - 1, pageSize);
 
@@ -24,7 +25,10 @@ const update = async (scheduleId, data) => {
 };
 
 const remove = async (scheduleId) => {
-  const schedule = await ShiftSchedule.query().deleteById(scheduleId).returning(COLUMNS);
+  const [schedule] = await ShiftSchedule.query()
+    .where('schedule_id', scheduleId)
+    .patch({ status: 'inactive' })
+    .returning(COLUMNS);
   return schedule || null;
 };
 

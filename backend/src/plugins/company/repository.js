@@ -27,7 +27,10 @@ const update = async (companyId, data) => {
 };
 
 const remove = async (companyId) => {
-  const company = await Company.query().deleteById(companyId).returning(COLUMNS);
+  const [company] = await Company.query()
+    .where('company_id', companyId)
+    .patch({ status: 'inactive', updated_at: db.fn.now() })
+    .returning(COLUMNS);
   return company || null;
 };
 

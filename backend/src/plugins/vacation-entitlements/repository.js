@@ -3,11 +3,12 @@
 const VacationEntitlement = require('./model');
 const { COLUMNS } = require('./fields');
 
-const list = async ({ employee_id, period_year, page = 1, pageSize = 20 }) => {
+const list = async ({ employee_id, period_year, status, page = 1, pageSize = 20 }) => {
   const query = VacationEntitlement.query().select(COLUMNS).orderBy(['employee_id', 'period_year']);
 
   if (employee_id !== undefined) query.where('employee_id', employee_id);
   if (period_year !== undefined) query.where('period_year', period_year);
+  if (status !== undefined) query.where('status', status);
 
   const { results, total } = await query.page(page - 1, pageSize);
 
@@ -27,7 +28,10 @@ const update = async (entitlementId, data) => {
 };
 
 const remove = async (entitlementId) => {
-  const entitlement = await VacationEntitlement.query().deleteById(entitlementId).returning(COLUMNS);
+  const [entitlement] = await VacationEntitlement.query()
+    .where('entitlement_id', entitlementId)
+    .patch({ status: 'inactive' })
+    .returning(COLUMNS);
   return entitlement || null;
 };
 

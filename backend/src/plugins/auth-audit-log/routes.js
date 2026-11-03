@@ -12,7 +12,7 @@ const authAuditLogPlugin = {
         method: 'GET',
         path: '/api/v1/auth-audit-log',
         options: {
-          description: 'List auth audit log entries, read-only, with pagination and optional filters',
+          description: 'List auth audit log entries (read-only)',
           tags: ['api', 'auth-audit-log'],
           validate: { query: schemas.list },
         },
@@ -22,7 +22,7 @@ const authAuditLogPlugin = {
         method: 'GET',
         path: '/api/v1/auth-audit-log/{logId}',
         options: {
-          description: 'Get a single auth audit log entry by ID',
+          description: 'Get an auth audit log entry by ID',
           tags: ['api', 'auth-audit-log'],
           validate: { params: schemas.params },
         },

@@ -3,8 +3,10 @@
 const Permission = require('./model');
 const { COLUMNS } = require('./fields');
 
-const list = async ({ page = 1, pageSize = 20 }) => {
+const list = async ({ status, page = 1, pageSize = 20 }) => {
   const query = Permission.query().select(COLUMNS).orderBy('permission_code');
+
+  if (status !== undefined) query.where('status', status);
 
   const { results, total } = await query.page(page - 1, pageSize);
 
@@ -21,7 +23,10 @@ const update = async (permissionId, data) => {
 };
 
 const remove = async (permissionId) => {
-  const permission = await Permission.query().deleteById(permissionId).returning(COLUMNS);
+  const [permission] = await Permission.query()
+    .where('permission_id', permissionId)
+    .patch({ status: 'inactive' })
+    .returning(COLUMNS);
   return permission || null;
 };
 

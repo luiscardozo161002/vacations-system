@@ -12,7 +12,7 @@ const permissionsPlugin = {
         method: 'GET',
         path: '/api/v1/permissions',
         options: {
-          description: 'List permissions with pagination',
+          description: 'List permissions',
           tags: ['api', 'permissions'],
           validate: { query: schemas.list },
         },
@@ -22,7 +22,7 @@ const permissionsPlugin = {
         method: 'GET',
         path: '/api/v1/permissions/{permissionId}',
         options: {
-          description: 'Get a single permission by ID',
+          description: 'Get a permission by ID',
           tags: ['api', 'permissions'],
           validate: { params: schemas.params },
         },
@@ -32,7 +32,7 @@ const permissionsPlugin = {
         method: 'POST',
         path: '/api/v1/permissions',
         options: {
-          description: 'Create a new permission',
+          description: 'Create a permission',
           tags: ['api', 'permissions'],
           validate: { payload: schemas.create },
         },
@@ -45,7 +45,7 @@ const permissionsPlugin = {
         method: 'PATCH',
         path: '/api/v1/permissions/{permissionId}',
         options: {
-          description: 'Update an existing permission',
+          description: 'Update a permission',
           tags: ['api', 'permissions'],
           validate: { params: schemas.params, payload: schemas.update },
         },
@@ -55,7 +55,7 @@ const permissionsPlugin = {
         method: 'DELETE',
         path: '/api/v1/permissions/{permissionId}',
         options: {
-          description: 'Permanently delete a permission (no soft delete: this catalog has no status column)',
+          description: 'Deactivate a permission',
           tags: ['api', 'permissions'],
           validate: { params: schemas.params },
         },

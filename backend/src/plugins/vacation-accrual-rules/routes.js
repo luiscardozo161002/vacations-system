@@ -12,7 +12,7 @@ const vacationAccrualRulesPlugin = {
         method: 'GET',
         path: '/api/v1/vacation-accrual-rules',
         options: {
-          description: 'List vacation accrual rules with pagination and optional filters',
+          description: 'List vacation accrual rules',
           tags: ['api', 'vacation-accrual-rules'],
           validate: { query: schemas.list },
         },
@@ -22,7 +22,7 @@ const vacationAccrualRulesPlugin = {
         method: 'GET',
         path: '/api/v1/vacation-accrual-rules/{ruleId}',
         options: {
-          description: 'Get a single vacation accrual rule by ID',
+          description: 'Get a vacation accrual rule by ID',
           tags: ['api', 'vacation-accrual-rules'],
           validate: { params: schemas.params },
         },
@@ -32,7 +32,7 @@ const vacationAccrualRulesPlugin = {
         method: 'POST',
         path: '/api/v1/vacation-accrual-rules',
         options: {
-          description: 'Create a new vacation accrual rule',
+          description: 'Create a vacation accrual rule',
           tags: ['api', 'vacation-accrual-rules'],
           validate: { payload: schemas.create },
         },
@@ -45,7 +45,7 @@ const vacationAccrualRulesPlugin = {
         method: 'PATCH',
         path: '/api/v1/vacation-accrual-rules/{ruleId}',
         options: {
-          description: 'Update an existing vacation accrual rule',
+          description: 'Update a vacation accrual rule',
           tags: ['api', 'vacation-accrual-rules'],
           validate: { params: schemas.params, payload: schemas.update },
         },
@@ -55,7 +55,7 @@ const vacationAccrualRulesPlugin = {
         method: 'DELETE',
         path: '/api/v1/vacation-accrual-rules/{ruleId}',
         options: {
-          description: 'Permanently delete an existing vacation accrual rule',
+          description: 'Deactivate a vacation accrual rule',
           tags: ['api', 'vacation-accrual-rules'],
           validate: { params: schemas.params },
         },

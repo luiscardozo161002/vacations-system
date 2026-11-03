@@ -1,5 +1,5 @@
 meta {
-  name: Delete Notice
+  name: Cancel Notice
   type: http
   seq: 5
 }
@@ -15,5 +15,5 @@ params:path {
 }
 
 docs {
-  Borrado fisico: elimina el registro. 204 sin contenido.
+  No es baja logica con `status = 'inactive'` (esa tabla no admite ese valor): pone `status = 'cancelled'`. 204 sin contenido.
 }

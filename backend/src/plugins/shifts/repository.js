@@ -27,7 +27,10 @@ const update = async (shiftId, data) => {
 };
 
 const remove = async (shiftId) => {
-  const shift = await Shift.query().deleteById(shiftId).returning(COLUMNS);
+  const [shift] = await Shift.query()
+    .where('shift_id', shiftId)
+    .patch({ status: 'inactive', updated_at: db.fn.now() })
+    .returning(COLUMNS);
   return shift || null;
 };
 

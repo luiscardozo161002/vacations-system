@@ -1,0 +1,22 @@
+meta {
+  name: Deactivate Role-Permission
+  type: http
+  seq: 4
+}
+
+delete {
+  url: {{baseUrl}}/api/v1/role-permissions/:roleId/:permissionId
+  body: none
+  auth: none
+}
+
+params:path {
+  roleId: 3
+  permissionId: 6
+}
+
+docs {
+  Baja logica: pone `status = 'inactive'`, no elimina el registro. 204 sin contenido.
+
+  Volver a asignar el mismo rol+permiso (POST) lo reactiva en vez de fallar con 409: role_id+permission_id es la primary key, asi que no puede haber dos filas para el mismo par.
+}

@@ -106,12 +106,6 @@ const DB_ERRORS = {
     code: 'INVALID_PERMISSION',
     message: 'El permiso no existe',
   },
-  pk_role_permissions: {
-    sqlstate: '23505',
-    status: 409,
-    code: 'ROLE_PERMISSION_EXISTS',
-    message: 'Ese permiso ya esta asignado a ese rol',
-  },
   shift_schedules_shift_id_foreign: {
     sqlstate: '23503',
     status: 422,

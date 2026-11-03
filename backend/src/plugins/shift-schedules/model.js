@@ -23,6 +23,7 @@ class ShiftSchedule extends Model {
         is_working_day: { type: 'boolean' },
         check_in_time: { type: ['string', 'null'] },
         check_out_time: { type: ['string', 'null'] },
+        status: { type: 'string', enum: ['active', 'inactive'] },
       },
     };
   }

@@ -92,7 +92,7 @@ Queda disponible en `http://localhost:3000` (o el `HOST`/`PORT` configurado).
 
 ### Endpoints disponibles
 
-Todos los recursos siguen el mismo esquema CRUD con paginación en el listado (`GET /`, `GET /{id}`, `POST /`, `PATCH /{id}`, `DELETE /{id}`). `DELETE` siempre hace un borrado físico (elimina el registro); si otra tabla todavía lo referencia por una foreign key, responde `409 RELATED_RECORDS` en vez de borrarlo.
+Todos los recursos siguen el mismo esquema CRUD con paginación en el listado (`GET /`, `GET /{id}`, `POST /`, `PATCH /{id}`, `DELETE /{id}`) y baja lógica: `DELETE` pone `status = 'inactive'`, nunca borra el registro (salvo `notices`, que usa `'cancelled'` en vez de `'inactive'`, porque ese es su propio enum de estado).
 
 | Recurso                            | Base                                  | Notas                                                         |
 |-------------------------------------|-----------------------------------------|------------------------------------------------------------------|
@@ -104,14 +104,12 @@ Todos los recursos siguen el mismo esquema CRUD con paginación en el listado (`
 | Empleados                           | `/api/v1/employees`                     |                                                                    |
 | Roles                               | `/api/v1/roles`                         |                                                                    |
 | Permisos                            | `/api/v1/permissions`                   |                                                                    |
-| Permisos por rol                    | `/api/v1/role-permissions`              | solo `GET`/`POST`/`DELETE`; clave compuesta `{roleId}/{permissionId}` en vez de un id propio |
+| Permisos por rol                    | `/api/v1/role-permissions`              | solo `GET`/`POST`/`DELETE` (clave compuesta `{roleId}/{permissionId}`, sin campos propios que editar); volver a asignar un permiso desactivado lo reactiva, no da 409 |
 | Reglas de acumulación de vacaciones | `/api/v1/vacation-accrual-rules`        |                                                                    |
 | Saldos de vacaciones                | `/api/v1/vacation-entitlements`         | `remaining_days` es una columna generada por Postgres (no se envía en el body) |
 | Motivos de aviso                    | `/api/v1/reasons`                       |                                                                    |
-| Avisos de ausencia                  | `/api/v1/notices`                       |                                                                    |
+| Avisos de ausencia                  | `/api/v1/notices`                       | `DELETE` pone `status = 'cancelled'`, no `'inactive'`            |
 | Usuarios                            | `/api/v1/users`                         | nunca devuelve `password_hash`; ver [Autenticación](#autenticación) |
-
-Varios de estos recursos (`companies`, `departments`, `shifts`, `employees`, `roles`, `vacation-accrual-rules`) todavía tienen una columna `status` (`active`/`inactive`) editable por `PATCH`, para desactivar un registro sin borrarlo — pero `DELETE` ya no la usa, borra directamente.
 
 Todas las respuestas de error tienen la misma forma:
 

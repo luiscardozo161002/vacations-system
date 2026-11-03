@@ -11,6 +11,7 @@ const fields = {
   rule_id: id,
   total_days: Joi.number().integer().min(0),
   used_days: Joi.number().integer().min(0),
+  status: Joi.string().valid('active', 'inactive'),
 };
 
 const create = Joi.object({
@@ -20,6 +21,7 @@ const create = Joi.object({
   rule_id: fields.rule_id.required(),
   total_days: fields.total_days.required(),
   used_days: fields.used_days.default(0),
+  status: fields.status.default('active'),
 }).unknown(false);
 
 const update = Joi.object({ ...fields }).min(1).unknown(false);
@@ -31,6 +33,7 @@ const params = Joi.object({
 const list = Joi.object({
   employee_id: id,
   period_year: Joi.number().integer().min(2000).max(2100),
+  status: Joi.string().valid('active', 'inactive'),
   page: Joi.number().integer().min(1).default(1),
   pageSize: Joi.number().integer().min(1).max(100).default(20),
 }).unknown(false);

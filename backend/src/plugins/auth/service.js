@@ -8,8 +8,6 @@ const password = require('../../lib/password');
 const { generateOpaqueToken, hashToken } = require('../../lib/tokens');
 const config = require('../../config');
 
-// Devuelven ISO strings (no objetos Date): el jsonSchema de Users (campos last_login_at /
-// locked_until) exige string, y Postgres acepta ISO 8601 igual de bien que un Date para timestamp.
 const addSeconds = (seconds) => new Date(Date.now() + seconds * 1000).toISOString();
 const addMinutes = (minutes) => addSeconds(minutes * 60);
 const addHours = (hours) => addSeconds(hours * 3600);
@@ -47,7 +45,6 @@ const login = async ({ username, password: plainPassword }, context) => {
       throw new AppError('ACCOUNT_LOCKED', 'La cuenta esta bloqueada temporalmente por demasiados intentos fallidos');
     }
 
-    // El bloqueo ya expiro: se desbloquea antes de seguir validando la contraseña.
     await repository.updateUser(user.user_id, { status: 'active', failed_login_attempts: 0, locked_until: null });
     user.status = 'active';
     user.failed_login_attempts = 0;
@@ -105,8 +102,6 @@ const refresh = async ({ refreshToken }, context) => {
     throw new AppError('ACCOUNT_INACTIVE', 'El usuario no esta activo');
   }
 
-  // Rotacion: se revoca la sesion usada y se emite una nueva, para que un refresh token
-  // robado deje de servir apenas el dueno real lo vuelve a usar.
   await repository.revokeSession(session.session_id);
   const newRefreshToken = await issueSession(user.user_id, context);
   const accessToken = issueAccessToken(user);
@@ -122,7 +117,6 @@ const logout = async ({ refreshToken }, context) => {
     await repository.revokeSession(session.session_id);
     await repository.logAuditEvent(session.user_id, 'LOGOUT', context);
   }
-  // Responde igual exista o no la sesion, para no revelar informacion sobre el token.
 };
 
 const requestPasswordReset = async ({ email }, context) => {
@@ -138,9 +132,6 @@ const requestPasswordReset = async ({ email }, context) => {
     });
     await repository.logAuditEvent(user.user_id, 'PASSWORD_RESET_REQUESTED', context);
 
-    // No hay envio de correo implementado: en produccion esto se manda por email, nunca en la
-    // respuesta de la API. Se devuelve aca solo fuera de production, para poder probar el flujo
-    // completo sin un servicio de correo.
     if (config.env !== 'production') devToken = token;
   }
 

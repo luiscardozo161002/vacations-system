@@ -17,6 +17,7 @@ const params = Joi.object({
 const list = Joi.object({
   role_id: id,
   permission_id: id,
+  status: Joi.string().valid('active', 'inactive'),
   page: Joi.number().integer().min(1).default(1),
   pageSize: Joi.number().integer().min(1).max(200).default(50),
 }).unknown(false);

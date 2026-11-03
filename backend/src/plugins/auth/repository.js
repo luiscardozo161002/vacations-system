@@ -5,8 +5,6 @@ const UserSession = require('./models/user-session');
 const PasswordResetToken = require('./models/password-reset-token');
 const AuthAuditLog = require('../auth-audit-log/model');
 
-// A diferencia de users/repository.js (que nunca selecciona password_hash), aca si hace falta
-// para poder verificarla contra la que manda el cliente en el login.
 const AUTH_COLUMNS = [
   'user_id',
   'employee_id',

@@ -3,11 +3,12 @@
 const Reason = require('./model');
 const { COLUMNS } = require('./fields');
 
-const list = async ({ requires_approval, affects_vacation_balance, page = 1, pageSize = 20 }) => {
+const list = async ({ requires_approval, affects_vacation_balance, status, page = 1, pageSize = 20 }) => {
   const query = Reason.query().select(COLUMNS).orderBy('description');
 
   if (requires_approval !== undefined) query.where('requires_approval', requires_approval);
   if (affects_vacation_balance !== undefined) query.where('affects_vacation_balance', affects_vacation_balance);
+  if (status !== undefined) query.where('status', status);
 
   const { results, total } = await query.page(page - 1, pageSize);
 
@@ -24,7 +25,7 @@ const update = async (reasonId, data) => {
 };
 
 const remove = async (reasonId) => {
-  const reason = await Reason.query().deleteById(reasonId).returning(COLUMNS);
+  const [reason] = await Reason.query().where('reason_id', reasonId).patch({ status: 'inactive' }).returning(COLUMNS);
   return reason || null;
 };
 

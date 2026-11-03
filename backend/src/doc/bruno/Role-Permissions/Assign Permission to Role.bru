@@ -22,7 +22,7 @@ body:json {
 }
 
 docs {
-  Sin PATCH: la relacion solo se crea o se borra, no tiene campos propios para actualizar.
+  Sin PATCH: la relacion solo se crea/reactiva o se desactiva. Idempotente: asignar un permiso ya asignado (activo o inactivo) no da error, solo asegura que quede `status: 'active'`.
 
-  Errores: `422 INVALID_ROLE` / `INVALID_PERMISSION` si los ids no existen; `409 ROLE_PERMISSION_EXISTS` si ya estaba asignado.
+  Errores: `422 INVALID_ROLE` / `INVALID_PERMISSION` si los ids no existen.
 }

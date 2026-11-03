@@ -12,7 +12,7 @@ const usersPlugin = {
         method: 'GET',
         path: '/api/v1/users',
         options: {
-          description: 'List users with pagination and optional filters (never returns password_hash)',
+          description: 'List users (never returns password_hash)',
           tags: ['api', 'users'],
           validate: { query: schemas.list },
         },
@@ -22,7 +22,7 @@ const usersPlugin = {
         method: 'GET',
         path: '/api/v1/users/{userId}',
         options: {
-          description: 'Get a single user by ID (never returns password_hash)',
+          description: 'Get a user by ID (never returns password_hash)',
           tags: ['api', 'users'],
           validate: { params: schemas.params },
         },
@@ -32,7 +32,7 @@ const usersPlugin = {
         method: 'POST',
         path: '/api/v1/users',
         options: {
-          description: 'Create a new user (password is hashed before storing)',
+          description: 'Create a user (password is hashed before storing)',
           tags: ['api', 'users'],
           validate: { payload: schemas.create },
         },
@@ -45,7 +45,7 @@ const usersPlugin = {
         method: 'PATCH',
         path: '/api/v1/users/{userId}',
         options: {
-          description: 'Update an existing user (password, if sent, is re-hashed before storing)',
+          description: 'Update a user (password is re-hashed if sent)',
           tags: ['api', 'users'],
           validate: { params: schemas.params, payload: schemas.update },
         },
@@ -55,7 +55,7 @@ const usersPlugin = {
         method: 'DELETE',
         path: '/api/v1/users/{userId}',
         options: {
-          description: 'Permanently delete an existing user',
+          description: 'Deactivate a user',
           tags: ['api', 'users'],
           validate: { params: schemas.params },
         },

@@ -29,7 +29,10 @@ const update = async (userId, data) => {
 };
 
 const remove = async (userId) => {
-  const user = await User.query().deleteById(userId).returning(SAFE_COLUMNS);
+  const [user] = await User.query()
+    .where('user_id', userId)
+    .patch({ status: 'inactive', updated_at: db.fn.now() })
+    .returning(SAFE_COLUMNS);
   return user || null;
 };
 

@@ -20,6 +20,7 @@ class Permission extends Model {
         permission_id: { type: 'integer' },
         permission_code: { type: 'string', maxLength: 60 },
         description: { type: 'string', maxLength: 150 },
+        status: { type: 'string', enum: ['active', 'inactive'] },
       },
     };
   }

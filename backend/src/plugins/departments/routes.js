@@ -12,7 +12,7 @@ const departmentsPlugin = {
         method: 'GET',
         path: '/api/v1/departments',
         options: {
-          description: 'List departments with pagination and optional filters by company and status',
+          description: 'List departments',
           tags: ['api', 'departments'],
           validate: { query: schemas.list },
         },
@@ -22,7 +22,7 @@ const departmentsPlugin = {
         method: 'GET',
         path: '/api/v1/departments/{departmentId}',
         options: {
-          description: 'Get a single department by ID',
+          description: 'Get a department by ID',
           tags: ['api', 'departments'],
           validate: { params: schemas.params },
         },
@@ -32,7 +32,7 @@ const departmentsPlugin = {
         method: 'POST',
         path: '/api/v1/departments',
         options: {
-          description: 'Create a new department',
+          description: 'Create a department',
           tags: ['api', 'departments'],
           validate: { payload: schemas.create },
         },
@@ -45,7 +45,7 @@ const departmentsPlugin = {
         method: 'PATCH',
         path: '/api/v1/departments/{departmentId}',
         options: {
-          description: 'Update an existing department',
+          description: 'Update a department',
           tags: ['api', 'departments'],
           validate: { params: schemas.params, payload: schemas.update },
         },
@@ -55,7 +55,7 @@ const departmentsPlugin = {
         method: 'DELETE',
         path: '/api/v1/departments/{departmentId}',
         options: {
-          description: 'Permanently delete an existing department',
+          description: 'Deactivate a department',
           tags: ['api', 'departments'],
           validate: { params: schemas.params },
         },

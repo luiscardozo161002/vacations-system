@@ -12,7 +12,7 @@ const shiftSchedulesPlugin = {
         method: 'GET',
         path: '/api/v1/shift-schedules',
         options: {
-          description: 'List shift schedules with pagination and optional filters by shift and day',
+          description: 'List shift schedules',
           tags: ['api', 'shift-schedules'],
           validate: { query: schemas.list },
         },
@@ -22,7 +22,7 @@ const shiftSchedulesPlugin = {
         method: 'GET',
         path: '/api/v1/shift-schedules/{scheduleId}',
         options: {
-          description: 'Get a single shift schedule by ID',
+          description: 'Get a shift schedule by ID',
           tags: ['api', 'shift-schedules'],
           validate: { params: schemas.params },
         },
@@ -32,7 +32,7 @@ const shiftSchedulesPlugin = {
         method: 'POST',
         path: '/api/v1/shift-schedules',
         options: {
-          description: 'Create a new shift schedule entry',
+          description: 'Create a shift schedule',
           tags: ['api', 'shift-schedules'],
           validate: { payload: schemas.create },
         },
@@ -45,7 +45,7 @@ const shiftSchedulesPlugin = {
         method: 'PATCH',
         path: '/api/v1/shift-schedules/{scheduleId}',
         options: {
-          description: 'Update an existing shift schedule entry',
+          description: 'Update a shift schedule',
           tags: ['api', 'shift-schedules'],
           validate: { params: schemas.params, payload: schemas.update },
         },
@@ -55,7 +55,7 @@ const shiftSchedulesPlugin = {
         method: 'DELETE',
         path: '/api/v1/shift-schedules/{scheduleId}',
         options: {
-          description: 'Permanently delete a shift schedule entry (no soft delete: this catalog has no status column)',
+          description: 'Deactivate a shift schedule',
           tags: ['api', 'shift-schedules'],
           validate: { params: schemas.params },
         },

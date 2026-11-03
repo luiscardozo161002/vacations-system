@@ -24,7 +24,10 @@ const update = async (ruleId, data) => {
 };
 
 const remove = async (ruleId) => {
-  const rule = await VacationAccrualRule.query().deleteById(ruleId).returning(COLUMNS);
+  const [rule] = await VacationAccrualRule.query()
+    .where('rule_id', ruleId)
+    .patch({ status: 'inactive' })
+    .returning(COLUMNS);
   return rule || null;
 };
 

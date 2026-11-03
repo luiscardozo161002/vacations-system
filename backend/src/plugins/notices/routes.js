@@ -12,7 +12,7 @@ const noticesPlugin = {
         method: 'GET',
         path: '/api/v1/notices',
         options: {
-          description: 'List absence notices with pagination and optional filters by employee, reason and status',
+          description: 'List absence notices',
           tags: ['api', 'notices'],
           validate: { query: schemas.list },
         },
@@ -22,7 +22,7 @@ const noticesPlugin = {
         method: 'GET',
         path: '/api/v1/notices/{noticeId}',
         options: {
-          description: 'Get a single notice by ID',
+          description: 'Get a notice by ID',
           tags: ['api', 'notices'],
           validate: { params: schemas.params },
         },
@@ -32,7 +32,7 @@ const noticesPlugin = {
         method: 'POST',
         path: '/api/v1/notices',
         options: {
-          description: 'Create a new absence notice',
+          description: 'Create an absence notice',
           tags: ['api', 'notices'],
           validate: { payload: schemas.create },
         },
@@ -45,7 +45,7 @@ const noticesPlugin = {
         method: 'PATCH',
         path: '/api/v1/notices/{noticeId}',
         options: {
-          description: 'Update an existing notice (including its status: pending/approved/rejected/cancelled)',
+          description: 'Update a notice',
           tags: ['api', 'notices'],
           validate: { params: schemas.params, payload: schemas.update },
         },
@@ -55,7 +55,7 @@ const noticesPlugin = {
         method: 'DELETE',
         path: '/api/v1/notices/{noticeId}',
         options: {
-          description: 'Permanently delete an existing notice',
+          description: 'Cancel a notice',
           tags: ['api', 'notices'],
           validate: { params: schemas.params },
         },

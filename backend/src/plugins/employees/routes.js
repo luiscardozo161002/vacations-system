@@ -12,7 +12,7 @@ const employeesPlugin = {
         method: 'GET',
         path: '/api/v1/employees',
         options: {
-          description: 'List employees with pagination and optional filters by department and status',
+          description: 'List employees',
           tags: ['api', 'employees'],
           validate: { query: schemas.list },
         },
@@ -22,7 +22,7 @@ const employeesPlugin = {
         method: 'GET',
         path: '/api/v1/employees/{employeeId}',
         options: {
-          description: 'Get a single employee by ID',
+          description: 'Get an employee by ID',
           tags: ['api', 'employees'],
           validate: { params: schemas.params },
         },
@@ -32,7 +32,7 @@ const employeesPlugin = {
         method: 'POST',
         path: '/api/v1/employees',
         options: {
-          description: 'Create a new employee',
+          description: 'Create an employee',
           tags: ['api', 'employees'],
           validate: { payload: schemas.create },
         },
@@ -45,7 +45,7 @@ const employeesPlugin = {
         method: 'PATCH',
         path: '/api/v1/employees/{employeeId}',
         options: {
-          description: 'Update an existing employee',
+          description: 'Update an employee',
           tags: ['api', 'employees'],
           validate: { params: schemas.params, payload: schemas.update },
         },
@@ -55,7 +55,7 @@ const employeesPlugin = {
         method: 'DELETE',
         path: '/api/v1/employees/{employeeId}',
         options: {
-          description: 'Permanently delete an existing employee',
+          description: 'Deactivate an employee',
           tags: ['api', 'employees'],
           validate: { params: schemas.params },
         },

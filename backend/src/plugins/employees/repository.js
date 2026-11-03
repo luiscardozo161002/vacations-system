@@ -4,7 +4,7 @@ const db = require('../../db');
 const Employee = require('./model');
 const { COLUMNS } = require('./fields');
 
-const list = async ({ department_id, status, page = 1, pageSize = 10 }) => {
+const list = async ({ department_id, status, page = 1, pageSize = 20 }) => {
   const query = Employee.query().select(COLUMNS).orderBy('employee_id');
 
   if (department_id !== undefined) query.where('department_id', department_id);
@@ -28,7 +28,10 @@ const update = async (employeeId, data) => {
 };
 
 const remove = async (employeeId) => {
-  const employee = await Employee.query().deleteById(employeeId).returning(COLUMNS);
+  const [employee] = await Employee.query()
+    .where('employee_id', employeeId)
+    .patch({ status: 'inactive', updated_at: db.fn.now() })
+    .returning(COLUMNS);
   return employee || null;
 };
 

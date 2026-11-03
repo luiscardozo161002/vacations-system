@@ -12,7 +12,7 @@ const shiftsPlugin = {
         method: 'GET',
         path: '/api/v1/shifts',
         options: {
-          description: 'List shifts with pagination and optional filter by status',
+          description: 'List shifts',
           tags: ['api', 'shifts'],
           validate: { query: schemas.list },
         },
@@ -22,7 +22,7 @@ const shiftsPlugin = {
         method: 'GET',
         path: '/api/v1/shifts/{shiftId}',
         options: {
-          description: 'Get a single shift by ID',
+          description: 'Get a shift by ID',
           tags: ['api', 'shifts'],
           validate: { params: schemas.params },
         },
@@ -32,7 +32,7 @@ const shiftsPlugin = {
         method: 'POST',
         path: '/api/v1/shifts',
         options: {
-          description: 'Create a new shift',
+          description: 'Create a shift',
           tags: ['api', 'shifts'],
           validate: { payload: schemas.create },
         },
@@ -45,7 +45,7 @@ const shiftsPlugin = {
         method: 'PATCH',
         path: '/api/v1/shifts/{shiftId}',
         options: {
-          description: 'Update an existing shift',
+          description: 'Update a shift',
           tags: ['api', 'shifts'],
           validate: { params: schemas.params, payload: schemas.update },
         },
@@ -55,7 +55,7 @@ const shiftsPlugin = {
         method: 'DELETE',
         path: '/api/v1/shifts/{shiftId}',
         options: {
-          description: 'Permanently delete an existing shift',
+          description: 'Deactivate a shift',
           tags: ['api', 'shifts'],
           validate: { params: schemas.params },
         },

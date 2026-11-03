@@ -28,7 +28,10 @@ const update = async (departmentId, data) => {
 };
 
 const remove = async (departmentId) => {
-  const department = await Department.query().deleteById(departmentId).returning(COLUMNS);
+  const [department] = await Department.query()
+    .where('department_id', departmentId)
+    .patch({ status: 'inactive', updated_at: db.fn.now() })
+    .returning(COLUMNS);
   return department || null;
 };
 

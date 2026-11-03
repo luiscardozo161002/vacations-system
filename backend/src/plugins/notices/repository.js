@@ -25,7 +25,7 @@ const update = async (noticeId, data) => {
 };
 
 const remove = async (noticeId) => {
-  const notice = await Notice.query().deleteById(noticeId).returning(COLUMNS);
+  const [notice] = await Notice.query().where('notice_id', noticeId).patch({ status: 'cancelled' }).returning(COLUMNS);
   return notice || null;
 };
 

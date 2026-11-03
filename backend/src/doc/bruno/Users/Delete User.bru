@@ -15,5 +15,5 @@ params:path {
 }
 
 docs {
-  Borrado fisico. Si el usuario ya inicio sesion, pidio un reset de password o tiene eventos en el log de auditoria, responde `409 RELATED_RECORDS` (esas tablas lo referencian y auth-audit-log no se puede borrar via API).
+  Baja logica: pone `status = 'inactive'`, no elimina el registro. 204 sin contenido.
 }
