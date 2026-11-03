@@ -8,6 +8,10 @@ const fields = {
   folio: Joi.string().max(15),
   company_name: Joi.string().max(150),
   company_branch: Joi.string().max(100).allow(null),
+  logo: Joi.string().max(255).allow(null),
+  location: Joi.string().max(255).allow(null),
+  phone_number: Joi.string().max(20).allow(null),
+  rfc: Joi.string().max(13).allow(null),
   status: Joi.string().valid('active', 'inactive'),
 };
 
@@ -15,6 +19,10 @@ const create = Joi.object({
   folio: fields.folio.required(),
   company_name: fields.company_name.required(),
   company_branch: fields.company_branch,
+  logo: fields.logo,
+  location: fields.location,
+  phone_number: fields.phone_number,
+  rfc: fields.rfc,
   status: fields.status.default('active'),
 }).unknown(false);
 

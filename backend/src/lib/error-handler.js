@@ -76,6 +76,12 @@ const DB_ERRORS = {
     code: 'COMPANY_FOLIO_EXISTS',
     message: 'Ya existe una empresa con ese folio',
   },
+  company_rfc_unique: {
+    sqlstate: '23505',
+    status: 409,
+    code: 'COMPANY_RFC_EXISTS',
+    message: 'Ya existe una empresa con ese RFC',
+  },
   reasons_description_unique: {
     sqlstate: '23505',
     status: 409,

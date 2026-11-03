@@ -23,3 +23,9 @@ body:json {
     "company_name": "Empresa Actualizada"
   }
 }
+
+docs {
+  Todos los campos opcionales, al menos uno requerido: `folio`, `company_name`, `company_branch`, `logo`, `location`, `phone_number`, `rfc`, `status`.
+
+  Errores: `409 COMPANY_RFC_EXISTS` si `rfc` ya esta en uso.
+}
