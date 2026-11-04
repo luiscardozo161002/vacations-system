@@ -1,4 +1,4 @@
-import { EmployeesPage } from './features/employees/EmployeesPage';
+import { EmployeesPage } from './features/employees/pages/EmployeesPage';
 import './App.css';
 
 function App() {

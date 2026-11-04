@@ -1,7 +1,7 @@
 import { useState, type ChangeEvent, type FormEvent } from 'react';
 import type { CreateEmployeeInput, Department, Employee, Shift } from '@vacations/sdk';
-import { sdk } from '../../lib/sdk';
-import { getErrorMessage } from '../../lib/get-error-message';
+import { sdk } from '../../../lib/sdk';
+import { getErrorMessage } from '../../../lib/get-error-message';
 
 interface EmployeeFormProps {
   employee: Employee | null;

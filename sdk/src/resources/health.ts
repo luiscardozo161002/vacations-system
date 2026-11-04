@@ -1,4 +1,4 @@
-import { HttpClient } from '../http-client';
+import { HttpClient } from '../core/http-client';
 
 export interface HealthStatus {
   status: 'ok' | 'error';
@@ -6,10 +6,7 @@ export interface HealthStatus {
   timestamp: string;
 }
 
-/**
- * Recurso "health" del SDK. Cada recurso de la API (employees, notices, vacations...)
- * se agregara como una clase igual a esta, instanciada una vez en VacationsSdk.
- */
+
 export class HealthResource {
   constructor(private readonly http: HttpClient) {}
 

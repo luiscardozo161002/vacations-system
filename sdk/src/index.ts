@@ -1,24 +1,18 @@
-import { HttpClient, SdkClientOptions } from './http-client';
+import { HttpClient, SdkClientOptions } from './core/http-client';
 import { HealthResource } from './resources/health';
 import { EmployeesResource } from './resources/employees';
 import { DepartmentsResource } from './resources/departments';
 import { ShiftsResource } from './resources/shifts';
 
-export * from './http-client';
+export * from './core/http-client';
+export * from './core/api-error';
+export * from './types/common';
 export * from './resources/health';
 export * from './resources/employees';
 export * from './resources/departments';
 export * from './resources/shifts';
 
-/**
- * SDK del sistema de vacaciones, organizado por recursos:
- *   const sdk = new VacationsSdk({ baseUrl: "http://localhost:3000" });
- *   const health = await sdk.health.check();
- *   const employees = await sdk.employees.list({ status: "active" });
- *
- * A futuro se agregan aqui mas recursos (notices, vacations...)
- * siguiendo el mismo patron que HealthResource/EmployeesResource.
- */
+
 export class VacationsSdk {
   readonly health: HealthResource;
   readonly employees: EmployeesResource;

@@ -1,4 +1,5 @@
-import { HttpClient } from '../http-client';
+import { HttpClient } from '../core/http-client';
+import type { Paginated } from '../types/common';
 
 export type ShiftStatus = 'active' | 'inactive';
 
@@ -18,15 +19,6 @@ export interface ListShiftsParams {
   pageSize?: number;
 }
 
-export interface ShiftsPage {
-  data: Shift[];
-  pagination: {
-    page: number;
-    pageSize: number;
-    total: number;
-  };
-}
-
 export interface CreateShiftInput {
   code: string;
   shift_name: string;
@@ -41,46 +33,29 @@ export interface UpdateShiftInput {
   status?: ShiftStatus;
 }
 
-const buildQueryString = (params: ListShiftsParams): string => {
-  const query = new URLSearchParams();
-
-  if (params.status !== undefined) query.set('status', params.status);
-  if (params.page !== undefined) query.set('page', String(params.page));
-  if (params.pageSize !== undefined) query.set('pageSize', String(params.pageSize));
-
-  const qs = query.toString();
-  return qs ? `?${qs}` : '';
-};
-
-/**
- * Recurso "shifts" del SDK. Sigue el mismo patron que EmployeesResource.
- */
 export class ShiftsResource {
   constructor(private readonly http: HttpClient) {}
 
-  list(params: ListShiftsParams = {}): Promise<ShiftsPage> {
-    return this.http.request<ShiftsPage>(`/api/v1/shifts${buildQueryString(params)}`, { method: 'GET' });
+  list(params: ListShiftsParams = {}, options: { signal?: AbortSignal } = {}): Promise<Paginated<Shift>> {
+    return this.http.request<Paginated<Shift>>('/api/v1/shifts', {
+      method: 'GET',
+      query: { ...params },
+      signal: options.signal,
+    });
   }
 
-  get(shiftId: number): Promise<Shift> {
-    return this.http.request<Shift>(`/api/v1/shifts/${shiftId}`, { method: 'GET' });
+  get(shiftId: number, options: { signal?: AbortSignal } = {}): Promise<Shift> {
+    return this.http.request<Shift>(`/api/v1/shifts/${shiftId}`, { method: 'GET', signal: options.signal });
   }
 
   create(input: CreateShiftInput): Promise<Shift> {
-    return this.http.request<Shift>('/api/v1/shifts', {
-      method: 'POST',
-      body: JSON.stringify(input),
-    });
+    return this.http.request<Shift>('/api/v1/shifts', { method: 'POST', body: input });
   }
 
   update(shiftId: number, input: UpdateShiftInput): Promise<Shift> {
-    return this.http.request<Shift>(`/api/v1/shifts/${shiftId}`, {
-      method: 'PATCH',
-      body: JSON.stringify(input),
-    });
+    return this.http.request<Shift>(`/api/v1/shifts/${shiftId}`, { method: 'PATCH', body: input });
   }
 
-  /** Borrado logico: el backend hace status = 'inactive', nunca un DELETE real. */
   remove(shiftId: number): Promise<void> {
     return this.http.request<void>(`/api/v1/shifts/${shiftId}`, { method: 'DELETE' });
   }

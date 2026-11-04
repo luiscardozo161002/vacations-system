@@ -1,4 +1,5 @@
-import { HttpClient } from '../http-client';
+import { HttpClient } from '../core/http-client';
+import type { Paginated } from '../types/common';
 
 export type DepartmentStatus = 'active' | 'inactive';
 
@@ -20,15 +21,6 @@ export interface ListDepartmentsParams {
   pageSize?: number;
 }
 
-export interface DepartmentsPage {
-  data: Department[];
-  pagination: {
-    page: number;
-    pageSize: number;
-    total: number;
-  };
-}
-
 export interface CreateDepartmentInput {
   company_id: number;
   code: string;
@@ -45,49 +37,33 @@ export interface UpdateDepartmentInput {
   status?: DepartmentStatus;
 }
 
-const buildQueryString = (params: ListDepartmentsParams): string => {
-  const query = new URLSearchParams();
 
-  if (params.company_id !== undefined) query.set('company_id', String(params.company_id));
-  if (params.status !== undefined) query.set('status', params.status);
-  if (params.page !== undefined) query.set('page', String(params.page));
-  if (params.pageSize !== undefined) query.set('pageSize', String(params.pageSize));
-
-  const qs = query.toString();
-  return qs ? `?${qs}` : '';
-};
-
-/**
- * Recurso "departments" del SDK. Sigue el mismo patron que EmployeesResource.
- */
 export class DepartmentsResource {
   constructor(private readonly http: HttpClient) {}
 
-  list(params: ListDepartmentsParams = {}): Promise<DepartmentsPage> {
-    return this.http.request<DepartmentsPage>(`/api/v1/departments${buildQueryString(params)}`, {
+  list(params: ListDepartmentsParams = {}, options: { signal?: AbortSignal } = {}): Promise<Paginated<Department>> {
+    return this.http.request<Paginated<Department>>('/api/v1/departments', {
       method: 'GET',
+      query: { ...params },
+      signal: options.signal,
     });
   }
 
-  get(departmentId: number): Promise<Department> {
-    return this.http.request<Department>(`/api/v1/departments/${departmentId}`, { method: 'GET' });
+  get(departmentId: number, options: { signal?: AbortSignal } = {}): Promise<Department> {
+    return this.http.request<Department>(`/api/v1/departments/${departmentId}`, {
+      method: 'GET',
+      signal: options.signal,
+    });
   }
 
   create(input: CreateDepartmentInput): Promise<Department> {
-    return this.http.request<Department>('/api/v1/departments', {
-      method: 'POST',
-      body: JSON.stringify(input),
-    });
+    return this.http.request<Department>('/api/v1/departments', { method: 'POST', body: input });
   }
 
   update(departmentId: number, input: UpdateDepartmentInput): Promise<Department> {
-    return this.http.request<Department>(`/api/v1/departments/${departmentId}`, {
-      method: 'PATCH',
-      body: JSON.stringify(input),
-    });
+    return this.http.request<Department>(`/api/v1/departments/${departmentId}`, { method: 'PATCH', body: input });
   }
 
-  /** Borrado logico: el backend hace status = 'inactive', nunca un DELETE real. */
   remove(departmentId: number): Promise<void> {
     return this.http.request<void>(`/api/v1/departments/${departmentId}`, { method: 'DELETE' });
   }

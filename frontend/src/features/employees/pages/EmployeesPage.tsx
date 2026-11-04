@@ -1,69 +1,50 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import type { Department, Employee, EmployeeStatus, Shift } from '@vacations/sdk';
-import { sdk } from '../../lib/sdk';
-import { getErrorMessage } from '../../lib/get-error-message';
-import { EmployeeForm } from './EmployeeForm';
+import { useMemo, useState } from 'react';
+import type { Employee, EmployeeStatus } from '@vacations/sdk';
+import { sdk } from '../../../lib/sdk';
+import { getErrorMessage } from '../../../lib/get-error-message';
+import { useEmployees } from '../hooks/useEmployees';
+import { useDepartments } from '../../departments/hooks/useDepartments';
+import { useShifts } from '../../shifts/hooks/useShifts';
+import { EmployeeForm } from '../components/EmployeeForm';
 
 const PAGE_SIZE = 10;
 
 export function EmployeesPage() {
-  const [employees, setEmployees] = useState<Employee[]>([]);
-  const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [departmentFilter, setDepartmentFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
 
-  const [departments, setDepartments] = useState<Department[]>([]);
-  const [shifts, setShifts] = useState<Shift[]>([]);
+  const { departments, error: departmentsError } = useDepartments();
+  const { shifts, error: shiftsError } = useShifts();
 
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const employeesParams = useMemo(
+    () => ({
+      page,
+      pageSize: PAGE_SIZE,
+      department_id: departmentFilter ? Number(departmentFilter) : undefined,
+      status: statusFilter ? (statusFilter as EmployeeStatus) : undefined,
+    }),
+    [page, departmentFilter, statusFilter],
+  );
+
+  const { data, loading, error: listError, reload } = useEmployees(employeesParams);
+
+  const [actionError, setActionError] = useState<string | null>(null);
   const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
   const [formOpen, setFormOpen] = useState(false);
 
-  useEffect(() => {
-    sdk.departments
-      .list({ pageSize: 100 })
-      .then((result) => setDepartments(result.data))
-      .catch((err) => setError(getErrorMessage(err)));
-
-    sdk.shifts
-      .list({ pageSize: 100 })
-      .then((result) => setShifts(result.data))
-      .catch((err) => setError(getErrorMessage(err)));
-  }, []);
-
-  const loadEmployees = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const result = await sdk.employees.list({
-        page,
-        pageSize: PAGE_SIZE,
-        department_id: departmentFilter ? Number(departmentFilter) : undefined,
-        status: statusFilter ? (statusFilter as EmployeeStatus) : undefined,
-      });
-      setEmployees(result.data);
-      setTotal(result.pagination.total);
-    } catch (err) {
-      setError(getErrorMessage(err));
-    } finally {
-      setLoading(false);
-    }
-  }, [page, departmentFilter, statusFilter]);
-
-  useEffect(() => {
-    loadEmployees();
-  }, [loadEmployees]);
+  const employees = data?.data ?? [];
+  const total = data?.pagination.total ?? 0;
+  const error = actionError ?? listError ?? departmentsError ?? shiftsError;
 
   const departmentsById = useMemo(() => {
-    const map = new Map<number, Department>();
+    const map = new Map<number, (typeof departments)[number]>();
     for (const department of departments) map.set(department.department_id, department);
     return map;
   }, [departments]);
 
   const shiftsById = useMemo(() => {
-    const map = new Map<number, Shift>();
+    const map = new Map<number, (typeof shifts)[number]>();
     for (const shift of shifts) map.set(shift.shift_id, shift);
     return map;
   }, [shifts]);
@@ -84,25 +65,25 @@ export function EmployeesPage() {
 
   const handleSaved = () => {
     setFormOpen(false);
-    loadEmployees();
+    reload();
   };
 
   const handleDeactivate = async (employee: Employee) => {
     if (!window.confirm(`¿Dar de baja a ${employee.employee_name}?`)) return;
     try {
       await sdk.employees.remove(employee.employee_id);
-      loadEmployees();
+      reload();
     } catch (err) {
-      setError(getErrorMessage(err));
+      setActionError(getErrorMessage(err));
     }
   };
 
   const handleReactivate = async (employee: Employee) => {
     try {
       await sdk.employees.update(employee.employee_id, { status: 'active' });
-      loadEmployees();
+      reload();
     } catch (err) {
-      setError(getErrorMessage(err));
+      setActionError(getErrorMessage(err));
     }
   };
 

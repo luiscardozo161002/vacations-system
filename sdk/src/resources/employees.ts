@@ -1,4 +1,5 @@
-import { HttpClient } from '../http-client';
+import { HttpClient } from '../core/http-client';
+import type { Paginated } from '../types/common';
 
 export type EmployeeStatus = 'active' | 'inactive';
 
@@ -22,15 +23,6 @@ export interface ListEmployeesParams {
   pageSize?: number;
 }
 
-export interface EmployeesPage {
-  data: Employee[];
-  pagination: {
-    page: number;
-    pageSize: number;
-    total: number;
-  };
-}
-
 export interface CreateEmployeeInput {
   department_id: number;
   shift_id: number;
@@ -51,44 +43,30 @@ export interface UpdateEmployeeInput {
   status?: EmployeeStatus;
 }
 
-const buildQueryString = (params: ListEmployeesParams): string => {
-  const query = new URLSearchParams();
-
-  if (params.department_id !== undefined) query.set('department_id', String(params.department_id));
-  if (params.status !== undefined) query.set('status', params.status);
-  if (params.page !== undefined) query.set('page', String(params.page));
-  if (params.pageSize !== undefined) query.set('pageSize', String(params.pageSize));
-
-  const qs = query.toString();
-  return qs ? `?${qs}` : '';
-};
-
-
 export class EmployeesResource {
   constructor(private readonly http: HttpClient) {}
 
-  list(params: ListEmployeesParams = {}): Promise<EmployeesPage> {
-    return this.http.request<EmployeesPage>(`/api/v1/employees${buildQueryString(params)}`, {
+  list(params: ListEmployeesParams = {}, options: { signal?: AbortSignal } = {}): Promise<Paginated<Employee>> {
+    return this.http.request<Paginated<Employee>>('/api/v1/employees', {
       method: 'GET',
+      query: { ...params },
+      signal: options.signal,
     });
   }
 
-  get(employeeId: number): Promise<Employee> {
-    return this.http.request<Employee>(`/api/v1/employees/${employeeId}`, { method: 'GET' });
+  get(employeeId: number, options: { signal?: AbortSignal } = {}): Promise<Employee> {
+    return this.http.request<Employee>(`/api/v1/employees/${employeeId}`, {
+      method: 'GET',
+      signal: options.signal,
+    });
   }
 
   create(input: CreateEmployeeInput): Promise<Employee> {
-    return this.http.request<Employee>('/api/v1/employees', {
-      method: 'POST',
-      body: JSON.stringify(input),
-    });
+    return this.http.request<Employee>('/api/v1/employees', { method: 'POST', body: input });
   }
 
   update(employeeId: number, input: UpdateEmployeeInput): Promise<Employee> {
-    return this.http.request<Employee>(`/api/v1/employees/${employeeId}`, {
-      method: 'PATCH',
-      body: JSON.stringify(input),
-    });
+    return this.http.request<Employee>(`/api/v1/employees/${employeeId}`, { method: 'PATCH', body: input });
   }
 
   remove(employeeId: number): Promise<void> {
