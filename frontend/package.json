@@ -1,6 +1,7 @@
 {
   "name": "@vacations/frontend",
   "private": true,
+  "description": "APP System Vacation Management.",
   "version": "0.0.0",
   "type": "module",
   "scripts": {

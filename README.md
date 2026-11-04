@@ -119,6 +119,12 @@ Todas las respuestas de error tienen la misma forma:
 
 La colección de [Bruno](https://www.usebruno.com/) en [`backend/src/doc/bruno/`](backend/src/doc/bruno/) tiene un request de ejemplo por cada endpoint, con los campos requeridos y los códigos de error de cada uno.
 
+#### Documentación interactiva (Swagger)
+
+Con el servidor corriendo, `http://localhost:3000/documentation` muestra todos los endpoints en Swagger UI (agrupados por recurso, con "Try it out" para probarlos desde el navegador) y `http://localhost:3000/swagger.json` expone el spec OpenAPI 2.0 crudo. Se genera automaticamente a partir de los mismos schemas de Joi que ya validan cada ruta ([hapi-swagger](https://github.com/hapi-swagger/hapi-swagger), registrado en [server.js](backend/src/server.js) junto con `@hapi/inert` y `@hapi/vision`, que son requisito de hapi-swagger) — no hay que mantener la documentacion aparte ni duplicar los schemas.
+
+**Nota de compatibilidad:** `hapi-swagger@17.3.2` declara `peerDependencies: { joi: "17.x" }`, pero el proyecto usa `joi@^18.3.1`. Se instalo igual (`--legacy-peer-deps`) porque hapi-swagger no trae su propio Joi: solo llama a `.describe()` sobre los schemas que ya existen, y esa API no cambio entre Joi 17 y 18 — se probo endpoint por endpoint y todos generan su definicion correctamente. Si una actualizacion futura de Joi rompe esto, el error va a aparecer como un schema vacio o un 500 al pedir `/swagger.json`, no al arrancar el servidor.
+
 ### Autenticación
 
 Las otras tres tablas de este dominio (`user_sessions`, `password_reset_tokens`, `auth_audit_log`) a propósito no tienen un CRUD genérico — login, refresh, logout y reset de contraseña necesitan su propia lógica, no un `POST`/`PATCH` abierto:

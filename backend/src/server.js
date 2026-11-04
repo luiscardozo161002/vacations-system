@@ -1,6 +1,10 @@
 const Hapi = require('@hapi/hapi');
 const Boom = require('@hapi/boom');
+const Inert = require('@hapi/inert');
+const Vision = require('@hapi/vision');
+const HapiSwagger = require('hapi-swagger');
 const config = require('./config');
+const pkg = require('../package.json');
 
 require('./db');
 const errorHandler = require('./lib/error-handler');
@@ -21,6 +25,14 @@ const usersPlugin = require('./plugins/users/routes');
 const authAuditLogPlugin = require('./plugins/auth-audit-log/routes');
 const authPlugin = require('./plugins/auth/routes');
 
+const swaggerOptions = {
+  info: {
+    title: 'API Documentation System Vacation Management',
+    version: pkg.version,
+  },
+  grouping: 'tags',
+};
+
 const createServer = async () => {
   const server = Hapi.server({
     host: config.server.host,
@@ -38,6 +50,9 @@ const createServer = async () => {
   });
 
   await server.register([
+    Inert,
+    Vision,
+    { plugin: HapiSwagger, options: swaggerOptions },
     errorHandler,
     healthPlugin,
     employeesPlugin,

@@ -2,7 +2,7 @@
   "name": "@vacations/sdk",
   "version": "0.1.0",
   "private": true,
-  "description": "SDK en TypeScript para consumir la API del sistema de vacaciones, organizado por recursos (resource-based client).",
+  "description": "SDK System Vacation Management.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [

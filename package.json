@@ -2,7 +2,7 @@
   "name": "vacations-system",
   "private": true,
   "version": "1.0.0",
-  "description": "Monorepo: backend (Hapi.js), sdk (TypeScript) y frontend (React + TypeScript) del sistema de vacaciones.",
+  "description": "Monorepo: Backend API, SDK, Frontend APP",
   "workspaces": [
     "backend",
     "sdk",
