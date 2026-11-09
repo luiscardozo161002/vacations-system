@@ -10,11 +10,8 @@ const EDITABLE_FIELDS = [
   'absence_end_date',
   'absence_start_time',
   'absence_end_time',
-  'absence_start_minutes',
-  'absence_end_minutes',
   'remaining_days',
   'remaining_hours',
-  'remaining_minutes',
   'remarks',
   'approved_at',
 ];

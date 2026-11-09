@@ -5,7 +5,7 @@ const Joi = require('joi');
 const id = Joi.number().integer().positive();
 const isoDateString = Joi.string().pattern(/^\d{4}-\d{2}-\d{2}$/).message('El formato es YYYY-MM-DD');
 const timeString = Joi.string().pattern(/^\d{2}:\d{2}(:\d{2})?$/).message('El formato es HH:MM').allow(null);
-const minutes = Joi.number().integer().min(0).allow(null);
+const nonNegativeInt = Joi.number().integer().min(0).allow(null);
 
 const fields = {
   employee_id: id,
@@ -16,11 +16,8 @@ const fields = {
   absence_end_date: isoDateString,
   absence_start_time: timeString,
   absence_end_time: timeString,
-  absence_start_minutes: minutes,
-  absence_end_minutes: minutes,
-  remaining_days: minutes,
-  remaining_hours: minutes,
-  remaining_minutes: minutes,
+  remaining_days: nonNegativeInt,
+  remaining_hours: nonNegativeInt,
   remarks: Joi.string().max(255).allow(null),
   approved_at: Joi.string().isoDate().allow(null),
 };
@@ -34,11 +31,8 @@ const create = Joi.object({
   absence_end_date: fields.absence_end_date.required(),
   absence_start_time: fields.absence_start_time,
   absence_end_time: fields.absence_end_time,
-  absence_start_minutes: fields.absence_start_minutes,
-  absence_end_minutes: fields.absence_end_minutes,
   remaining_days: fields.remaining_days,
   remaining_hours: fields.remaining_hours,
-  remaining_minutes: fields.remaining_minutes,
   remarks: fields.remarks,
 }).unknown(false);
 
