@@ -149,7 +149,7 @@ exports.seed = async function (knex) {
     { user_id: 2, event_type: 'LOGIN_SUCCESS', ip_address: '10.0.0.15', user_agent: 'Mozilla/5.0', metadata: null, created_at: knex.raw("now() - interval '1 day'") },
     { user_id: 3, event_type: 'LOGIN_SUCCESS', ip_address: '10.0.0.20', user_agent: 'Mozilla/5.0', metadata: null, created_at: knex.raw("now() - interval '6 hours'") },
     { user_id: 4, event_type: 'LOGIN_SUCCESS', ip_address: '10.0.0.42', user_agent: 'Mozilla/5.0', metadata: null, created_at: knex.raw("now() - interval '2 hours'") },
-    { user_id: null, event_type: 'LOGIN_FAILED', ip_address: '201.1.2.3', user_agent: 'curl/8.0', metadata: JSON.stringify({ attempted_username: 'admin' }), created_at: knex.raw("now() - interval '5 hours'") },
+    { user_id: null, event_type: 'LOGIN_FAILED', ip_address: '201.1.2.3', user_agent: 'curl/8.0', metadata: JSON.stringify({ attempted_login: 'admin' }), created_at: knex.raw("now() - interval '5 hours'") },
   ]);
 
   // ---------- VACACIONES ----------

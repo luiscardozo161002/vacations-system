@@ -56,7 +56,7 @@ const logAuditEvent = (userId, eventType, { ip, userAgent, metadata } = {}) =>
     event_type: eventType,
     ip_address: ip || null,
     user_agent: userAgent || null,
-    metadata: metadata ? JSON.stringify(metadata) : null,
+    metadata: metadata || null,
   });
 
 module.exports = {
