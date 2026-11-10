@@ -13,7 +13,7 @@ npx serve C:/Develop/vacations-design-system -l 4600
 | `styles.css` | [frontend/src/styles.css](../frontend/src/styles.css) | Copia idéntica, no se edita a mano |
 | `icons.js` | [frontend/src/components/Icon.tsx](../frontend/src/components/Icon.tsx) | El mismo mapa de iconos, usado como `<Icon name="plus" />` |
 | Markup de `app.js` (`renderEmpleados`, `openDrawer`, `openDialog`, `paginationFooter`…) | Componentes de React | Mismas clases y misma estructura |
-| `applyTheme` y `vm_theme` | [frontend/src/lib/theme.ts](../frontend/src/lib/theme.ts) | `data-theme` en `<html>`, claro por defecto |
+| `applyTheme`, `applyButtonColor`, `applyWindowAlpha` y las claves `vm_theme`, `vm_backdrop`, `vm_btn_color`, `vm_window_alpha` | [frontend/src/lib/appearance.ts](../frontend/src/lib/appearance.ts) | Mismos presets y fórmulas; se aplican al arrancar, también en el login. Tema claro por defecto |
 
 ## Reglas
 

@@ -1,11 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useSyncExternalStore } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router';
 import { Icon } from '../components/Icon';
 import { ToastProvider } from '../components/ToastProvider';
 import { useAuth } from '../features/auth/auth-context';
 import { ProfileDrawer } from '../features/auth/components/ProfileDrawer';
 import { initials } from '../lib/format';
-import { getTheme, toggleTheme } from '../lib/theme';
+import { getTheme, subscribeTheme, toggleTheme } from '../lib/appearance';
 import { ROLE_LABELS, findNavItem, visibleGroups } from './navigation';
 
 const COLLAPSED_KEY = 'vm_sidebar_collapsed';
@@ -17,7 +17,7 @@ export function Shell() {
   const [collapsed, setCollapsed] = useState(() => localStorage.getItem(COLLAPSED_KEY) === '1');
   const [mobileOpen, setMobileOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
-  const [theme, setTheme] = useState(getTheme);
+  const theme = useSyncExternalStore(subscribeTheme, getTheme);
 
   const displayName = user?.employee?.employee_name ?? user?.username ?? '';
   const roleLabel = user ? (ROLE_LABELS[user.role.role_code] ?? user.role.description) : '';
@@ -110,7 +110,7 @@ export function Shell() {
                   className="icon-btn"
                   id="theme-toggle-btn"
                   title="Cambiar tema"
-                  onClick={() => setTheme(toggleTheme())}
+                  onClick={toggleTheme}
                 >
                   <Icon name={theme === 'dark' ? 'moon' : 'sun'} />
                 </button>

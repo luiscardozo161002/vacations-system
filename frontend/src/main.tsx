@@ -3,9 +3,9 @@ import { createRoot } from 'react-dom/client'
 import './styles.css'
 import App from './App.tsx'
 import { AuthProvider } from './features/auth/AuthProvider'
-import { initTheme } from './lib/theme'
+import { initAppearance } from './lib/appearance'
 
-initTheme()
+initAppearance()
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

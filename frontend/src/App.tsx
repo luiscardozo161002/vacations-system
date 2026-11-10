@@ -4,11 +4,13 @@ import { Shell } from './app/Shell';
 import { PendingPage } from './app/PendingPage';
 import { NAV_GROUPS, visibleGroups } from './app/navigation';
 import { EmployeesPage } from './features/employees/pages/EmployeesPage';
+import { SettingsPage } from './features/settings/pages/SettingsPage';
 import { LoginPage } from './features/auth/pages/LoginPage';
 import { useAuth } from './features/auth/auth-context';
 
 const PAGES: Record<string, ReactNode> = {
   '/empleados': <EmployeesPage />,
+  '/configuracion': <SettingsPage />,
 };
 
 function App() {
