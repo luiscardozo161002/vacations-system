@@ -28,3 +28,21 @@ npx serve C:/Develop/vacations-design-system -l 4600
    - `pending` → `badge-warning`
    - `rejected` → `badge-danger`
    - `inactive` y `cancelled` → `badge-neutral`
+
+## Componentes del kit
+
+Están en [frontend/src/components](../frontend/src/components). Cada uno reproduce una función de `app.js` con el mismo markup:
+
+| Componente | En el prototipo | Uso |
+|---|---|---|
+| `Drawer` | `openDrawer` | Formularios laterales; con `onSubmit` se vuelve `<form>` |
+| `Dialog` y `ConfirmDialog` | `openDialog` | Confirmaciones; sustituyen a `window.confirm` |
+| `ToastProvider` y `useToast()` | `showToast` | Avisos de 3.2 s abajo a la derecha |
+| `DataTable` | `table-wrap` + `paginationFooter` | Tablas con estado vacío, carga y "Página X de Y" |
+| `EmptyState` | `emptyState` | Listas sin resultados |
+| `StatusBadge` | `statusBadge` | Estados con su color |
+| `SearchSelect` | `searchSelect` | Combobox con `datalist` |
+| `StatCard` | `statCard` | Indicadores del dashboard |
+| `Icon` | `iconSvg` | Iconos de `icons.js` |
+
+Los drawers y los diálogos se cierran con Escape o con clic fuera.
