@@ -1,7 +1,9 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { Employee, EmployeeStatus } from '@vacations/sdk';
 import { sdk } from '../../../lib/sdk';
 import { getErrorMessage } from '../../../lib/get-error-message';
+import { formatDate, initials } from '../../../lib/format';
+import { Icon } from '../../../components/Icon';
 import { useEmployees } from '../hooks/useEmployees';
 import { useDepartments } from '../../departments/hooks/useDepartments';
 import { useShifts } from '../../shifts/hooks/useShifts';
@@ -29,13 +31,21 @@ export function EmployeesPage() {
 
   const { data, loading, error: listError, reload } = useEmployees(employeesParams);
 
-  const [actionError, setActionError] = useState<string | null>(null);
+  const [toast, setToast] = useState<string | null>(null);
   const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
   const [formOpen, setFormOpen] = useState(false);
+  const [statusTarget, setStatusTarget] = useState<Employee | null>(null);
+
+  useEffect(() => {
+    if (!toast) return;
+    const timer = setTimeout(() => setToast(null), 3200);
+    return () => clearTimeout(timer);
+  }, [toast]);
 
   const employees = data?.data ?? [];
   const total = data?.pagination.total ?? 0;
-  const error = actionError ?? listError ?? departmentsError ?? shiftsError;
+  const totalPages = Math.max(1, data?.pagination.totalPages ?? 1);
+  const loadError = listError ?? departmentsError ?? shiftsError;
 
   const departmentsById = useMemo(() => {
     const map = new Map<number, (typeof departments)[number]>();
@@ -49,8 +59,6 @@ export function EmployeesPage() {
     return map;
   }, [shifts]);
 
-  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
-
   const openCreateForm = () => {
     setEditingEmployee(null);
     setFormOpen(true);
@@ -61,133 +69,164 @@ export function EmployeesPage() {
     setFormOpen(true);
   };
 
-  const closeForm = () => setFormOpen(false);
-
-  const handleSaved = () => {
+  const handleSaved = (message: string) => {
     setFormOpen(false);
+    setToast(message);
     reload();
   };
 
-  const handleDeactivate = async (employee: Employee) => {
-    if (!window.confirm(`¿Dar de baja a ${employee.employee_name}?`)) return;
+  const confirmStatusChange = async () => {
+    if (!statusTarget) return;
+    const willDeactivate = statusTarget.status === 'active';
     try {
-      await sdk.employees.remove(employee.employee_id);
+      if (willDeactivate) {
+        await sdk.employees.remove(statusTarget.employee_id);
+      } else {
+        await sdk.employees.update(statusTarget.employee_id, { status: 'active' });
+      }
+      setToast(`${statusTarget.employee_name} ${willDeactivate ? 'dada de baja' : 'reactivada'}.`);
       reload();
     } catch (err) {
-      setActionError(getErrorMessage(err));
+      setToast(getErrorMessage(err));
+    } finally {
+      setStatusTarget(null);
     }
   };
 
-  const handleReactivate = async (employee: Employee) => {
-    try {
-      await sdk.employees.update(employee.employee_id, { status: 'active' });
-      reload();
-    } catch (err) {
-      setActionError(getErrorMessage(err));
-    }
-  };
+  const emptyMessage = loading ? 'Cargando...' : (loadError ?? 'No hay empleados con estos filtros.');
 
   return (
-    <div className="page">
-      <header className="page-header">
-        <h1>Empleados</h1>
-        <button type="button" className="button-primary" onClick={openCreateForm} disabled={departments.length === 0}>
-          Nuevo empleado
-        </button>
-      </header>
-
-      {error && <p className="banner banner-error">{error}</p>}
-
-      <div className="toolbar">
-        <label>
-          Departamento
-          <select value={departmentFilter} onChange={(e) => { setPage(1); setDepartmentFilter(e.target.value); }}>
-            <option value="">Todos</option>
-            {departments.map((department) => (
-              <option key={department.department_id} value={department.department_id}>
-                {department.department_name}
-              </option>
-            ))}
-          </select>
-        </label>
-
-        <label>
-          Estado
-          <select value={statusFilter} onChange={(e) => { setPage(1); setStatusFilter(e.target.value); }}>
-            <option value="">Todos</option>
-            <option value="active">Activo</option>
-            <option value="inactive">Inactivo</option>
-          </select>
-        </label>
+    <>
+      <div className="page-header">
+        <div>
+          <h1>Empleados</h1>
+          <p className="page-sub">Catálogo de personal, departamentos y turnos.</p>
+        </div>
+        <div className="page-actions">
+          <button type="button" className="btn btn-primary" onClick={openCreateForm} disabled={departments.length === 0}>
+            <Icon name="plus" /> Nuevo empleado
+          </button>
+        </div>
       </div>
 
-      <table className="table">
-        <thead>
-          <tr>
-            <th>Numero</th>
-            <th>Nombre</th>
-            <th>Departamento</th>
-            <th>Turno</th>
-            <th>Ingreso</th>
-            <th>Estado</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          {loading && (
-            <tr>
-              <td colSpan={7}>Cargando...</td>
-            </tr>
-          )}
+      <div className="toolbar">
+        <select
+          value={departmentFilter}
+          onChange={(e) => {
+            setPage(1);
+            setDepartmentFilter(e.target.value);
+          }}
+        >
+          <option value="">Todos los departamentos</option>
+          {departments.map((department) => (
+            <option key={department.department_id} value={department.department_id}>
+              {department.department_name}
+            </option>
+          ))}
+        </select>
+        <select
+          value={statusFilter}
+          onChange={(e) => {
+            setPage(1);
+            setStatusFilter(e.target.value);
+          }}
+        >
+          <option value="">Todos los estados</option>
+          <option value="active">Activo</option>
+          <option value="inactive">Inactivo</option>
+        </select>
+      </div>
 
-          {!loading && employees.length === 0 && (
+      <div className="table-wrap">
+        <table className="data-table">
+          <thead>
             <tr>
-              <td colSpan={7}>No hay empleados con estos filtros.</td>
+              <th>Nombre</th>
+              <th>Número</th>
+              <th>Folio</th>
+              <th>Departamento</th>
+              <th>Turno</th>
+              <th>Ingreso</th>
+              <th>Estado</th>
+              <th></th>
             </tr>
-          )}
-
-          {!loading &&
-            employees.map((employee) => (
-              <tr key={employee.employee_id}>
-                <td>{employee.employee_number}</td>
-                <td>{employee.employee_name}</td>
-                <td>{departmentsById.get(employee.department_id)?.department_name ?? employee.department_id}</td>
-                <td>{shiftsById.get(employee.shift_id)?.shift_name ?? employee.shift_id}</td>
-                <td>{employee.start_date.slice(0, 10)}</td>
-                <td>
-                  <span className={`badge badge-${employee.status}`}>
-                    {employee.status === 'active' ? 'Activo' : 'Inactivo'}
-                  </span>
-                </td>
-                <td className="table-actions">
-                  <button type="button" className="button-link" onClick={() => openEditForm(employee)}>
-                    Editar
-                  </button>
-                  {employee.status === 'active' ? (
-                    <button type="button" className="button-link button-danger" onClick={() => handleDeactivate(employee)}>
-                      Dar de baja
-                    </button>
-                  ) : (
-                    <button type="button" className="button-link" onClick={() => handleReactivate(employee)}>
-                      Reactivar
-                    </button>
-                  )}
+          </thead>
+          <tbody>
+            {(loading || employees.length === 0) && (
+              <tr>
+                <td colSpan={8}>
+                  <div className="empty-state">
+                    <div className="mark">
+                      <Icon name="inbox" />
+                    </div>
+                    <p>{emptyMessage}</p>
+                  </div>
                 </td>
               </tr>
-            ))}
-        </tbody>
-      </table>
+            )}
 
-      <div className="pagination">
-        <button type="button" onClick={() => setPage((p) => p - 1)} disabled={page <= 1}>
-          Anterior
-        </button>
-        <span>
-          Pagina {page} de {totalPages}
-        </span>
-        <button type="button" onClick={() => setPage((p) => p + 1)} disabled={page >= totalPages}>
-          Siguiente
-        </button>
+            {!loading &&
+              employees.map((employee) => (
+                <tr key={employee.employee_id}>
+                  <td>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <div className="avatar">{initials(employee.employee_name)}</div>
+                      <span className="cell-main">{employee.employee_name}</span>
+                    </div>
+                  </td>
+                  <td>{employee.employee_number}</td>
+                  <td className="cell-sub">{employee.folio}</td>
+                  <td>{departmentsById.get(employee.department_id)?.department_name ?? employee.department_id}</td>
+                  <td>{shiftsById.get(employee.shift_id)?.shift_name ?? employee.shift_id}</td>
+                  <td>{formatDate(employee.start_date)}</td>
+                  <td>
+                    {employee.status === 'active' ? (
+                      <span className="badge badge-success">Activo</span>
+                    ) : (
+                      <span className="badge badge-neutral">Inactivo</span>
+                    )}
+                  </td>
+                  <td>
+                    <div className="row-actions">
+                      <button type="button" className="icon-btn" title="Editar" onClick={() => openEditForm(employee)}>
+                        <Icon name="edit" />
+                      </button>
+                      <button
+                        type="button"
+                        className="icon-btn"
+                        title={employee.status === 'active' ? 'Dar de baja' : 'Reactivar'}
+                        onClick={() => setStatusTarget(employee)}
+                      >
+                        <Icon name={employee.status === 'active' ? 'user-x' : 'user-check'} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+          </tbody>
+        </table>
+
+        <div className="table-foot">
+          <span>
+            {total} resultado{total === 1 ? '' : 's'}
+          </span>
+          <div className="pagination">
+            <button type="button" className="icon-btn" onClick={() => setPage((p) => p - 1)} disabled={page <= 1}>
+              <Icon name="chevron-left" />
+            </button>
+            <span>
+              Página {page} de {totalPages}
+            </span>
+            <button
+              type="button"
+              className="icon-btn"
+              onClick={() => setPage((p) => p + 1)}
+              disabled={page >= totalPages}
+            >
+              <Icon name="chevron-right" />
+            </button>
+          </div>
+        </div>
       </div>
 
       {formOpen && (
@@ -196,10 +235,51 @@ export function EmployeesPage() {
           employee={editingEmployee}
           departments={departments}
           shifts={shifts}
-          onClose={closeForm}
+          onClose={() => setFormOpen(false)}
           onSaved={handleSaved}
         />
       )}
-    </div>
+
+      {statusTarget && (
+        <div
+          className="overlay center"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setStatusTarget(null);
+          }}
+        >
+          <div className="dialog" role="dialog" aria-modal="true">
+            <div className="dialog-head">
+              <h2>{statusTarget.status === 'active' ? 'Dar de baja empleado' : 'Reactivar empleado'}</h2>
+              <button type="button" className="icon-btn" onClick={() => setStatusTarget(null)}>
+                <Icon name="x" />
+              </button>
+            </div>
+            <div className="dialog-body">
+              <p>
+                ¿Confirmas {statusTarget.status === 'active' ? 'dar de baja a' : 'reactivar a'}{' '}
+                <strong>{statusTarget.employee_name}</strong>?
+              </p>
+            </div>
+            <div className="dialog-foot">
+              <button type="button" className="btn btn-secondary" onClick={() => setStatusTarget(null)}>
+                Cancelar
+              </button>
+              <button type="button" className="btn btn-primary" onClick={confirmStatusChange}>
+                Confirmar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div id="toast-stack">
+        {toast && (
+          <div className="toast">
+            <Icon name="check" />
+            <span>{toast}</span>
+          </div>
+        )}
+      </div>
+    </>
   );
 }

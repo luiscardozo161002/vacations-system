@@ -20,12 +20,10 @@ const storeTheme = (theme: Theme): boolean => {
   }
 };
 
-const systemTheme = (): Theme => (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-
 export const getTheme = (): Theme => (document.documentElement.dataset.theme as Theme | undefined) ?? 'light';
 
 export const initTheme = (): void => {
-  document.documentElement.dataset.theme = readStoredTheme() ?? systemTheme();
+  document.documentElement.dataset.theme = readStoredTheme() ?? 'light';
 };
 
 export const setTheme = (theme: Theme): void => {
