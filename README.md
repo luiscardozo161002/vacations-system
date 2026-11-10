@@ -226,6 +226,18 @@ Durante el desarrollo conviene dejarlo en modo watch:
 npm run dev --workspace=sdk
 ```
 
+**Sesión:** `sdk.auth.login({ email, password })` (o `{ username, password }`) guarda los tokens y desde ahí cada petición lleva el `accessToken`. Si una petición responde `401`, el SDK renueva la sesión con el `refreshToken` y la reintenta una vez; si varias fallan a la vez, comparten una sola renovación. Si el refresh también falla, borra los tokens y llama a `onSessionExpired`. `sdk.auth.logout()` revoca el refresh token.
+
+Por defecto los tokens viven en memoria y se pierden al recargar. Para guardarlos en otro lado se pasa un `storage` con `get()` y `set(tokens | null)`:
+
+```ts
+const sdk = new VacationsSdk({
+  baseUrl: 'http://localhost:3000',
+  storage: myStorage,
+  onSessionExpired: () => navigate('/login'),
+});
+```
+
 ## Frontend
 
 ```bash

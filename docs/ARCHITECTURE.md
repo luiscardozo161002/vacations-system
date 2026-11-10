@@ -7,7 +7,7 @@ Usuario (navegador)
   ↓
 Frontend React (Vite) — features/*/{components,hooks,pages}
   ↓ usa
-SDK TypeScript (@vacations/sdk) — HttpClient con fetch + AbortSignal
+SDK TypeScript (@vacations/sdk) — HttpClient con fetch + AbortSignal, Bearer y refresh automático
   ↓ HTTP/JSON
 API Hapi.js — validación Joi, un plugin por entidad
   ↓ Objection.js / Knex
