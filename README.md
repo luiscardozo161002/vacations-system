@@ -244,7 +244,11 @@ const sdk = new VacationsSdk({
 npm run dev --workspace=frontend
 ```
 
-El frontend ya declara `@vacations/sdk` como dependencia (resuelta como paquete local del workspace, sin publicarlo a ningún registro), pero todavía no lo usa en ningún componente.
+El frontend usa `@vacations/sdk` como paquete local del workspace, sin publicarlo a ningún registro. Apunta a `VITE_API_BASE_URL`, que por defecto es `http://localhost:3000`.
+
+**Login:** se entra con correo y contraseña. En desarrollo, la pantalla muestra las cuentas de prueba para autocompletarlas; en el build de producción no aparecen. La sesión se guarda en `localStorage` con **Recordarme**, o en `sessionStorage` sin esa opción, y se renueva sola. Si el refresh token ya no sirve, regresa al login con el aviso de sesión expirada.
+
+**Recuperar contraseña:** "¿Olvidaste tu contraseña?" pide el correo y luego el código. Fuera de producción el código se llena solo con el `devToken` de la API. En producción hará falta el envío por correo (VM-054).
 
 ## Próximos pasos
 
