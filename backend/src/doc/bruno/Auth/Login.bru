@@ -16,13 +16,22 @@ headers {
 
 body:json {
   {
-    "username": "test.user",
-    "password": "Password123"
+    "email": "r.jimenez@thh.com.mx",
+    "password": "Vacaciones2026!"
+  }
+}
+
+script:post-response {
+  if (res.status === 200) {
+    bru.setVar("accessToken", res.body.accessToken);
+    bru.setVar("refreshToken", res.body.refreshToken);
   }
 }
 
 docs {
-  Devuelve `accessToken` (JWT, dura 15 min), `refreshToken` (opaco, dura 7 dias, se guarda hasheado en `user_sessions`) y los datos basicos del usuario.
+  Recibe `email` o `username` (uno de los dos, no ambos) y `password`. Devuelve `accessToken` (JWT, dura 15 min), `refreshToken` (opaco, dura 7 dias, se guarda hasheado en `user_sessions`) y los datos basicos del usuario. Guarda ambos tokens en las variables `accessToken` y `refreshToken` de la coleccion.
+
+  Usuarios de prueba del seed: ver la tabla del README (todos con `Vacaciones2026!`).
 
   Errores: `401 INVALID_CREDENTIALS`; `423 ACCOUNT_LOCKED` tras 5 intentos fallidos seguidos (se desbloquea solo a los 15 minutos, o al hacer un reset de password); `403 ACCOUNT_INACTIVE` si `status` no es `active`.
 }

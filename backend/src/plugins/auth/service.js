@@ -32,11 +32,11 @@ const issueSession = async (userId, context) => {
   return refreshToken;
 };
 
-const login = async ({ username, password: plainPassword }, context) => {
-  const user = await repository.findUserByUsername(username);
+const login = async ({ email, username, password: plainPassword }, context) => {
+  const user = email ? await repository.findUserByEmail(email) : await repository.findUserByUsername(username);
 
   if (!user) {
-    await repository.logAuditEvent(null, 'LOGIN_FAILED', { ...context, metadata: { attempted_username: username } });
+    await repository.logAuditEvent(null, 'LOGIN_FAILED', { ...context, metadata: { attempted_login: email || username } });
     throw new AppError('INVALID_CREDENTIALS', 'Usuario o contraseña incorrectos');
   }
 
@@ -161,4 +161,61 @@ const confirmPasswordReset = async ({ token, newPassword }, context) => {
   return { message: 'Contraseña actualizada' };
 };
 
-module.exports = { login, refresh, logout, requestPasswordReset, confirmPasswordReset };
+const getMe = async (userId) => {
+  const row = await repository.findProfile(userId);
+  if (!row) throw new AppError('USER_NOT_FOUND', 'El usuario no existe');
+
+  const permissions = await repository.findPermissionCodes(row.role_id);
+
+  return {
+    user_id: row.user_id,
+    username: row.username,
+    email: row.email,
+    status: row.status,
+    last_login_at: row.last_login_at,
+    role: { role_id: row.role_id, role_code: row.role_code, description: row.role_description },
+    employee: row.employee_id
+      ? {
+          employee_id: row.employee_id,
+          employee_number: row.employee_number,
+          employee_name: row.employee_name,
+          department_id: row.department_id,
+          shift_id: row.shift_id,
+        }
+      : null,
+    permissions,
+  };
+};
+
+const updateMe = async (userId, data) => {
+  await repository.updateProfile(userId, data);
+  return getMe(userId);
+};
+
+const changePassword = async (userId, { currentPassword, newPassword }, context) => {
+  const user = await repository.findUserById(userId);
+  if (!user) throw new AppError('USER_NOT_FOUND', 'El usuario no existe');
+
+  const validPassword = await password.verify(currentPassword, user.password_hash);
+  if (!validPassword) {
+    throw new AppError('INVALID_CURRENT_PASSWORD', 'La contraseña actual no es correcta');
+  }
+
+  await repository.updateUser(userId, { password_hash: await password.hash(newPassword) });
+  await repository.revokeAllSessionsForUser(userId);
+  await repository.logAuditEvent(userId, 'PASSWORD_CHANGED', context);
+
+  const refreshToken = await issueSession(userId, context);
+  return { accessToken: issueAccessToken(user), refreshToken, expiresIn: config.auth.accessTokenTtlSeconds };
+};
+
+module.exports = {
+  login,
+  refresh,
+  logout,
+  requestPasswordReset,
+  confirmPasswordReset,
+  getMe,
+  updateMe,
+  changePassword,
+};

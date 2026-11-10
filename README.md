@@ -175,7 +175,10 @@ Las otras tres tablas de este dominio (`user_sessions`, `password_reset_tokens`,
 
 | Acción                        | Endpoint                                    |
 |---------------------------------|------------------------------------------------|
-| Login                            | `POST /api/v1/auth/login`                       |
+| Login (con `email` o `username`) | `POST /api/v1/auth/login`                       |
+| Usuario actual                   | `GET /api/v1/auth/me`                           |
+| Editar username o correo         | `PATCH /api/v1/auth/me`                         |
+| Cambiar contraseña               | `POST /api/v1/auth/me/password`                 |
 | Refrescar sesión                 | `POST /api/v1/auth/refresh`                     |
 | Logout                           | `POST /api/v1/auth/logout`                      |
 | Pedir reset de contraseña        | `POST /api/v1/auth/password-reset/request`      |
@@ -184,7 +187,8 @@ Las otras tres tablas de este dominio (`user_sessions`, `password_reset_tokens`,
 
 Cómo funciona:
 
-- **Login** valida usuario/contraseña (bcrypt) y devuelve un **access token** (JWT, dura 15 minutos, firmado con `JWT_SECRET`) y un **refresh token** (opaco, dura 7 días; solo se guarda su hash en `user_sessions`, nunca el valor original).
+- **Usuario actual:** `GET /auth/me` devuelve el usuario con su rol, su empleado vinculado (o `null`) y la lista de códigos de permiso activos del rol. Cambiar la contraseña pide la actual, revoca todas las sesiones del usuario y devuelve tokens nuevos para la sesión que hizo el cambio.
+- **Login** recibe `email` o `username` (uno de los dos, no ambos), valida la contraseña (bcrypt) y devuelve un **access token** (JWT, dura 15 minutos, firmado con `JWT_SECRET`) y un **refresh token** (opaco, dura 7 días; solo se guarda su hash en `user_sessions`, nunca el valor original).
 - **Refresh** cambia un refresh token válido por un access token nuevo y **rota** el refresh token (revoca el usado, entrega uno nuevo): si alguien reutiliza uno viejo, falla con `401 INVALID_REFRESH_TOKEN`.
 - Tras **5 intentos fallidos** de login seguidos, la cuenta queda `status: 'locked'` por 15 minutos (`423 ACCOUNT_LOCKED`); se desbloquea sola al expirar ese tiempo, o antes si se completa un reset de contraseña.
 - **Password reset** responde siempre el mismo mensaje exista o no el correo, para no revelar qué correos están registrados. Como todavía no hay envío de email, fuera de `NODE_ENV=production` la respuesta de `request` incluye el token en texto plano (`devToken`) para poder probar el flujo — en producción eso se reemplaza por un correo real y la respuesta nunca lo expone. Confirmar el reset revoca todas las sesiones activas del usuario.

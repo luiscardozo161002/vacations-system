@@ -1,0 +1,21 @@
+meta {
+  name: Get Me
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{baseUrl}}/api/v1/auth/me
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+docs {
+  Usuario de la sesion actual: datos de la cuenta, `role` (id, codigo y descripcion), `employee` vinculado (o `null`, como `sysadmin`) y `permissions` con los codigos activos del rol.
+
+  Correr Login antes. Errores: `401` sin token o con token vencido.
+}

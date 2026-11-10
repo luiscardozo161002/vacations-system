@@ -71,6 +71,36 @@ const authPlugin = {
         },
         handler: (request) => service.confirmPasswordReset(request.payload, context(request)),
       },
+      {
+        method: 'GET',
+        path: '/api/v1/auth/me',
+        options: {
+          description: 'Get the current user with role, employee and permissions',
+          tags: ['api', 'auth'],
+        },
+        handler: (request) => service.getMe(request.auth.credentials.user_id),
+      },
+      {
+        method: 'PATCH',
+        path: '/api/v1/auth/me',
+        options: {
+          description: 'Update the current user username or email',
+          tags: ['api', 'auth'],
+          validate: { payload: schemas.updateMe },
+        },
+        handler: (request) => service.updateMe(request.auth.credentials.user_id, request.payload),
+      },
+      {
+        method: 'POST',
+        path: '/api/v1/auth/me/password',
+        options: {
+          description: 'Change the current user password and revoke every other session',
+          tags: ['api', 'auth'],
+          validate: { payload: schemas.changePassword },
+        },
+        handler: (request) =>
+          service.changePassword(request.auth.credentials.user_id, request.payload, context(request)),
+      },
     ]);
   },
 };

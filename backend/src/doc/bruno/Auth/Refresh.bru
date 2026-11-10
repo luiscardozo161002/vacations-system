@@ -16,12 +16,19 @@ headers {
 
 body:json {
   {
-    "refreshToken": "pegar-aca-el-refreshToken-del-login"
+    "refreshToken": "{{refreshToken}}"
+  }
+}
+
+script:post-response {
+  if (res.status === 200) {
+    bru.setVar("accessToken", res.body.accessToken);
+    bru.setVar("refreshToken", res.body.refreshToken);
   }
 }
 
 docs {
-  Rota el refresh token: revoca el que se mando y devuelve uno nuevo junto con un accessToken nuevo. El token viejo deja de servir de inmediato (si se reutiliza, responde 401).
+  Rota el refresh token: revoca el que se mando y devuelve uno nuevo junto con un accessToken nuevo. El token viejo deja de servir de inmediato (si se reutiliza, responde 401). Usa y actualiza las variables que deja Login.
 
   Errores: `401 INVALID_REFRESH_TOKEN` si no existe, ya se uso, esta revocado o expiro.
 }

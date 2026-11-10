@@ -1,5 +1,6 @@
 'use strict';
 
+const db = require('../../db');
 const User = require('../users/model');
 const UserSession = require('./models/user-session');
 const PasswordResetToken = require('./models/password-reset-token');
@@ -24,6 +25,37 @@ const findUserByEmail = (email) => User.query().select(AUTH_COLUMNS).where('emai
 const findUserById = (userId) => User.query().select(AUTH_COLUMNS).findById(userId);
 
 const updateUser = (userId, patch) => User.query().findById(userId).patch(patch);
+
+const updateProfile = (userId, data) => User.query().findById(userId).patch({ ...data, updated_at: db.fn.now() });
+
+const findProfile = (userId) =>
+  db('users as u')
+    .join('roles as r', 'r.role_id', 'u.role_id')
+    .leftJoin('employees as e', 'e.employee_id', 'u.employee_id')
+    .select(
+      'u.user_id',
+      'u.username',
+      'u.email',
+      'u.status',
+      'u.last_login_at',
+      'r.role_id',
+      'r.role_code',
+      'r.description as role_description',
+      'e.employee_id',
+      'e.employee_number',
+      'e.employee_name',
+      'e.department_id',
+      'e.shift_id'
+    )
+    .where('u.user_id', userId)
+    .first();
+
+const findPermissionCodes = (roleId) =>
+  db('role_permissions as rp')
+    .join('permissions as p', 'p.permission_id', 'rp.permission_id')
+    .where({ 'rp.role_id': roleId, 'rp.status': 'active', 'p.status': 'active' })
+    .orderBy('p.permission_code')
+    .pluck('p.permission_code');
 
 const createSession = (data) => UserSession.query().insert(data);
 
@@ -64,6 +96,9 @@ module.exports = {
   findUserByEmail,
   findUserById,
   updateUser,
+  updateProfile,
+  findProfile,
+  findPermissionCodes,
   createSession,
   findActiveSessionByHash,
   revokeSession,

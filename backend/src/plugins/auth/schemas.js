@@ -3,9 +3,12 @@
 const Joi = require('joi');
 
 const login = Joi.object({
-  username: Joi.string().max(50).required(),
+  email: Joi.string().email().max(120),
+  username: Joi.string().max(50),
   password: Joi.string().max(100).required(),
-}).unknown(false);
+})
+  .xor('email', 'username')
+  .unknown(false);
 
 const refresh = Joi.object({
   refreshToken: Joi.string().required(),
@@ -24,4 +27,24 @@ const passwordResetConfirm = Joi.object({
   newPassword: Joi.string().min(8).max(100).required(),
 }).unknown(false);
 
-module.exports = { login, refresh, logout, passwordResetRequest, passwordResetConfirm };
+const updateMe = Joi.object({
+  username: Joi.string().max(50),
+  email: Joi.string().email().max(120),
+})
+  .min(1)
+  .unknown(false);
+
+const changePassword = Joi.object({
+  currentPassword: Joi.string().max(100).required(),
+  newPassword: Joi.string().min(8).max(100).required(),
+}).unknown(false);
+
+module.exports = {
+  login,
+  refresh,
+  logout,
+  passwordResetRequest,
+  passwordResetConfirm,
+  updateMe,
+  changePassword,
+};
