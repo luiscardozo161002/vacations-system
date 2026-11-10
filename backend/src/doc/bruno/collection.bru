@@ -1,0 +1,11 @@
+auth {
+  mode: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+docs {
+  Correr primero `Auth/Login`: guarda `accessToken` y `refreshToken` en variables de la coleccion. Todas las peticiones protegidas heredan `Bearer {{accessToken}}` de aqui. El access token dura 15 minutos; al vencer, correr `Auth/Refresh`.
+}

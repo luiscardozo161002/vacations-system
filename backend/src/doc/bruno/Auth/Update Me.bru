@@ -7,11 +7,7 @@ meta {
 patch {
   url: {{baseUrl}}/api/v1/auth/me
   body: json
-  auth: bearer
-}
-
-auth:bearer {
-  token: {{accessToken}}
+  auth: inherit
 }
 
 headers {

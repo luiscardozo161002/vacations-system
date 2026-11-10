@@ -162,7 +162,7 @@ Todas las respuestas de error tienen la misma forma:
 { "error": { "code": "ALGUN_CODIGO", "message": "..." } }
 ```
 
-La colección de [Bruno](https://www.usebruno.com/) en [`backend/src/doc/bruno/`](backend/src/doc/bruno/) tiene un request de ejemplo por cada endpoint, con los campos requeridos y los códigos de error de cada uno.
+La colección de [Bruno](https://www.usebruno.com/) en [`backend/src/doc/bruno/`](backend/src/doc/bruno/) tiene un request de ejemplo por cada endpoint, con los campos requeridos y los códigos de error de cada uno. Para usarla: elegir el entorno **Local**, correr **Auth → Login** (guarda el token en la variable `accessToken`) y después cualquier otra petición; todas las protegidas heredan `Bearer {{accessToken}}` de la configuración de la colección. Cuando el token vence (15 min), correr **Auth → Refresh**.
 
 #### Documentación interactiva (Swagger)
 
