@@ -100,7 +100,16 @@ npm run migrate --workspace=backend
 npm run seed --workspace=backend
 ```
 
-Carga datos dummy (empresas, departamentos, turnos, empleados, usuarios, vacaciones y avisos). Se puede correr tantas veces como se quiera.
+Carga datos dummy (empresas, departamentos, turnos, empleados, usuarios, vacaciones y avisos). **Borra antes todo lo que haya en la base**, así que se puede correr tantas veces como se quiera, pero no conserva datos capturados a mano. Se niega a correr con `NODE_ENV=production`.
+
+Usuarios de prueba (todos con la contraseña `Vacaciones2026!`, solo para desarrollo):
+
+| Usuario     | Correo                  | Rol      | Empleado vinculado      |
+|-------------|-------------------------|----------|--------------------------|
+| `sysadmin`  | sysadmin@grupo-jo.com   | ADMIN    | —                        |
+| `r.jimenez` | r.jimenez@thh.com.mx    | HR       | Roberto Jimenez Cruz     |
+| `j.navarro` | j.navarro@jo.com.mx     | EMPLOYEE | Jorge Luis Navarro       |
+| `j.perez`   | j.perez@jo.com.mx       | EMPLOYEE | Juan Perez Lopez         |
 
 ### 5. Levantar el servidor
 

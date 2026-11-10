@@ -1,6 +1,16 @@
 /* Data dummy para desarrollo local, basada en vacations_db_postgresql.sql (raiz del repo). */
 
+const password = require('../../lib/password');
+
+const DEV_PASSWORD = 'Vacaciones2026!';
+
 exports.seed = async function (knex) {
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('El seed borra todas las tablas; no se corre en produccion');
+  }
+
+  const devPasswordHash = await password.hash(DEV_PASSWORD);
+
   // ---------- Borrado (orden inverso de dependencias) ----------
   await knex('notices').del();
   await knex('vacation_entitlements').del();
@@ -117,12 +127,11 @@ exports.seed = async function (knex) {
     { role_id: 3, permission_id: 1 }, { role_id: 3, permission_id: 2 }, // EMPLOYEE: solo lo propio
   ]);
 
-  // password_hash es un marcador de desarrollo: en la app real se genera con bcrypt/argon2id antes de insertar.
   await knex('users').insert([
-    { user_id: 1, employee_id: null, role_id: 1, username: 'sysadmin', email: 'sysadmin@grupo-jo.com', password_hash: 'HASH_PLACEHOLDER_REEMPLAZAR_EN_APP', status: 'active' },
-    { user_id: 2, employee_id: 5, role_id: 2, username: 'r.jimenez', email: 'r.jimenez@thh.com.mx', password_hash: 'HASH_PLACEHOLDER_REEMPLAZAR_EN_APP', status: 'active' },
-    { user_id: 3, employee_id: 11, role_id: 3, username: 'j.navarro', email: 'j.navarro@jo.com.mx', password_hash: 'HASH_PLACEHOLDER_REEMPLAZAR_EN_APP', status: 'active' },
-    { user_id: 4, employee_id: 1, role_id: 3, username: 'j.perez', email: 'j.perez@jo.com.mx', password_hash: 'HASH_PLACEHOLDER_REEMPLAZAR_EN_APP', status: 'active' },
+    { user_id: 1, employee_id: null, role_id: 1, username: 'sysadmin', email: 'sysadmin@grupo-jo.com', password_hash: devPasswordHash, status: 'active' },
+    { user_id: 2, employee_id: 5, role_id: 2, username: 'r.jimenez', email: 'r.jimenez@thh.com.mx', password_hash: devPasswordHash, status: 'active' },
+    { user_id: 3, employee_id: 11, role_id: 3, username: 'j.navarro', email: 'j.navarro@jo.com.mx', password_hash: devPasswordHash, status: 'active' },
+    { user_id: 4, employee_id: 1, role_id: 3, username: 'j.perez', email: 'j.perez@jo.com.mx', password_hash: devPasswordHash, status: 'active' },
   ]);
   await knex.raw("SELECT setval(pg_get_serial_sequence('users','user_id'), (SELECT MAX(user_id) FROM users))");
 
