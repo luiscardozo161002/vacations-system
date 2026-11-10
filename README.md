@@ -9,7 +9,7 @@ Monorepo con npm workspaces, compuesto por tres paquetes:
 ## Requisitos
 
 - Node.js 20+ y npm 10+
-- PostgreSQL 
+- PostgreSQL 17, ya sea con Docker o instalado localmente
 
 ## Instalación
 
@@ -21,13 +21,33 @@ npm install
 
 ## Backend
 
-### 1. Crear la base de datos
+### Arranque rápido con Docker
 
 ```bash
-createdb vacations_db
+cp backend/.env.example backend/.env
 ```
 
-### 2. Configurar variables de entorno
+```bash
+docker compose --env-file backend/.env up -d
+```
+
+```bash
+npm run migrate --workspace=backend
+```
+
+```bash
+npm run seed --workspace=backend
+```
+
+```bash
+npm run dev --workspace=backend
+```
+
+El contenedor toma la base, el usuario, la contraseña y el puerto de `backend/.env`, así que la API y Postgres siempre usan las mismas credenciales. Los datos se guardan en el volumen `pgdata` y sobreviven a `docker compose down`; para empezar desde cero, `docker compose down -v`. Si ya tienes un Postgres local en el 5432, cambia `DB_PORT` en `backend/.env` (por ejemplo a `5433`) antes de levantar el contenedor.
+
+Los pasos de abajo son el arranque sin Docker, o el detalle de cada comando.
+
+### 1. Configurar variables de entorno
 
 ```bash
 cp backend/.env.example backend/.env
@@ -52,6 +72,12 @@ Editar `backend/.env` con los datos de conexión a PostgreSQL:
 | `DB_USER`     | Usuario de PostgreSQL           | `postgres`       |
 | `DB_PASSWORD` | Password de ese usuario         | *(sin default)*  |
 | `JWT_SECRET`  | Firma los access token (JWT) de `POST /api/v1/auth/login` | `dev-secret-change-me-in-production` (**cambiar en producción**) |
+
+### 2. Crear la base de datos (solo sin Docker)
+
+```bash
+createdb vacations_db
+```
 
 ### 3. Correr las migraciones
 
