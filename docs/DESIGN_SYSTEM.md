@@ -1,84 +1,97 @@
 # Design System
 
+## Fuente de verdad
+
+El diseño aprobado es el prototipo de `C:\Develop\vacations-design-system` (`index.html`, `styles.css`, `app.js`): 14 pantallas y 3 roles. Para verlo:
+
+```bash
+npx serve C:/Develop/vacations-design-system -l 4600
+```
+
+Si el frontend y el prototipo no coinciden, gana el prototipo. Este documento resume las reglas de ese diseño y cómo están portadas a [frontend/src/index.css](../frontend/src/index.css).
+
 ## Dirección
 
-Limpio, claro, minimal — estilo panel de administración (ver referencia visual al final), no estilo producto de consumo. Fondo blanco, bordes sutiles en vez de sombras, una sola jerarquía tipográfica clara. El contraste lo da el espaciado y un acento usado con moderación (botón primario, links, foco, estados), no decoración.
+Panel de administración limpio: fuente Inter, texto casi negro sobre blanco, bordes sutiles y botón primario negro. No hay color de marca. El color se usa solo para comunicar estados (éxito, advertencia, peligro). En la app final, el contenido vive en una "ventana" con esquinas redondeadas sobre un fondo gris (`--backdrop`). Eso llega con el shell (VM-030).
 
-## Colores
+## Tokens
 
-Ya implementados en [frontend/src/index.css](../frontend/src/index.css) como custom properties, con variante para modo oscuro. Se mantienen tal cual — nombres semánticos, pocos, ya cubren claro/oscuro:
+Todos son custom properties en `:root`. El tema oscuro los redefine en `:root[data-theme='dark']`.
 
-```css
---bg            /* fondo de la página */
---bg-subtle     /* superficies secundarias: badge inactivo, filas alternas */
---text          /* texto de cuerpo */
---text-h        /* texto de encabezados */
---border        /* bordes de tablas, inputs, tarjetas */
---accent        /* color de marca: botón primario, links, foco */
---accent-bg     /* fondo tenue del acento: hover, selección */
---accent-contrast
---danger / --danger-bg         /* rechazar, dar de baja, errores */
---success-bg / --success-text  /* activo, aprobado */
-```
+| Grupo | Tokens | Uso |
+|---|---|---|
+| Superficies | `--bg`, `--bg-subtle`, `--surface`, `--surface-solid` | fondo de página, encabezados de tabla y hover, tarjetas, modales e inputs |
+| Texto | `--text`, `--text-muted` | cuerpo y encabezados; ayudas, metadatos y encabezados de tabla |
+| Bordes | `--border`, `--divider` | tablas, inputs y tarjetas; separadores del sidebar |
+| Botón primario | `--btn-primary-bg`, `--btn-primary-bg-hover`, `--btn-primary-text` | acción principal de cada pantalla |
+| Botón secundario | `--btn-secondary-bg`, `--btn-secondary-bg-hover`, `--btn-secondary-text`, `--btn-secondary-border` | cancelar y acciones alternas |
+| Estados | `--success-*`, `--warning-*`, `--danger-*`, `--neutral-*` (cada uno con `-bg` y `-text`) | badges, banners y acciones destructivas |
+| Radios | `--radius-sm` 8px, `--radius-md` 10px, `--radius-lg` 12px, `--radius-pill` 999px | botones e inputs; tarjetas; tablas y modales; badges |
+| Sombras | `--shadow-sm`, `--shadow-md`, `--focus-ring` | tarjetas; modales y menús; foco de inputs |
+| Layout | `--sidebar-w` 248px, `--sidebar-w-collapsed` 76px, `--topbar-h` 60px, `--backdrop`, `--window-margin`, `--window-radius`, `--window-bg-rgb`, `--window-bg-alpha` | shell de la aplicación |
 
-Falta un tono para estados intermedios (avisos `pending`). Agregar:
+Reglas:
 
-```css
---warning-bg: rgba(217, 119, 6, 0.12);
---warning-text: #b45309;
+- Los componentes usan tokens, nunca colores sueltos. La única excepción es el overlay de los modales.
+- Los estados van en pares: un fondo `-bg` siempre con su texto `-text`.
+- Estados de un aviso o solicitud: `approved` → success, `pending` → warning, `rejected` → danger, `cancelled` e `inactive` → neutral.
 
-/* dentro de @media (prefers-color-scheme: dark) */
---warning-bg: rgba(251, 191, 36, 0.15);
---warning-text: #fbbf24;
-```
+## Tema claro y oscuro
 
-No se cambia el acento morado (`--accent: #aa3bff`) ya en uso: tocar la paleta ahora sería cosmético y afectaría toda la UI ya construida sin ganar nada — lo "limpio y minimal" lo da la disciplina de espaciado y tipografía, no el tono del acento.
+- El tema se elige con `data-theme="light" | "dark"` en `<html>`, desde [frontend/src/lib/theme.ts](../frontend/src/lib/theme.ts).
+- Al arrancar, `initTheme()` usa el tema guardado en `localStorage` (`vm_theme`) o, si no hay ninguno, el del sistema operativo.
+- `setTheme` y `toggleTheme` lo cambian y lo guardan. El botón para cambiarlo vive en la topbar (VM-030).
+- Las preferencias de color de fondo, color del botón primario y transparencia de la ventana son de la pantalla de Configuración (VM-045). Se aplican sobrescribiendo `--backdrop`, `--btn-primary-*` y `--window-bg-alpha` en `<html>`. Si el fondo del botón es claro, el texto pasa a `#0f172a`.
 
 ## Tipografía
 
-Sin fuente custom — menos peso de carga, ya consistente con "minimal": `system-ui, 'Segoe UI', Roboto, sans-serif` (ya en `index.css`).
+Inter (400, 500, 600 y 700), cargada desde Google Fonts en `index.html`, con `system-ui` como respaldo.
 
 | Uso | Tamaño | Peso |
 |---|---|---|
-| H1 — título de página | 28px | 600 |
-| H2 — título de modal/sección | 20px | 600 |
-| Body | 15px | 400 |
-| Small — badges, ayuda, metadatos | 13px | 400 |
+| Título de página (`h1`) | 22px | 600 |
+| Título de modal o drawer | 18px | 600 |
+| Cuerpo, botones e inputs | 14px | 400 / 500 |
+| Celdas de tabla y subtítulos | 13.5px | 400 |
+| Labels y paginación | 13px | 500 |
+| Encabezados de tabla (mayúsculas) y badges | 12px | 600 / 500 |
 
 ## Espaciado
 
-Sistema de 8px, ya usado de facto en `App.css`: 4, 8, 12, 16, 20, 24, 32, 48. Formalizarlo evita que aparezcan valores sueltos en componentes nuevos.
-
-## Radios y bordes
-
-- `6px` — inputs, botones, banners.
-- `10px` — modales, tarjetas.
-- `999px` — badges/pills.
-- `1px solid var(--border)` para separar superficies, sin sombra.
+Múltiplos de 2 y 4: 4, 6, 8, 10, 12, 16, 20, 24, 32, 48. Las celdas de tabla usan `12px 16px`, los modales `24px` y los espacios entre controles `10px`.
 
 ## Componentes
 
-Inventario actual (clases globales en `App.css`, CSS plano — se mantiene así, no hace falta Tailwind ni una librería de componentes para este tamaño de proyecto):
+**Hoy en `App.css`**, ya con los tokens nuevos:
+- `.page` y `.page-header`
+- `.banner-error`
+- `.toolbar`
+- `.table`
+- `.badge` (`-active` / `-inactive`)
+- `.pagination`
+- `.button-primary`, `.button-secondary` y `.button-link` (`+ .button-danger`)
+- `.modal-overlay` y `.modal`
 
-- `.page` / `.page-header` — layout de página con título + acción principal.
-- `.banner.banner-error` — mensaje de error inline.
-- `.toolbar` — fila de filtros.
-- `.table` — tabla de datos con bordes sutiles.
-- `.badge.badge-active` / `.badge-inactive` — estado en pill.
-- `.pagination` — anterior/siguiente + "Página X de Y".
-- `.button-primary` / `.button-secondary` / `.button-link` (+ `.button-danger`) — tres variantes, sin librería.
-- `.modal-overlay` / `.modal` — diálogo centrado para formularios.
+**Kit del prototipo, pendiente para VM-031:**
+- Botones: `btn` (primary, secondary, outline, ghost y sm) e `icon-btn`.
+- Formularios: `field` con label, error y ayuda.
+- Datos: `DataTable` con pie de paginación y orden por columna.
+- Feedback: badges success, warning, danger y neutral; `Toast`; `EmptyState`.
+- Capas: `Drawer` y diálogo de confirmación, que reemplaza a `window.confirm`.
+- Otros: `StatCard`, `Toolbar` con buscador y `SearchSelect`.
 
-Para completar el módulo de avisos y las pantallas que faltan, agregar (mismo patrón, sin dependencias nuevas):
+Cuando entre el kit, las clases de `App.css` se reemplazan por esos componentes.
 
-- `.badge-pending` / `.badge-approved` / `.badge-rejected` / `.badge-cancelled`, usando `--warning-*` y los tokens ya existentes.
-- Un diálogo de confirmación reutilizable (variante pequeña de `.modal`) para reemplazar los `window.confirm()` actuales en aprobar/rechazar/dar de baja.
-- Una barra de navegación simple (Empleados / Departamentos / Turnos / Avisos) en `App.tsx` — hoy no existe ninguna, el App solo renderiza `EmployeesPage` directo. Hace falta ese shell antes de sumar más pantallas.
+## Accesibilidad
+
+- Todo elemento interactivo muestra foco con `:focus-visible` (contorno de 2px en `--text`). Los inputs, además, usan `--focus-ring`.
+- El texto sobre `--btn-primary-bg` mantiene un contraste legible con cualquier color elegido en Configuración.
+- En el prototipo, el botón primario es `#111111` también en el tema oscuro, y casi no se distingue del fondo. En la app, el tema oscuro lo invierte: fondo `#f1f5f9` con texto `#0f172a`. Si el usuario elige un color en Configuración, se usa ese en los dos temas.
+- El prototipo oculta las barras de scroll. En la app no se ocultan, para no perder la pista de que una lista sigue.
 
 ## Responsive
 
-Mobile: < 640px · Tablet: 640–1024px · Desktop: > 1024px. El layout actual (`max-width: 1024px` centrado) ya es compatible.
-
-## Referencia visual
-
-Panel de administración tipo Tailscale: fondo blanco, tabs superiores por sección, tabla de datos con buscador y filtros a la derecha, puntos de estado de color en vez de iconos grandes. Es el mismo patrón que ya tiene `EmployeesPage` (toolbar + tabla) — se trata de extenderlo a Departamentos, Turnos y Avisos bajo un shell común, no de rediseñarlo.
+Cortes del prototipo:
+- **< 640px:** las rejillas bajan a una columna.
+- **< 960px:** la ventana ocupa toda la pantalla, sin margen ni esquinas. El sidebar se abre como panel desde el botón de menú.
+- **< 1100px:** las rejillas de 4 y 3 columnas bajan a 2.
