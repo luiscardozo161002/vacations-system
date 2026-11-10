@@ -34,8 +34,11 @@ sdk/
     types/          Tipos compartidos (Pagination, Paginated<T>)
 frontend/
   src/
+    app/            Shell (sidebar y topbar), navegación con permisos y pantallas pendientes
+    components/     Piezas compartidas (Icon)
     features/       Un folder por dominio: components/ hooks/ pages/
-    lib/            sdk.ts (instancia del SDK), utilidades
+    lib/            sdk.ts (instancia del SDK), sesión, tema, utilidades
+    styles.css      Copia idéntica del styles.css del prototipo
 ```
 
 ## Módulos del backend (plugins Hapi, uno por entidad)

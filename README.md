@@ -248,6 +248,19 @@ El frontend usa `@vacations/sdk` como paquete local del workspace, sin publicarl
 
 **Login:** se entra con correo y contraseña. En desarrollo, la pantalla muestra las cuentas de prueba para autocompletarlas; en el build de producción no aparecen. La sesión se guarda en `localStorage` con **Recordarme**, o en `sessionStorage` sin esa opción, y se renueva sola. Si el refresh token ya no sirve, regresa al login con el aviso de sesión expirada.
 
+**Shell y rutas:** el sidebar y la topbar son los del prototipo. Las 14 pantallas tienen su ruta (`/dashboard`, `/empleados`, `/solicitudes`…), y las que todavía no existen muestran qué ticket las construye. El menú solo enseña los módulos que permite el rol. Entrar por URL a uno prohibido, o a una ruta que no existe, lleva al primer módulo permitido, como en el prototipo.
+
+Mientras VM-013 no define la matriz de permisos, cada módulo pide uno de los permisos que ya existen en la base. Así cada rol ve lo mismo que en el prototipo:
+
+| Módulos | Permiso | Roles que lo ven |
+|---|---|---|
+| Dashboard y Configuración | ninguno | todos |
+| Solicitudes, Calendario, Días y Avisos | `NOTICE_READ_OWN` | Superusuario, Usuario y Empleado |
+| Empleados, Departamentos, Empresas, Turnos y Reglas | `EMPLOYEE_MANAGE` | Superusuario y Usuario |
+| Usuarios, Roles y permisos, y Auditoría | `USER_MANAGE` | Superusuario |
+
+La configuración vive en [frontend/src/app/navigation.ts](frontend/src/app/navigation.ts).
+
 **Recuperar contraseña:** "¿Olvidaste tu contraseña?" pide el correo y luego el código. Fuera de producción el código se llena solo con el `devToken` de la API. En producción hará falta el envío por correo (VM-054).
 
 ## Próximos pasos
