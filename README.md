@@ -142,6 +142,12 @@ Las pruebas usan el runner que trae Node (`node:test`) y llaman a la API con `se
 
 Las pruebas viven en `backend/test/*.test.js`.
 
+### Integración continua
+
+[`.github/workflows/ci.yml`](.github/workflows/ci.yml) corre en cada pull request y en cada push a `develop` y `main`. Levanta Postgres 17 como servicio, instala con `npm ci --legacy-peer-deps` (por el peer `joi 17.x` de hapi-swagger, ver arriba) y hace, en orden: lint del backend, lint del frontend, build del SDK, typecheck y build del frontend, y las pruebas del backend.
+
+Para que un PR no se pueda mergear con el CI en rojo hay que activar la protección de ramas en GitHub: **Settings → Branches → Add rule** para `develop` y para `main`, con *Require a pull request before merging* y *Require status checks to pass* marcando `build-and-test`.
+
 ### Endpoints disponibles
 
 Todos los recursos siguen el mismo esquema CRUD con paginación en el listado (`GET /`, `GET /{id}`, `POST /`, `PATCH /{id}`, `DELETE /{id}`) y baja lógica: `DELETE` pone `status = 'inactive'`, nunca borra el registro (salvo `notices`, que usa `'cancelled'` en vez de `'inactive'`, porque ese es su propio enum de estado).
