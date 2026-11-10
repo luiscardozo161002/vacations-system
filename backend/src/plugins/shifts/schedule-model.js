@@ -2,6 +2,8 @@
 
 const { Model } = require('objection');
 
+const SCHEDULE_COLUMNS = ['shift_id', 'day_of_week', 'is_working_day', 'check_in_time', 'check_out_time'];
+
 class ShiftSchedule extends Model {
   static get tableName() {
     return 'shift_schedules';
@@ -24,6 +26,14 @@ class ShiftSchedule extends Model {
         check_in_time: { type: ['string', 'null'] },
         check_out_time: { type: ['string', 'null'] },
         status: { type: 'string', enum: ['active', 'inactive'] },
+      },
+    };
+  }
+
+  static get modifiers() {
+    return {
+      week(query) {
+        query.select(SCHEDULE_COLUMNS).where('status', 'active').orderBy('day_of_week');
       },
     };
   }

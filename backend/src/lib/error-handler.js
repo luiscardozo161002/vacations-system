@@ -14,7 +14,7 @@ const BUSINESS_STATUS = {
   ROLE_NOT_FOUND: 404,
   PERMISSION_NOT_FOUND: 404,
   ROLE_PERMISSION_NOT_FOUND: 404,
-  SHIFT_SCHEDULE_NOT_FOUND: 404,
+  INVALID_SCHEDULE: 400,
   VACATION_RULE_NOT_FOUND: 404,
   VACATION_ENTITLEMENT_NOT_FOUND: 404,
   NOTICE_NOT_FOUND: 404,
@@ -112,18 +112,6 @@ const DB_ERRORS = {
     status: 422,
     code: 'INVALID_PERMISSION',
     message: 'El permiso no existe',
-  },
-  shift_schedules_shift_id_foreign: {
-    sqlstate: '23503',
-    status: 422,
-    code: 'INVALID_SHIFT',
-    message: 'El turno no existe',
-  },
-  uq_shift_schedules: {
-    sqlstate: '23505',
-    status: 409,
-    code: 'SHIFT_SCHEDULE_EXISTS',
-    message: 'Ya existe un horario para ese turno en ese dia',
   },
   vacation_entitlements_employee_id_foreign: {
     sqlstate: '23503',

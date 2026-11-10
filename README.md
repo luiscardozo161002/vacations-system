@@ -144,8 +144,7 @@ Todos los recursos siguen el mismo esquema CRUD con paginación en el listado (`
 | Health check                        | `GET /api/v1/health`                    |                                                                     |
 | Empresas                            | `/api/v1/companies`                     |                                                                    |
 | Departamentos                       | `/api/v1/departments`                   |                                                                    |
-| Turnos                              | `/api/v1/shifts`                        |                                                                    |
-| Horarios de turno                   | `/api/v1/shift-schedules`               |                                                                    |
+| Turnos                              | `/api/v1/shifts`                        | cada turno trae `schedule` con sus 7 días; la semana se reemplaza completa con `PUT /api/v1/shifts/{shiftId}/schedule` |
 | Empleados                           | `/api/v1/employees`                     |                                                                    |
 | Roles                               | `/api/v1/roles`                         |                                                                    |
 | Permisos                            | `/api/v1/permissions`                   |                                                                    |

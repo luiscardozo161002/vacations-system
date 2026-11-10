@@ -1,6 +1,7 @@
 'use strict';
 
 const { Model } = require('objection');
+const ShiftSchedule = require('./schedule-model');
 
 class Shift extends Model {
   static get tableName() {
@@ -24,6 +25,16 @@ class Shift extends Model {
         status: { type: 'string', enum: ['active', 'inactive'] },
         created_at: { type: 'string' },
         updated_at: { type: 'string' },
+      },
+    };
+  }
+
+  static get relationMappings() {
+    return {
+      schedule: {
+        relation: Model.HasManyRelation,
+        modelClass: ShiftSchedule,
+        join: { from: 'shifts.shift_id', to: 'shift_schedules.shift_id' },
       },
     };
   }

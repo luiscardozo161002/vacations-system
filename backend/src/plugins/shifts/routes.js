@@ -29,6 +29,16 @@ const shiftsPlugin = {
         handler: (request) => service.findById(request.params.shiftId),
       },
       {
+        method: 'PUT',
+        path: '/api/v1/shifts/{shiftId}/schedule',
+        options: {
+          description: 'Replace the weekly schedule of a shift (all 7 days at once)',
+          tags: ['api', 'shifts'],
+          validate: { params: schemas.params, payload: schemas.schedule },
+        },
+        handler: (request) => service.replaceSchedule(request.params.shiftId, request.payload),
+      },
+      {
         method: 'POST',
         path: '/api/v1/shifts',
         options: {

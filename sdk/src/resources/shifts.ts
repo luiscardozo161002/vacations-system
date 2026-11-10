@@ -3,6 +3,15 @@ import type { Paginated } from '../types/common';
 
 export type ShiftStatus = 'active' | 'inactive';
 
+export type DayOfWeek = 1 | 2 | 3 | 4 | 5 | 6 | 7;
+
+export interface ShiftScheduleDay {
+  day_of_week: DayOfWeek;
+  is_working_day: boolean;
+  check_in_time: string | null;
+  check_out_time: string | null;
+}
+
 export interface Shift {
   shift_id: number;
   code: string;
@@ -11,6 +20,7 @@ export interface Shift {
   status: ShiftStatus;
   created_at: string;
   updated_at: string;
+  schedule: ShiftScheduleDay[];
 }
 
 export interface ListShiftsParams {
@@ -51,6 +61,10 @@ export class ShiftsResource {
 
   create(input: CreateShiftInput): Promise<Shift> {
     return this.http.request<Shift>('/api/v1/shifts', { method: 'POST', body: input });
+  }
+
+  replaceSchedule(shiftId: number, days: ShiftScheduleDay[]): Promise<Shift> {
+    return this.http.request<Shift>(`/api/v1/shifts/${shiftId}/schedule`, { method: 'PUT', body: days });
   }
 
   update(shiftId: number, input: UpdateShiftInput): Promise<Shift> {

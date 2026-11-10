@@ -1,0 +1,37 @@
+meta {
+  name: Replace Shift Schedule
+  type: http
+  seq: 6
+}
+
+put {
+  url: {{baseUrl}}/api/v1/shifts/:shiftId/schedule
+  body: json
+  auth: inherit
+}
+
+params:path {
+  shiftId: 2
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  [
+    { "day_of_week": 1, "is_working_day": true, "check_in_time": "07:00", "check_out_time": "15:00" },
+    { "day_of_week": 2, "is_working_day": true, "check_in_time": "07:00", "check_out_time": "15:00" },
+    { "day_of_week": 3, "is_working_day": true, "check_in_time": "07:00", "check_out_time": "15:00" },
+    { "day_of_week": 4, "is_working_day": true, "check_in_time": "07:00", "check_out_time": "15:00" },
+    { "day_of_week": 5, "is_working_day": true, "check_in_time": "07:00", "check_out_time": "15:00" },
+    { "day_of_week": 6, "is_working_day": true, "check_in_time": "08:00", "check_out_time": "13:00" },
+    { "day_of_week": 7, "is_working_day": false }
+  ]
+}
+
+docs {
+  Reemplaza la semana completa del turno en una sola operacion: siempre los 7 dias (1 = lunes ... 7 = domingo), sin repetir. Los dias laborables requieren `check_in_time` y `check_out_time` (HH:MM); los de descanso no llevan horario. Devuelve el turno con su `schedule` actualizado.
+
+  Errores: `400` si faltan dias, se repite uno o falta el horario de un dia laborable; `400 INVALID_SCHEDULE` si la salida no es despues de la entrada; `404 SHIFT_NOT_FOUND` si el turno no existe.
+}

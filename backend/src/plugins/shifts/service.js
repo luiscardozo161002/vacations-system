@@ -20,12 +20,27 @@ const findById = async (shiftId) => {
   return shift;
 };
 
-const create = (data) => repository.create(pick(data));
+const replaceSchedule = async (shiftId, days) => {
+  await findById(shiftId);
+
+  const invalidDay = days.find((day) => day.is_working_day && day.check_out_time <= day.check_in_time);
+  if (invalidDay) {
+    throw new AppError('INVALID_SCHEDULE', `La salida debe ser despues de la entrada (dia ${invalidDay.day_of_week})`);
+  }
+
+  await repository.replaceSchedule(shiftId, days);
+  return findById(shiftId);
+};
+
+const create = async (data) => {
+  const shift = await repository.create(pick(data));
+  return findById(shift.shift_id);
+};
 
 const update = async (shiftId, data) => {
   const shift = await repository.update(shiftId, pick(data));
   if (!shift) throw new AppError('SHIFT_NOT_FOUND', 'El turno no existe');
-  return shift;
+  return findById(shiftId);
 };
 
 const remove = async (shiftId) => {
@@ -34,4 +49,4 @@ const remove = async (shiftId) => {
   return shift;
 };
 
-module.exports = { list, findById, create, update, remove };
+module.exports = { list, findById, replaceSchedule, create, update, remove };

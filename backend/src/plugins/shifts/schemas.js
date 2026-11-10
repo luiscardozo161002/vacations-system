@@ -31,4 +31,15 @@ const list = Joi.object({
   pageSize: Joi.number().integer().min(1).max(100).default(20),
 }).unknown(false);
 
-module.exports = { create, update, params, list };
+const time = Joi.string().pattern(/^\d{2}:\d{2}(:\d{2})?$/).message('El formato es HH:MM');
+
+const scheduleDay = Joi.object({
+  day_of_week: Joi.number().integer().min(1).max(7).required(),
+  is_working_day: Joi.boolean().required(),
+  check_in_time: Joi.when('is_working_day', { is: true, then: time.required(), otherwise: Joi.valid(null).default(null) }),
+  check_out_time: Joi.when('is_working_day', { is: true, then: time.required(), otherwise: Joi.valid(null).default(null) }),
+}).unknown(false);
+
+const schedule = Joi.array().items(scheduleDay).length(7).unique('day_of_week');
+
+module.exports = { create, update, params, list, schedule };

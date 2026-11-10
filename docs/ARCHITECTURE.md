@@ -40,7 +40,7 @@ frontend/
 
 ## Módulos del backend (plugins Hapi, uno por entidad)
 
-company, shifts, shift-schedules, departments, employees, roles, permissions, role-permissions, users, auth, auth-audit-log, vacation-accrual-rules, vacation-entitlements, reasons, notices.
+company, shifts (con su horario semanal anidado), departments, employees, roles, permissions, role-permissions, users, auth, auth-audit-log, vacation-accrual-rules, vacation-entitlements, reasons, notices.
 
 Cada plugin sigue el mismo patrón: `model.js` (Objection), `schemas.js` (Joi), `fields.js` (columnas expuestas), `service.js` (lógica + queries), `routes.js` (handlers Hapi). Las respuestas de error pasan por un `onPreResponse` global (`lib/error-handler.js`) que traduce errores de Postgres (constraints reales, verificados contra `pg_constraint`) a mensajes legibles.
 
