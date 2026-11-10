@@ -142,9 +142,15 @@ Las pruebas usan el runner que trae Node (`node:test`) y llaman a la API con `se
 
 Las pruebas viven en `backend/test/*.test.js`.
 
+El SDK tiene sus propias pruebas en `sdk/test/*.test.ts`, también con `node:test`. Simulan `fetch`, así que no necesitan la API ni la base. Cubren el query string, los errores de la API traducidos a `SdkHttpError`, la renovación del token en un 401 (una sola vez y compartida entre peticiones simultáneas) y el recurso `sdk.auth`. `tsc` las compila a CommonJS en `sdk/build/` antes de correrlas:
+
+```bash
+npm test --workspace=sdk
+```
+
 ### Integración continua
 
-[`.github/workflows/ci.yml`](.github/workflows/ci.yml) corre en cada pull request y en cada push a `develop` y `main`. Levanta Postgres 17 como servicio, instala con `npm ci --legacy-peer-deps` (por el peer `joi 17.x` de hapi-swagger, ver arriba) y hace, en orden: lint del backend, lint del frontend, build del SDK, typecheck y build del frontend, y las pruebas del backend.
+[`.github/workflows/ci.yml`](.github/workflows/ci.yml) corre en cada pull request y en cada push a `develop` y `main`. Levanta Postgres 17 como servicio, instala con `npm ci --legacy-peer-deps` (por el peer `joi 17.x` de hapi-swagger, ver arriba) y hace, en orden: lint del backend, lint del frontend, build y pruebas del SDK, typecheck y build del frontend, y las pruebas del backend.
 
 Para que un PR no se pueda mergear con el CI en rojo hay que activar la protección de ramas en GitHub: **Settings → Branches → Add rule** para `develop` y para `main`, con *Require a pull request before merging* y *Require status checks to pass* marcando `build-and-test`.
 

@@ -51,6 +51,9 @@ jobs:
       - name: Build SDK
         run: npm run build --workspace=sdk
 
+      - name: Test SDK
+        run: npm test --workspace=sdk
+
       - name: Typecheck and build frontend
         run: npm run build --workspace=frontend
 
