@@ -5,7 +5,7 @@ const Shift = require('./model');
 const { COLUMNS } = require('./fields');
 const { buildOrderBy, paginationMeta } = require('../../lib/list-query');
 
-const DEFAULT_SORT = [{ column: 'shift_name', order: 'asc' }];
+const DEFAULT_SORT = [{ column: 'shift_id', order: 'asc' }];
 
 const list = async ({ status, sort, page = 1, pageSize = 20 }) => {
   const query = Shift.query().select(COLUMNS).orderBy(buildOrderBy(sort, COLUMNS, DEFAULT_SORT));

@@ -4,10 +4,7 @@ const VacationEntitlement = require('./model');
 const { COLUMNS } = require('./fields');
 const { buildOrderBy, paginationMeta } = require('../../lib/list-query');
 
-const DEFAULT_SORT = [
-  { column: 'employee_id', order: 'asc' },
-  { column: 'period_year', order: 'asc' },
-];
+const DEFAULT_SORT = [{ column: 'entitlement_id', order: 'asc' }];
 
 const list = async ({ employee_id, period_year, status, sort, page = 1, pageSize = 20 }) => {
   const query = VacationEntitlement.query().select(COLUMNS).orderBy(buildOrderBy(sort, COLUMNS, DEFAULT_SORT));

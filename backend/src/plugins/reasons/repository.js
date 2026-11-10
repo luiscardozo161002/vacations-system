@@ -4,7 +4,7 @@ const Reason = require('./model');
 const { COLUMNS } = require('./fields');
 const { buildOrderBy, paginationMeta } = require('../../lib/list-query');
 
-const DEFAULT_SORT = [{ column: 'description', order: 'asc' }];
+const DEFAULT_SORT = [{ column: 'reason_id', order: 'asc' }];
 
 const list = async ({ requires_approval, affects_vacation_balance, status, sort, page = 1, pageSize = 20 }) => {
   const query = Reason.query().select(COLUMNS).orderBy(buildOrderBy(sort, COLUMNS, DEFAULT_SORT));

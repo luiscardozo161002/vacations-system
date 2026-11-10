@@ -4,10 +4,7 @@ const ShiftSchedule = require('./model');
 const { COLUMNS } = require('./fields');
 const { buildOrderBy, paginationMeta } = require('../../lib/list-query');
 
-const DEFAULT_SORT = [
-  { column: 'shift_id', order: 'asc' },
-  { column: 'day_of_week', order: 'asc' },
-];
+const DEFAULT_SORT = [{ column: 'schedule_id', order: 'asc' }];
 
 const list = async ({ shift_id, day_of_week, status, sort, page = 1, pageSize = 20 }) => {
   const query = ShiftSchedule.query().select(COLUMNS).orderBy(buildOrderBy(sort, COLUMNS, DEFAULT_SORT));

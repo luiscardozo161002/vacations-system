@@ -4,7 +4,7 @@ const Notice = require('./model');
 const { COLUMNS } = require('./fields');
 const { buildOrderBy, paginationMeta } = require('../../lib/list-query');
 
-const DEFAULT_SORT = [{ column: 'request_date', order: 'desc' }];
+const DEFAULT_SORT = [{ column: 'notice_id', order: 'asc' }];
 
 const list = async ({ employee_id, reason_id, status, sort, page = 1, pageSize = 20 }) => {
   const query = Notice.query().select(COLUMNS).orderBy(buildOrderBy(sort, COLUMNS, DEFAULT_SORT));

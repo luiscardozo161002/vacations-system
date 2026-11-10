@@ -4,7 +4,7 @@ const VacationAccrualRule = require('./model');
 const { COLUMNS } = require('./fields');
 const { buildOrderBy, paginationMeta } = require('../../lib/list-query');
 
-const DEFAULT_SORT = [{ column: 'years_from', order: 'asc' }];
+const DEFAULT_SORT = [{ column: 'rule_id', order: 'asc' }];
 
 const list = async ({ status, effective_year, sort, page = 1, pageSize = 20 }) => {
   const query = VacationAccrualRule.query().select(COLUMNS).orderBy(buildOrderBy(sort, COLUMNS, DEFAULT_SORT));

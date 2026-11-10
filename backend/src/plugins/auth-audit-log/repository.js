@@ -4,7 +4,7 @@ const AuthAuditLog = require('./model');
 const { COLUMNS } = require('./fields');
 const { buildOrderBy, paginationMeta } = require('../../lib/list-query');
 
-const DEFAULT_SORT = [{ column: 'created_at', order: 'desc' }];
+const DEFAULT_SORT = [{ column: 'log_id', order: 'asc' }];
 
 const list = async ({ user_id, event_type, sort, page = 1, pageSize = 20 }) => {
   const query = AuthAuditLog.query().select(COLUMNS).orderBy(buildOrderBy(sort, COLUMNS, DEFAULT_SORT));

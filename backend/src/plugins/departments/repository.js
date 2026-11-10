@@ -5,7 +5,7 @@ const Department = require('./model');
 const { COLUMNS } = require('./fields');
 const { buildOrderBy, paginationMeta } = require('../../lib/list-query');
 
-const DEFAULT_SORT = [{ column: 'department_name', order: 'asc' }];
+const DEFAULT_SORT = [{ column: 'department_id', order: 'asc' }];
 
 const list = async ({ company_id, status, sort, page = 1, pageSize = 20 }) => {
   const query = Department.query().select(COLUMNS).orderBy(buildOrderBy(sort, COLUMNS, DEFAULT_SORT));

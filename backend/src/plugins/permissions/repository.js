@@ -4,7 +4,7 @@ const Permission = require('./model');
 const { COLUMNS } = require('./fields');
 const { buildOrderBy, paginationMeta } = require('../../lib/list-query');
 
-const DEFAULT_SORT = [{ column: 'permission_code', order: 'asc' }];
+const DEFAULT_SORT = [{ column: 'permission_id', order: 'asc' }];
 
 const list = async ({ status, sort, page = 1, pageSize = 20 }) => {
   const query = Permission.query().select(COLUMNS).orderBy(buildOrderBy(sort, COLUMNS, DEFAULT_SORT));

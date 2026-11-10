@@ -5,7 +5,7 @@ const User = require('./model');
 const { SAFE_COLUMNS } = require('./fields');
 const { buildOrderBy, paginationMeta } = require('../../lib/list-query');
 
-const DEFAULT_SORT = [{ column: 'username', order: 'asc' }];
+const DEFAULT_SORT = [{ column: 'user_id', order: 'asc' }];
 
 const list = async ({ role_id, status, employee_id, sort, page = 1, pageSize = 20 }) => {
   const query = User.query().select(SAFE_COLUMNS).orderBy(buildOrderBy(sort, SAFE_COLUMNS, DEFAULT_SORT));
