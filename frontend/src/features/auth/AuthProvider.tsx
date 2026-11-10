@@ -47,6 +47,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const can = (permission: string) => user?.permissions.includes(permission) ?? false;
 
   return (
-    <AuthContext.Provider value={{ status, user, notice, login, logout, can }}>{children}</AuthContext.Provider>
+    <AuthContext.Provider value={{ status, user, notice, login, logout, updateUser: setUser, can }}>
+      {children}
+    </AuthContext.Provider>
   );
 }

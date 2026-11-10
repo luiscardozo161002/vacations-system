@@ -9,6 +9,7 @@ export interface AuthContextValue {
   notice: string | null;
   login: (email: string, password: string, remember: boolean) => Promise<void>;
   logout: () => Promise<void>;
+  updateUser: (user: CurrentUser) => void;
   can: (permission: string) => boolean;
 }
 

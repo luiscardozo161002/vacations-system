@@ -3,6 +3,7 @@ import { Outlet, useLocation, useNavigate } from 'react-router';
 import { Icon } from '../components/Icon';
 import { ToastProvider } from '../components/ToastProvider';
 import { useAuth } from '../features/auth/auth-context';
+import { ProfileDrawer } from '../features/auth/components/ProfileDrawer';
 import { initials } from '../lib/format';
 import { getTheme, toggleTheme } from '../lib/theme';
 import { ROLE_LABELS, findNavItem, visibleGroups } from './navigation';
@@ -15,6 +16,7 @@ export function Shell() {
   const { pathname } = useLocation();
   const [collapsed, setCollapsed] = useState(() => localStorage.getItem(COLLAPSED_KEY) === '1');
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
   const [theme, setTheme] = useState(getTheme);
 
   const displayName = user?.employee?.employee_name ?? user?.username ?? '';
@@ -65,7 +67,7 @@ export function Shell() {
             </nav>
 
             <div className="sidebar-user">
-              <button type="button" className="sidebar-user-main" title="Editar perfil">
+              <button type="button" className="sidebar-user-main" title="Editar perfil" onClick={() => setProfileOpen(true)}>
                 <div className="avatar">{initials(displayName)}</div>
                 <div className="sidebar-user-info">
                   <div className="name">{displayName}</div>
@@ -119,6 +121,10 @@ export function Shell() {
               <Outlet />
             </main>
           </div>
+
+          {profileOpen && user && (
+            <ProfileDrawer user={user} roleLabel={roleLabel} onClose={() => setProfileOpen(false)} />
+          )}
         </ToastProvider>
       </div>
     </div>
