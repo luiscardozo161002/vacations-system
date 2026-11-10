@@ -34,6 +34,7 @@ const list = Joi.object({
   employee_id: id,
   period_year: Joi.number().integer().min(2000).max(2100),
   status: Joi.string().valid('active', 'inactive'),
+  sort: Joi.string(),
   page: Joi.number().integer().min(1).default(1),
   pageSize: Joi.number().integer().min(1).max(100).default(20),
 }).unknown(false);

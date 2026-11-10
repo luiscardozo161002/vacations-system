@@ -46,6 +46,7 @@ const list = Joi.object({
   employee_id: id,
   reason_id: id,
   status: Joi.string().valid('pending', 'approved', 'rejected', 'cancelled'),
+  sort: Joi.string(),
   page: Joi.number().integer().min(1).default(1),
   pageSize: Joi.number().integer().min(1).max(100).default(20),
 }).unknown(false);

@@ -29,6 +29,7 @@ const params = Joi.object({
 const list = Joi.object({
   status: Joi.string().valid('active', 'inactive'),
   effective_year: Joi.number().integer().min(2000).max(2100),
+  sort: Joi.string(),
   page: Joi.number().integer().min(1).default(1),
   pageSize: Joi.number().integer().min(1).max(100).default(20),
 }).unknown(false);

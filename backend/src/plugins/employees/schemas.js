@@ -34,6 +34,7 @@ const params = Joi.object({
 const list = Joi.object({
   department_id: id,
   status: Joi.string().valid('active', 'inactive'),
+  sort: Joi.string(),
   page: Joi.number().integer().min(1).default(1),
   pageSize: Joi.number().integer().min(1).max(100).default(10),
 }).unknown(false);

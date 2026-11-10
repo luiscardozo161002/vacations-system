@@ -2,9 +2,12 @@
 
 const Reason = require('./model');
 const { COLUMNS } = require('./fields');
+const { buildOrderBy, paginationMeta } = require('../../lib/list-query');
 
-const list = async ({ requires_approval, affects_vacation_balance, status, page = 1, pageSize = 20 }) => {
-  const query = Reason.query().select(COLUMNS).orderBy('description');
+const DEFAULT_SORT = [{ column: 'description', order: 'asc' }];
+
+const list = async ({ requires_approval, affects_vacation_balance, status, sort, page = 1, pageSize = 20 }) => {
+  const query = Reason.query().select(COLUMNS).orderBy(buildOrderBy(sort, COLUMNS, DEFAULT_SORT));
 
   if (requires_approval !== undefined) query.where('requires_approval', requires_approval);
   if (affects_vacation_balance !== undefined) query.where('affects_vacation_balance', affects_vacation_balance);
@@ -12,7 +15,7 @@ const list = async ({ requires_approval, affects_vacation_balance, status, page 
 
   const { results, total } = await query.page(page - 1, pageSize);
 
-  return { data: results, pagination: { page, pageSize, total } };
+  return { data: results, pagination: paginationMeta(page, pageSize, total) };
 };
 
 const findById = (reasonId) => Reason.query().select(COLUMNS).findById(reasonId);

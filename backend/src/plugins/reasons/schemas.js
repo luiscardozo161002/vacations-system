@@ -28,6 +28,7 @@ const list = Joi.object({
   requires_approval: Joi.boolean(),
   affects_vacation_balance: Joi.boolean(),
   status: Joi.string().valid('active', 'inactive'),
+  sort: Joi.string(),
   page: Joi.number().integer().min(1).default(1),
   pageSize: Joi.number().integer().min(1).max(100).default(20),
 }).unknown(false);

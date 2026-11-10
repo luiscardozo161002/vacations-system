@@ -33,6 +33,7 @@ const list = Joi.object({
   role_id: id,
   status: Joi.string().valid('active', 'inactive', 'locked'),
   employee_id: id,
+  sort: Joi.string(),
   page: Joi.number().integer().min(1).default(1),
   pageSize: Joi.number().integer().min(1).max(100).default(20),
 }).unknown(false);

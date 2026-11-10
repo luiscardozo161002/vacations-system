@@ -3,15 +3,18 @@
 const db = require('../../db');
 const Company = require('./model');
 const { COLUMNS } = require('./fields');
+const { buildOrderBy, paginationMeta } = require('../../lib/list-query');
 
-const list = async ({ status, page = 1, pageSize = 20 }) => {
-  const query = Company.query().select(COLUMNS).orderBy('company_name');
+const DEFAULT_SORT = [{ column: 'company_name', order: 'asc' }];
+
+const list = async ({ status, sort, page = 1, pageSize = 20 }) => {
+  const query = Company.query().select(COLUMNS).orderBy(buildOrderBy(sort, COLUMNS, DEFAULT_SORT));
 
   if (status !== undefined) query.where('status', status);
 
   const { results, total } = await query.page(page - 1, pageSize);
 
-  return { data: results, pagination: { page, pageSize, total } };
+  return { data: results, pagination: paginationMeta(page, pageSize, total) };
 };
 
 const findById = (companyId) => Company.query().select(COLUMNS).findById(companyId);

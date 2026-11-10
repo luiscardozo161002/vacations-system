@@ -2,9 +2,12 @@
 
 const Notice = require('./model');
 const { COLUMNS } = require('./fields');
+const { buildOrderBy, paginationMeta } = require('../../lib/list-query');
 
-const list = async ({ employee_id, reason_id, status, page = 1, pageSize = 20 }) => {
-  const query = Notice.query().select(COLUMNS).orderBy('request_date', 'desc');
+const DEFAULT_SORT = [{ column: 'request_date', order: 'desc' }];
+
+const list = async ({ employee_id, reason_id, status, sort, page = 1, pageSize = 20 }) => {
+  const query = Notice.query().select(COLUMNS).orderBy(buildOrderBy(sort, COLUMNS, DEFAULT_SORT));
 
   if (employee_id !== undefined) query.where('employee_id', employee_id);
   if (reason_id !== undefined) query.where('reason_id', reason_id);
@@ -12,7 +15,7 @@ const list = async ({ employee_id, reason_id, status, page = 1, pageSize = 20 })
 
   const { results, total } = await query.page(page - 1, pageSize);
 
-  return { data: results, pagination: { page, pageSize, total } };
+  return { data: results, pagination: paginationMeta(page, pageSize, total) };
 };
 
 const findById = (noticeId) => Notice.query().select(COLUMNS).findById(noticeId);

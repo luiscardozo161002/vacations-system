@@ -31,6 +31,7 @@ En construcción / pendiente:
 - La antigüedad y los días de vacaciones que le corresponden a cada empleado se calculan contra `vacation_accrual_rules` según su fecha de ingreso (reforma "vacaciones dignas", Art. 76 LFT).
 - Un aviso de ausencia (`notice`) tiene estatus `pending → approved | rejected`, o `cancelled`; solo los avisos `approved` descuentan del saldo.
 - Las 10 consultas documentadas al final de `vacations_db_postgresql.sql` (raíz del repo) son la especificación de referencia para estos cálculos hasta que queden implementadas como endpoints.
+- Todo endpoint de listado soporta paginación (`page`/`pageSize`, con `totalPages` en la respuesta), filtros por query param propios de cada recurso, y orden (`sort=campo` o `sort=-campo` para descendente). La lógica compartida vive en `backend/src/lib/list-query.js`.
 
 ## Métricas de éxito
 

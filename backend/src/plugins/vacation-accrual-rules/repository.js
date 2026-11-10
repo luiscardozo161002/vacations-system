@@ -2,16 +2,19 @@
 
 const VacationAccrualRule = require('./model');
 const { COLUMNS } = require('./fields');
+const { buildOrderBy, paginationMeta } = require('../../lib/list-query');
 
-const list = async ({ status, effective_year, page = 1, pageSize = 20 }) => {
-  const query = VacationAccrualRule.query().select(COLUMNS).orderBy('years_from');
+const DEFAULT_SORT = [{ column: 'years_from', order: 'asc' }];
+
+const list = async ({ status, effective_year, sort, page = 1, pageSize = 20 }) => {
+  const query = VacationAccrualRule.query().select(COLUMNS).orderBy(buildOrderBy(sort, COLUMNS, DEFAULT_SORT));
 
   if (status !== undefined) query.where('status', status);
   if (effective_year !== undefined) query.where('effective_year', effective_year);
 
   const { results, total } = await query.page(page - 1, pageSize);
 
-  return { data: results, pagination: { page, pageSize, total } };
+  return { data: results, pagination: paginationMeta(page, pageSize, total) };
 };
 
 const findById = (ruleId) => VacationAccrualRule.query().select(COLUMNS).findById(ruleId);

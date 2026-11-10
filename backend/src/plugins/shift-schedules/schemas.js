@@ -33,6 +33,7 @@ const list = Joi.object({
   shift_id: id,
   day_of_week: Joi.number().integer().min(1).max(7),
   status: Joi.string().valid('active', 'inactive'),
+  sort: Joi.string(),
   page: Joi.number().integer().min(1).default(1),
   pageSize: Joi.number().integer().min(1).max(100).default(20),
 }).unknown(false);

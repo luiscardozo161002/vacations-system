@@ -2,9 +2,15 @@
 
 const VacationEntitlement = require('./model');
 const { COLUMNS } = require('./fields');
+const { buildOrderBy, paginationMeta } = require('../../lib/list-query');
 
-const list = async ({ employee_id, period_year, status, page = 1, pageSize = 20 }) => {
-  const query = VacationEntitlement.query().select(COLUMNS).orderBy(['employee_id', 'period_year']);
+const DEFAULT_SORT = [
+  { column: 'employee_id', order: 'asc' },
+  { column: 'period_year', order: 'asc' },
+];
+
+const list = async ({ employee_id, period_year, status, sort, page = 1, pageSize = 20 }) => {
+  const query = VacationEntitlement.query().select(COLUMNS).orderBy(buildOrderBy(sort, COLUMNS, DEFAULT_SORT));
 
   if (employee_id !== undefined) query.where('employee_id', employee_id);
   if (period_year !== undefined) query.where('period_year', period_year);
@@ -12,7 +18,7 @@ const list = async ({ employee_id, period_year, status, page = 1, pageSize = 20 
 
   const { results, total } = await query.page(page - 1, pageSize);
 
-  return { data: results, pagination: { page, pageSize, total } };
+  return { data: results, pagination: paginationMeta(page, pageSize, total) };
 };
 
 const findById = (entitlementId) => VacationEntitlement.query().select(COLUMNS).findById(entitlementId);

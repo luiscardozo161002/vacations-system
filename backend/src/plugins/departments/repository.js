@@ -3,16 +3,19 @@
 const db = require('../../db');
 const Department = require('./model');
 const { COLUMNS } = require('./fields');
+const { buildOrderBy, paginationMeta } = require('../../lib/list-query');
 
-const list = async ({ company_id, status, page = 1, pageSize = 20 }) => {
-  const query = Department.query().select(COLUMNS).orderBy('department_name');
+const DEFAULT_SORT = [{ column: 'department_name', order: 'asc' }];
+
+const list = async ({ company_id, status, sort, page = 1, pageSize = 20 }) => {
+  const query = Department.query().select(COLUMNS).orderBy(buildOrderBy(sort, COLUMNS, DEFAULT_SORT));
 
   if (company_id !== undefined) query.where('company_id', company_id);
   if (status !== undefined) query.where('status', status);
 
   const { results, total } = await query.page(page - 1, pageSize);
 
-  return { data: results, pagination: { page, pageSize, total } };
+  return { data: results, pagination: paginationMeta(page, pageSize, total) };
 };
 
 const findById = (departmentId) => Department.query().select(COLUMNS).findById(departmentId);
