@@ -6,6 +6,15 @@ Monorepo con npm workspaces, compuesto por tres paquetes:
 - **`sdk/`** — SDK cliente para consume la API.
 - **`frontend/`** — APP de React que consume el SDK.
 
+## Documentación
+
+| Documento | Contenido |
+|---|---|
+| [docs/PRD.md](docs/PRD.md) | Producto, usuarios, funcionalidades y reglas de negocio |
+| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Capas, estructura del monorepo, auth y decisiones técnicas |
+| [docs/DESIGN_SYSTEM.md](docs/DESIGN_SYSTEM.md) | Colores, tipografía y componentes del frontend |
+| [docs/ROADMAP.md](docs/ROADMAP.md) | Estado actual, fixes pendientes y plan de ramas |
+
 ## Requisitos
 
 - Node.js 20+ y npm 10+

@@ -24,7 +24,7 @@ Estado al 2026-11-09.
 | 🟠 | Login por `username`; el diseño pide correo |
 | 🟠 | SDK: `Pagination` sin `totalPages` y params sin `sort` |
 | 🟡 | `DESIGN_SYSTEM.md` contradice el diseño nuevo; el frontend usa `--accent: #aa3bff` |
-| 🟡 | La documentación vive en `backend/src/doc` pero describe todo el monorepo; mover a `/docs` |
+| ✅ | Documentación movida a `/docs` (VM-003) |
 
 ## 3. Decisiones de modelo pendientes
 

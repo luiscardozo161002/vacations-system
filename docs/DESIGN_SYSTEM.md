@@ -6,7 +6,7 @@ Limpio, claro, minimal — estilo panel de administración (ver referencia visua
 
 ## Colores
 
-Ya implementados en [frontend/src/index.css](../../../frontend/src/index.css) como custom properties, con variante para modo oscuro. Se mantienen tal cual — nombres semánticos, pocos, ya cubren claro/oscuro:
+Ya implementados en [frontend/src/index.css](../frontend/src/index.css) como custom properties, con variante para modo oscuro. Se mantienen tal cual — nombres semánticos, pocos, ya cubren claro/oscuro:
 
 ```css
 --bg            /* fondo de la página */

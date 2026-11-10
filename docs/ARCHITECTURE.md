@@ -19,11 +19,12 @@ Sin servicios externos: no hay proveedor de autenticación, pagos, correo ni ana
 ## Estructura del monorepo (npm workspaces)
 
 ```
+docs/              Documentación del sistema (este archivo, PRD, Design System, Roadmap)
 backend/
   src/
     config/        Variables de entorno
     db/             Conexión Knex, migraciones, seeds
-    lib/            Utilidades compartidas (app-error, error-handler, password)
+    lib/            Utilidades compartidas (app-error, error-handler, password, list-query)
     plugins/        Un plugin Hapi por entidad (model + schemas + fields + service + routes)
     doc/bruno/      Colección Bruno para probar la API manualmente
 sdk/
@@ -35,7 +36,6 @@ frontend/
   src/
     features/       Un folder por dominio: components/ hooks/ pages/
     lib/            sdk.ts (instancia del SDK), utilidades
-  doc/             Documentación del sistema (este archivo, PRD, Design System)
 ```
 
 ## Módulos del backend (plugins Hapi, uno por entidad)
