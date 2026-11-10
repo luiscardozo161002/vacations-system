@@ -19,6 +19,7 @@ const authPlugin = {
         options: {
           description: 'Log in with username and password',
           tags: ['api', 'auth'],
+          auth: false,
           validate: { payload: schemas.login },
         },
         handler: (request) => service.login(request.payload, context(request)),
@@ -29,6 +30,7 @@ const authPlugin = {
         options: {
           description: 'Exchange a refresh token for a new access token',
           tags: ['api', 'auth'],
+          auth: false,
           validate: { payload: schemas.refresh },
         },
         handler: (request) => service.refresh(request.payload, context(request)),
@@ -39,6 +41,7 @@ const authPlugin = {
         options: {
           description: 'Revoke a refresh token',
           tags: ['api', 'auth'],
+          auth: false,
           validate: { payload: schemas.logout },
         },
         handler: async (request, h) => {
@@ -52,6 +55,7 @@ const authPlugin = {
         options: {
           description: 'Request a password reset token for an email',
           tags: ['api', 'auth'],
+          auth: false,
           validate: { payload: schemas.passwordResetRequest },
         },
         handler: (request) => service.requestPasswordReset(request.payload, context(request)),
@@ -62,6 +66,7 @@ const authPlugin = {
         options: {
           description: 'Confirm a password reset with a new password',
           tags: ['api', 'auth'],
+          auth: false,
           validate: { payload: schemas.passwordResetConfirm },
         },
         handler: (request) => service.confirmPasswordReset(request.payload, context(request)),

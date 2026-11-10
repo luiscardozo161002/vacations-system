@@ -15,7 +15,7 @@ const addDays = (days) => addSeconds(days * 86400);
 
 const issueAccessToken = (user) =>
   Jwt.token.generate(
-    { user_id: user.user_id, role_id: user.role_id, username: user.username },
+    { user_id: user.user_id, role_id: user.role_id, employee_id: user.employee_id, username: user.username },
     { key: config.auth.jwtSecret, algorithm: 'HS256' },
     { ttlSec: config.auth.accessTokenTtlSeconds }
   );

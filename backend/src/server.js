@@ -1,5 +1,6 @@
 const Hapi = require('@hapi/hapi');
 const Boom = require('@hapi/boom');
+const Jwt = require('@hapi/jwt');
 const Inert = require('@hapi/inert');
 const Vision = require('@hapi/vision');
 const HapiSwagger = require('hapi-swagger');
@@ -31,6 +32,10 @@ const swaggerOptions = {
     version: pkg.version,
   },
   grouping: 'tags',
+  securityDefinitions: {
+    jwt: { type: 'apiKey', name: 'Authorization', in: 'header' },
+  },
+  security: [{ jwt: [] }],
 };
 
 const createServer = async () => {
@@ -48,6 +53,15 @@ const createServer = async () => {
       },
     },
   });
+
+  await server.register(Jwt);
+
+  server.auth.strategy('jwt', 'jwt', {
+    keys: config.auth.jwtSecret,
+    verify: { aud: false, iss: false, sub: false, maxAgeSec: config.auth.accessTokenTtlSeconds },
+    validate: (artifacts) => ({ isValid: true, credentials: artifacts.decoded.payload }),
+  });
+  server.auth.default('jwt');
 
   await server.register([
     Inert,

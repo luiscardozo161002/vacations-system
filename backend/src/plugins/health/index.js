@@ -11,6 +11,7 @@ const healthPlugin = {
         description: 'Verify that the API is available.',
         notes: 'No authentication required. Useful for monitoring and load balancing.',
         tags: ['api', 'health'],
+        auth: false,
       },
       handler: () => ({
         status: 'ok',

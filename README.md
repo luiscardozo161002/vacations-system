@@ -190,7 +190,9 @@ Cómo funciona:
 - **Password reset** responde siempre el mismo mensaje exista o no el correo, para no revelar qué correos están registrados. Como todavía no hay envío de email, fuera de `NODE_ENV=production` la respuesta de `request` incluye el token en texto plano (`devToken`) para poder probar el flujo — en producción eso se reemplaza por un correo real y la respuesta nunca lo expone. Confirmar el reset revoca todas las sesiones activas del usuario.
 - Todo evento relevante (`LOGIN_SUCCESS`, `LOGIN_FAILED`, `TOKEN_REFRESH`, `LOGOUT`, `PASSWORD_RESET_REQUESTED`, `PASSWORD_RESET_COMPLETED`) queda registrado en `auth_audit_log`, consultable pero no editable por la API.
 
-**Lo que falta a propósito:** ningún endpoint de este backend (ni los de autenticación ni los demás recursos) valida todavía el access token ni los permisos del rol — no hay ningún middleware que lo exija. Login/refresh emiten y rotan el JWT, pero usarlo para proteger rutas es un paso aparte, todavía pendiente.
+**Rutas protegidas:** todas las rutas exigen `Authorization: Bearer <accessToken>`, salvo `GET /api/v1/health`, las 5 de `/api/v1/auth/*` y la documentación de Swagger. Sin token, con un token vencido o con una firma inválida responden `401`. El token lleva `user_id`, `role_id`, `employee_id` y `username`. En Swagger, el botón **Authorize** recibe `Bearer <accessToken>`.
+
+**Todavía no se revisan permisos por rol:** cualquier usuario con sesión puede llamar a cualquier ruta. Eso entra con el RBAC (VM-013).
 
 ## SDK
 
@@ -216,6 +218,4 @@ El frontend ya declara `@vacations/sdk` como dependencia (resuelta como paquete 
 
 ## Próximos pasos
 
-- Proteger rutas validando el access token (JWT) y el rol/permisos de quien llama — hoy ningún endpoint lo exige (ver [Autenticación](#autenticación)).
-- Agregar los recursos correspondientes en el SDK (incluyendo login/refresh/logout).
-- Conectar el frontend al SDK.
+El plan completo por ticket está en [docs/ROADMAP.md](docs/ROADMAP.md).
