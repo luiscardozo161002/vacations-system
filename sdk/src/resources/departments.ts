@@ -17,6 +17,7 @@ export interface Department {
 export interface ListDepartmentsParams {
   company_id?: number;
   status?: DepartmentStatus;
+  sort?: string;
   page?: number;
   pageSize?: number;
 }

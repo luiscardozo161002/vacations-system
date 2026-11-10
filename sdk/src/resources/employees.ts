@@ -19,6 +19,7 @@ export interface Employee {
 export interface ListEmployeesParams {
   department_id?: number;
   status?: EmployeeStatus;
+  sort?: string;
   page?: number;
   pageSize?: number;
 }

@@ -15,6 +15,7 @@ export interface Shift {
 
 export interface ListShiftsParams {
   status?: ShiftStatus;
+  sort?: string;
   page?: number;
   pageSize?: number;
 }
