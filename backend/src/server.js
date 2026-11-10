@@ -44,7 +44,7 @@ const createServer = async () => {
     port: config.server.port,
     routes: {
       cors: {
-        origin: ['*'],
+        origin: config.cors.origins,
       },
       validate: {
         failAction: (_request, _h, err) => {

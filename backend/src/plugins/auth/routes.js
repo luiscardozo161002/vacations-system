@@ -1,7 +1,29 @@
 'use strict';
 
+const Boom = require('@hapi/boom');
 const service = require('./service');
 const schemas = require('./schemas');
+const config = require('../../config');
+const { createAttemptLimiter } = require('../../lib/attempt-limiter');
+
+const failedLogins = createAttemptLimiter({
+  max: config.auth.maxFailedLoginsPerIp,
+  windowMs: config.auth.failedLoginsWindowMinutes * 60 * 1000,
+});
+
+const login = async (request) => {
+  const ip = request.info.remoteAddress;
+  if (failedLogins.isBlocked(ip)) {
+    throw Boom.tooManyRequests('Demasiados intentos fallidos desde esta red; intenta de nuevo en unos minutos');
+  }
+
+  try {
+    return await service.login(request.payload, context(request));
+  } catch (err) {
+    if (err.code === 'INVALID_CREDENTIALS') failedLogins.record(ip);
+    throw err;
+  }
+};
 
 const context = (request) => ({
   ip: request.info.remoteAddress,
@@ -22,7 +44,7 @@ const authPlugin = {
           auth: false,
           validate: { payload: schemas.login },
         },
-        handler: (request) => service.login(request.payload, context(request)),
+        handler: login,
       },
       {
         method: 'POST',

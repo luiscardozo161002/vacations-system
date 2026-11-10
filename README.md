@@ -80,7 +80,8 @@ Editar `backend/.env` con los datos de conexión a PostgreSQL:
 | `DB_NAME`     | Nombre de la base de datos      | `vacations_db`   |
 | `DB_USER`     | Usuario de PostgreSQL           | `postgres`       |
 | `DB_PASSWORD` | Password de ese usuario         | *(sin default)*  |
-| `JWT_SECRET`  | Firma los access token (JWT) de `POST /api/v1/auth/login` | `dev-secret-change-me-in-production` (**cambiar en producción**) |
+| `JWT_SECRET`  | Firma los access token (JWT) de `POST /api/v1/auth/login` | `dev-secret-change-me-in-production`. Con `NODE_ENV=production` la API no arranca si falta o si se deja este valor |
+| `CORS_ORIGINS` | Orígenes del navegador que pueden llamar a la API, separados por coma | `http://localhost:5173` (el frontend de Vite) |
 
 ### 2. Crear la base de datos (solo sin Docker)
 
@@ -190,6 +191,7 @@ Cómo funciona:
 - **Usuario actual:** `GET /auth/me` devuelve el usuario con su rol, su empleado vinculado (o `null`) y la lista de códigos de permiso activos del rol. Cambiar la contraseña pide la actual, revoca todas las sesiones del usuario y devuelve tokens nuevos para la sesión que hizo el cambio.
 - **Login** recibe `email` o `username` (uno de los dos, no ambos), valida la contraseña (bcrypt) y devuelve un **access token** (JWT, dura 15 minutos, firmado con `JWT_SECRET`) y un **refresh token** (opaco, dura 7 días; solo se guarda su hash en `user_sessions`, nunca el valor original).
 - **Refresh** cambia un refresh token válido por un access token nuevo y **rota** el refresh token (revoca el usado, entrega uno nuevo): si alguien reutiliza uno viejo, falla con `401 INVALID_REFRESH_TOKEN`.
+- Desde una misma IP se permiten **20 logins fallidos cada 15 minutos**; después responde `429` (incluso con la contraseña correcta) hasta que pasa la ventana. Los logins correctos no cuentan, para no bloquear a una oficina que sale a internet por una sola IP. El contador vive en memoria: se reinicia al reiniciar la API y, detrás de un proxy, todas las peticiones llegan con la IP del proxy (se ajusta al desplegar).
 - Tras **5 intentos fallidos** de login seguidos, la cuenta queda `status: 'locked'` por 15 minutos (`423 ACCOUNT_LOCKED`); se desbloquea sola al expirar ese tiempo, o antes si se completa un reset de contraseña.
 - **Password reset** responde siempre el mismo mensaje exista o no el correo, para no revelar qué correos están registrados. Como todavía no hay envío de email, fuera de `NODE_ENV=production` la respuesta de `request` incluye el token en texto plano (`devToken`) para poder probar el flujo — en producción eso se reemplaza por un correo real y la respuesta nunca lo expone. Confirmar el reset revoca todas las sesiones activas del usuario.
 - Todo evento relevante (`LOGIN_SUCCESS`, `LOGIN_FAILED`, `TOKEN_REFRESH`, `LOGOUT`, `PASSWORD_RESET_REQUESTED`, `PASSWORD_RESET_COMPLETED`) queda registrado en `auth_audit_log`, consultable pero no editable por la API.
