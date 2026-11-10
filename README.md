@@ -132,8 +132,15 @@ Queda disponible en `http://localhost:3000` (o el `HOST`/`PORT` configurado).
 | `npm run migrate:make --workspace=backend -- <nombre>`   | Crea un archivo de migración vacío          |
 | `npm run seed --workspace=backend`                       | Borra e inserta los datos de prueba         |
 | `npm run lint --workspace=backend`                       | Corre ESLint sobre el backend               |
+| `npm test --workspace=backend`                           | Prepara `vacations_test` y corre las pruebas |
 
 (Estos comandos también se pueden correr parado dentro de `backend/`, sin el flag `--workspace=backend`.)
+
+### Pruebas
+
+Las pruebas usan el runner que trae Node (`node:test`) y llaman a la API con `server.inject`, sin levantar el servidor. Corren contra su propia base, `vacations_test` (o la que diga `TEST_DB_NAME`), con las mismas credenciales de `backend/.env`. En cada corrida se crea si no existe, se migra y se vuelve a sembrar, así que nunca tocan tu base de desarrollo. Por seguridad se niegan a correr si el nombre de la base no termina en `_test`.
+
+Las pruebas viven en `backend/test/*.test.js`.
 
 ### Endpoints disponibles
 
