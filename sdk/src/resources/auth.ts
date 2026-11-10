@@ -81,6 +81,10 @@ export class AuthResource {
     }
   }
 
+  refresh(): Promise<boolean> {
+    return this.http.refreshSession();
+  }
+
   isAuthenticated(): boolean {
     return this.http.storage.get() !== null;
   }
