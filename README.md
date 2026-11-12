@@ -299,6 +299,11 @@ La configuración vive en [frontend/src/app/navigation.ts](frontend/src/app/navi
 - **Qué muestra:** el saldo del periodo vigente de cada empleado. Antigüedad, días otorgados, usados y disponibles, y horas usadas y disponibles según la jornada de su turno.
 - **Empleado:** por ahora ve solo su fila. Cuando exista el dashboard de empleado (VM-038), esta pantalla lo llevará ahí, como en el prototipo.
 
+**Dashboard:**
+- **Superusuario y RH:** ven los indicadores de su alcance, las próximas ausencias, los empleados por departamento (con la sede cuando el nombre se repite) y la actividad reciente.
+- **Empleado:** ve su perfil, su saldo con horas y sus últimas solicitudes y avisos. En "Días" el empleado también llega a esta vista.
+- **Datos:** cada vista pide una sola llamada, `GET /dashboard/summary` o `GET /dashboard/me`.
+
 **Calendario:**
 - **Qué muestra:** vista mensual con las ausencias aprobadas y pendientes de la sede (o las propias para el Empleado), con los festivos de la LFT.
 - **Datos:** pide a `GET /calendar` solo el mes visible.

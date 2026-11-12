@@ -40,3 +40,11 @@ export const formatAbsenceRange = (absence: {
   if (!absence.absence_start_time && !absence.absence_end_time) return `${start} – ${end}`;
   return `${start} ${shortTime(absence.absence_start_time ?? '00:00')} – ${end} ${shortTime(absence.absence_end_time ?? '23:59')}`;
 };
+
+export const formatDateTime = (iso: string): string =>
+  new Date(iso).toLocaleString('es-MX', {
+    day: '2-digit',
+    month: 'short',
+    hour: '2-digit',
+    minute: '2-digit',
+  });

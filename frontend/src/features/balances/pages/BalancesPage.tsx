@@ -3,6 +3,8 @@ import type { VacationEntitlement } from '@vacations/sdk';
 import { formatDate } from '../../../lib/format';
 import { DataTable, type Column } from '../../../components/DataTable';
 import { useBalances } from '../hooks/useBalances';
+import { useAuth } from '../../auth/auth-context';
+import { EmployeeDashboard } from '../../dashboard/components/EmployeeDashboard';
 
 const PAGE_SIZE = 10;
 
@@ -30,7 +32,7 @@ const columns: Column<VacationEntitlement>[] = [
   },
 ];
 
-export function BalancesPage() {
+function BalancesTable() {
   const [page, setPage] = useState(1);
   const params = useMemo(() => ({ status: 'active' as const, page, pageSize: PAGE_SIZE }), [page]);
   const { data, loading, error } = useBalances(params);
@@ -59,4 +61,9 @@ export function BalancesPage() {
       />
     </>
   );
+}
+
+export function BalancesPage() {
+  const { can } = useAuth();
+  return can('employees:view') ? <BalancesTable /> : <EmployeeDashboard />;
 }
