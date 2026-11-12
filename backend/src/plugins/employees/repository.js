@@ -8,10 +8,15 @@ const { forEmployees } = require('../../lib/data-scope');
 
 const DEFAULT_SORT = [{ column: 'employee_id', order: 'asc' }];
 
-const list = async ({ department_id, status, sort, page = 1, pageSize = 20 }, scope) => {
+const list = async ({ search, department_id, status, sort, page = 1, pageSize = 20 }, scope) => {
   const query = Employee.query().select(COLUMNS).orderBy(buildOrderBy(sort, COLUMNS, DEFAULT_SORT));
   forEmployees(query, scope, 'employee_id');
 
+  if (search) {
+    query.where((match) =>
+      match.whereILike('employee_name', `%${search}%`).orWhereILike('employee_number', `%${search}%`)
+    );
+  }
   if (department_id !== undefined) query.where('department_id', department_id);
   if (status !== undefined) query.where('status', status);
 

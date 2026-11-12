@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { Employee, EmployeeStatus } from '@vacations/sdk';
 import { sdk } from '../../../lib/sdk';
 import { getErrorMessage } from '../../../lib/get-error-message';
@@ -13,12 +13,18 @@ import { useEmployees } from '../hooks/useEmployees';
 import { useDepartments } from '../../departments/hooks/useDepartments';
 import { useShifts } from '../../shifts/hooks/useShifts';
 import { EmployeeForm } from '../components/EmployeeForm';
+import { EmployeeProfile } from '../components/EmployeeProfile';
+import { useAuth } from '../../auth/auth-context';
 
 const PAGE_SIZE = 10;
+const SEARCH_DELAY_MS = 300;
 
 export function EmployeesPage() {
   const showToast = useToast();
+  const { can } = useAuth();
   const [page, setPage] = useState(1);
+  const [searchText, setSearchText] = useState('');
+  const [search, setSearch] = useState('');
   const [departmentFilter, setDepartmentFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
 
@@ -29,10 +35,11 @@ export function EmployeesPage() {
     () => ({
       page,
       pageSize: PAGE_SIZE,
+      search: search || undefined,
       department_id: departmentFilter ? Number(departmentFilter) : undefined,
       status: statusFilter ? (statusFilter as EmployeeStatus) : undefined,
     }),
-    [page, departmentFilter, statusFilter],
+    [page, search, departmentFilter, statusFilter],
   );
 
   const { data, loading, error: listError, reload } = useEmployees(employeesParams);
@@ -40,6 +47,15 @@ export function EmployeesPage() {
   const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
   const [formOpen, setFormOpen] = useState(false);
   const [statusTarget, setStatusTarget] = useState<Employee | null>(null);
+  const [profileEmployee, setProfileEmployee] = useState<Employee | null>(null);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSearch(searchText.trim());
+      setPage(1);
+    }, SEARCH_DELAY_MS);
+    return () => clearTimeout(timer);
+  }, [searchText]);
 
   const loadError = listError ?? departmentsError ?? shiftsError;
 
@@ -103,17 +119,24 @@ export function EmployeesPage() {
       header: '',
       render: (employee) => (
         <div className="row-actions">
-          <button type="button" className="icon-btn" title="Editar" onClick={() => openForm(employee)}>
-            <Icon name="edit" />
+          <button type="button" className="icon-btn" title="Ver perfil" onClick={() => setProfileEmployee(employee)}>
+            <Icon name="eye" />
           </button>
-          <button
-            type="button"
-            className="icon-btn"
-            title={employee.status === 'active' ? 'Dar de baja' : 'Reactivar'}
-            onClick={() => setStatusTarget(employee)}
-          >
-            <Icon name={employee.status === 'active' ? 'user-x' : 'user-check'} />
-          </button>
+          {can('employees:update') && (
+            <button type="button" className="icon-btn" title="Editar" onClick={() => openForm(employee)}>
+              <Icon name="edit" />
+            </button>
+          )}
+          {can('employees:delete') && (
+            <button
+              type="button"
+              className="icon-btn"
+              title={employee.status === 'active' ? 'Dar de baja' : 'Reactivar'}
+              onClick={() => setStatusTarget(employee)}
+            >
+              <Icon name={employee.status === 'active' ? 'user-x' : 'user-check'} />
+            </button>
+          )}
         </div>
       ),
     },
@@ -126,14 +149,26 @@ export function EmployeesPage() {
           <h1>Empleados</h1>
           <p className="page-sub">Catálogo de personal, departamentos y turnos.</p>
         </div>
-        <div className="page-actions">
-          <button type="button" className="btn btn-primary" onClick={() => openForm(null)} disabled={departments.length === 0}>
-            <Icon name="plus" /> Nuevo empleado
-          </button>
-        </div>
+        {can('employees:create') && (
+          <div className="page-actions">
+            <button type="button" className="btn btn-primary" onClick={() => openForm(null)} disabled={departments.length === 0}>
+              <Icon name="plus" /> Nuevo empleado
+            </button>
+          </div>
+        )}
       </div>
 
       <div className="toolbar">
+        <div className="search-box" style={{ display: 'flex' }}>
+          <Icon name="search" />
+          <input
+            type="text"
+            id="emp-search"
+            placeholder="Buscar por nombre o número..."
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+          />
+        </div>
         <SearchSelect
           id="emp-dept-filter"
           options={departmentOptions}
@@ -179,6 +214,15 @@ export function EmployeesPage() {
           shifts={shifts}
           onClose={() => setFormOpen(false)}
           onSaved={handleSaved}
+        />
+      )}
+
+      {profileEmployee && (
+        <EmployeeProfile
+          employee={profileEmployee}
+          departmentName={departmentNames.get(profileEmployee.department_id) ?? ''}
+          shiftName={shiftNames.get(profileEmployee.shift_id) ?? ''}
+          onClose={() => setProfileEmployee(null)}
         />
       )}
 

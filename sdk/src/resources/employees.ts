@@ -17,6 +17,7 @@ export interface Employee {
 }
 
 export interface ListEmployeesParams {
+  search?: string;
   department_id?: number;
   status?: EmployeeStatus;
   sort?: string;

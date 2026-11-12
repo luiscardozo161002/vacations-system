@@ -299,6 +299,11 @@ La configuración vive en [frontend/src/app/navigation.ts](frontend/src/app/navi
 - **Qué muestra:** el saldo del periodo vigente de cada empleado. Antigüedad, días otorgados, usados y disponibles, y horas usadas y disponibles según la jornada de su turno.
 - **Empleado:** por ahora ve solo su fila. Cuando exista el dashboard de empleado (VM-038), esta pantalla lo llevará ahí, como en el prototipo.
 
+**Empleados:**
+- **Búsqueda:** por nombre o número (`search` en la API, sin importar mayúsculas), con filtros de departamento y estado.
+- **Perfil:** un drawer con los datos del empleado, su antigüedad, el saldo del periodo vigente y el historial de solicitudes y avisos.
+- **Botones:** dar de alta, editar y dar de baja aparecen solo con el permiso correspondiente.
+
 **Dashboard:**
 - **Superusuario y RH:** ven los indicadores de su alcance, las próximas ausencias, los empleados por departamento (con la sede cuando el nombre se repite) y la actividad reciente.
 - **Empleado:** ve su perfil, su saldo con horas y sus últimas solicitudes y avisos. En "Días" el empleado también llega a esta vista.
