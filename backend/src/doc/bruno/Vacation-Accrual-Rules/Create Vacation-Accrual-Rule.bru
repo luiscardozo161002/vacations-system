@@ -26,5 +26,5 @@ body:json {
 docs {
   Requeridos: `years_from`, `vacation_days`, `effective_year`. `years_to` opcional (acepta `null` = sin tope). `status` opcional (default `active`).
 
-  La base valida con un CHECK que `years_to >= years_from`; si se incumple responde 400 generico (`INVALID_CONSTRAINT`).
+  Errores: `422 INVALID_RULE_RANGE` si `years_to` es menor que `years_from`; `409 RULE_OVERLAP` si el rango se cruza con otra regla activa del mismo `effective_year`.
 }

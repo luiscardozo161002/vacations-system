@@ -21,6 +21,7 @@ export interface Shift {
   created_at: string;
   updated_at: string;
   schedule: ShiftScheduleDay[];
+  active_employees: number;
 }
 
 export interface ListShiftsParams {

@@ -52,6 +52,37 @@ describe('Departamentos', () => {
   });
 });
 
+describe('Turnos y reglas', () => {
+  it('los turnos cuentan sus empleados activos dentro del alcance', async () => {
+    const counts = async (role) =>
+      Object.fromEntries((await call(role, 'GET', '/shifts')).result.data.map((shift) => [shift.code, shift.active_employees]));
+
+    assert.deepEqual(await counts('SUPERUSER'), { OFICINAS: 2, OPERACIONES: 10 });
+    assert.deepEqual(await counts('USER'), { OFICINAS: 1, OPERACIONES: 7 });
+  });
+
+  it('una regla no puede cruzarse con otra del mismo año', async () => {
+    const res = await call('SUPERUSER', 'POST', '/vacation-accrual-rules', {
+      years_from: 3,
+      years_to: 4,
+      vacation_days: 17,
+      effective_year: 2023,
+    });
+
+    assert.equal(res.statusCode, 409);
+    assert.equal(res.result.error.code, 'RULE_OVERLAP');
+    assert.equal(res.result.error.message, 'Se cruza con la regla de 3 a 3 años');
+  });
+
+  it('"hasta" no puede ser menor que "desde", y RH sí edita los días', async () => {
+    const invalid = await call('USER', 'PATCH', '/vacation-accrual-rules/1', { years_to: 0 });
+    const valid = await call('USER', 'PATCH', '/vacation-accrual-rules/1', { vacation_days: 12 });
+
+    assert.equal(invalid.result.error.code, 'INVALID_RULE_RANGE');
+    assert.equal(valid.statusCode, 200);
+  });
+});
+
 describe('Sedes y empleados por empresa', () => {
   it('las sedes traen sus empleados activos', async () => {
     const res = await call('SUPERUSER', 'GET', `/branches?company_id=${THH}`);

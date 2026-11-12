@@ -1,6 +1,7 @@
 'use strict';
 
 const { requires } = require('../../lib/permissions');
+const { scopeFrom } = require('../../lib/data-scope');
 const service = require('./service');
 const schemas = require('./schemas');
 
@@ -18,7 +19,7 @@ const shiftsPlugin = {
           auth: requires('shifts:view'),
           validate: { query: schemas.list },
         },
-        handler: (request) => service.list(request.query),
+        handler: (request) => service.list(request.query, scopeFrom(request.auth.credentials)),
       },
       {
         method: 'GET',

@@ -1,6 +1,8 @@
 'use strict';
 
 const repository = require('./repository');
+const db = require('../../db');
+const { forEmployees } = require('../../lib/data-scope');
 const { AppError } = require('../../lib/app-error');
 const { EDITABLE_FIELDS } = require('./fields');
 
@@ -12,7 +14,20 @@ const pick = (data) => {
   return result;
 };
 
-const list = (filters) => repository.list(filters);
+const withEmployeeCounts = async (shifts, scope) => {
+  const counts = await forEmployees(db('employees'), scope, 'employee_id')
+    .whereIn('shift_id', shifts.map((shift) => shift.shift_id))
+    .where('status', 'active')
+    .groupBy('shift_id')
+    .select('shift_id', db.raw('COUNT(*)::int AS total'));
+  const countOf = new Map(counts.map((row) => [row.shift_id, row.total]));
+  return shifts.map((shift) => ({ ...shift, active_employees: countOf.get(shift.shift_id) ?? 0 }));
+};
+
+const list = async (filters, scope) => {
+  const page = await repository.list(filters);
+  return { ...page, data: await withEmployeeCounts(page.data, scope) };
+};
 
 const findById = async (shiftId) => {
   const shift = await repository.findById(shiftId);
