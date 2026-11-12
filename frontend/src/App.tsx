@@ -7,6 +7,7 @@ import { EmployeesPage } from './features/employees/pages/EmployeesPage';
 import { RequestsPage } from './features/requests/pages/RequestsPage';
 import { NoticesPage } from './features/requests/pages/NoticesPage';
 import { BalancesPage } from './features/balances/pages/BalancesPage';
+import { CalendarPage } from './features/calendar/pages/CalendarPage';
 import { SettingsPage } from './features/settings/pages/SettingsPage';
 import { LoginPage } from './features/auth/pages/LoginPage';
 import { useAuth } from './features/auth/auth-context';
@@ -16,6 +17,7 @@ const PAGES: Record<string, ReactNode> = {
   '/solicitudes': <RequestsPage />,
   '/avisos': <NoticesPage />,
   '/dias': <BalancesPage />,
+  '/calendario': <CalendarPage />,
   '/configuracion': <SettingsPage />,
 };
 

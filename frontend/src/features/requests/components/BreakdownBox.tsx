@@ -7,10 +7,14 @@ interface BreakdownBoxProps {
   placeholder?: string;
 }
 
-const restNote = (restDays: number): string =>
-  restDays
-    ? ` (${restDays} día${restDays === 1 ? '' : 's'} de descanso en el rango no se descuenta${restDays === 1 ? '' : 'n'})`
-    : '';
+const restNote = (restDays: number, holidays: number): string => {
+  const parts = [];
+  if (restDays) parts.push(`${restDays} día${restDays === 1 ? '' : 's'} de descanso`);
+  if (holidays) parts.push(`${holidays} festivo${holidays === 1 ? '' : 's'}`);
+  if (!parts.length) return '';
+  const plural = restDays + holidays > 1;
+  return ` (${parts.join(' y ')} en el rango no se descuenta${plural ? 'n' : ''})`;
+};
 
 export function BreakdownBox({ preview, verb = 'Vas a tomar', placeholder }: BreakdownBoxProps) {
   if (!preview) return <div className="request-breakdown">{placeholder}</div>;
@@ -22,7 +26,7 @@ export function BreakdownBox({ preview, verb = 'Vas a tomar', placeholder }: Bre
   }
 
   const taken = formatDaysHours(breakdown.days, breakdown.hours);
-  const note = restNote(breakdown.rest_days);
+  const note = restNote(breakdown.rest_days, breakdown.holidays);
 
   if (error?.code === 'INSUFFICIENT_BALANCE' && balance) {
     return (
