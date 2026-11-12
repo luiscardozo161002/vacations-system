@@ -25,6 +25,7 @@ const vacationEntitlementsPlugin = require('./plugins/vacation-entitlements/rout
 const noticesPlugin = require('./plugins/notices/routes');
 const calendarPlugin = require('./plugins/calendar/routes');
 const dashboardPlugin = require('./plugins/dashboard/routes');
+const notificationsPlugin = require('./plugins/notifications/routes');
 const usersPlugin = require('./plugins/users/routes');
 const authAuditLogPlugin = require('./plugins/auth-audit-log/routes');
 const authPlugin = require('./plugins/auth/routes');
@@ -90,6 +91,7 @@ const createServer = async () => {
     noticesPlugin,
     calendarPlugin,
     dashboardPlugin,
+    notificationsPlugin,
     usersPlugin,
     authAuditLogPlugin,
     authPlugin,

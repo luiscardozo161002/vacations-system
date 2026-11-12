@@ -85,6 +85,14 @@ users N─N branches (user_branches)
 - **Qué guarda cada aviso.** `days_taken`, `hours_taken` y el `entitlement_id` del que descontó. El saldo guarda `used_days` y `used_hours`; cuando las horas suman una jornada, pasan a días.
 - **Festivos.** `lib/holidays.js` calcula los descansos obligatorios del Art. 74 LFT de cada año, sin tabla que mantener. Los lunes movibles se calculan por año, y el 1 de octubre se agrega cada 6 años desde 2024. El cálculo de una solicitud no los descuenta, y pedir solo festivos responde 422 `MANDATORY_REST_DAY`.
 - **Calendario.** `GET /calendar?from&to` (máximo 62 días) devuelve en una sola llamada las ausencias aprobadas y pendientes del alcance del usuario y los festivos del rango. El Empleado ve las suyas y, si su departamento tiene `calendar_shared`, también las de sus compañeros.
+- **Periodos.** `lib/periods.js` calcula el periodo vigente de aniversario a aniversario. `plugins/vacation-entitlements/rollover.js` es idempotente:
+  - vence lo que ya terminó (lo no usado se pierde);
+  - abre el periodo vigente con la regla de la antigüedad;
+  - cancela solicitudes de Vacaciones pendientes de periodos anteriores;
+  - avisa al abrir el periodo y una semana antes de que venza.
+
+  Lo corre el servidor al arrancar y cada 24 horas (no con `NODE_ENV=test`), y el Superusuario con `POST /vacation-entitlements/generate`. Si un empleado falla, queda en `skipped` y el resto sigue.
+- **Notificaciones.** La tabla `notifications` guarda una fila por usuario, tipo y referencia, así que repetir un aviso no lo duplica. `GET /me/notifications` y `POST /me/notifications/read` alimentan la campana de la topbar. El envío por correo (VM-054) leerá esa misma tabla.
 - **Dashboard.** `GET /dashboard/summary` (requiere `employees:view`) junta en una sola llamada los indicadores, las próximas ausencias, el conteo por departamento y la actividad reciente, siempre dentro del alcance. `GET /dashboard/me` usa solo el `employee_id` del token, aunque el usuario sea de RH.
 - **Fechas.** `pg` devuelve las columnas `DATE` como texto `YYYY-MM-DD` y las `NUMERIC` como número (`src/db/index.js`), para no depender de la zona horaria del servidor.
 

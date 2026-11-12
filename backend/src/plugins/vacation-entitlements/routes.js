@@ -2,7 +2,10 @@
 
 const { requires } = require('../../lib/permissions');
 const { scopeFrom } = require('../../lib/data-scope');
+const Boom = require('@hapi/boom');
+const Joi = require('joi');
 const service = require('./service');
+const { rollover } = require('./rollover');
 const schemas = require('./schemas');
 
 const vacationEntitlementsPlugin = {
@@ -10,6 +13,26 @@ const vacationEntitlementsPlugin = {
   version: '1.0.0',
   register: (server) => {
     server.route([
+      {
+        method: 'POST',
+        path: '/api/v1/vacation-entitlements/generate',
+        options: {
+          description: 'Open current periods, expire ended ones and send period reminders',
+          tags: ['api', 'vacation-entitlements'],
+          auth: requires('balances:update'),
+          validate: {
+            payload: Joi.object({
+              date: Joi.string().pattern(/^\d{4}-\d{2}-\d{2}$/).message('El formato es AAAA-MM-DD'),
+            })
+              .allow(null)
+              .unknown(false),
+          },
+        },
+        handler: (request) => {
+          if (request.auth.credentials.role !== 'SUPERUSER') throw Boom.forbidden();
+          return rollover(request.payload?.date);
+        },
+      },
       {
         method: 'GET',
         path: '/api/v1/vacation-entitlements',

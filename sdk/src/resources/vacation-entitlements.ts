@@ -43,6 +43,15 @@ export interface CreateVacationEntitlementInput {
 
 export type UpdateVacationEntitlementInput = Partial<CreateVacationEntitlementInput>;
 
+export interface RolloverSummary {
+  date: string;
+  created: number;
+  expired: number;
+  cancelled_requests: number;
+  reminders: number;
+  skipped: { employee_id: number; reason: string }[];
+}
+
 export class VacationEntitlementsResource extends CrudResource<
   VacationEntitlement,
   ListVacationEntitlementsParams,
@@ -51,5 +60,9 @@ export class VacationEntitlementsResource extends CrudResource<
 > {
   constructor(http: HttpClient) {
     super(http, '/api/v1/vacation-entitlements');
+  }
+
+  generate(date?: string): Promise<RolloverSummary> {
+    return this.http.request<RolloverSummary>(`${this.path}/generate`, { method: 'POST', body: date ? { date } : undefined });
   }
 }

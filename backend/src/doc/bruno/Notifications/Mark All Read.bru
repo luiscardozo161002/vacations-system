@@ -1,0 +1,15 @@
+meta {
+  name: Mark All Read
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/api/v1/me/notifications/read
+  body: none
+  auth: inherit
+}
+
+docs {
+  Marca como leidas todas las notificaciones del usuario actual y devuelve la lista actualizada.
+}

@@ -1,0 +1,31 @@
+meta {
+  name: Generate Periods
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{baseUrl}}/api/v1/vacation-entitlements/generate
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "date": "2027-08-01"
+  }
+}
+
+docs {
+  Solo Superusuario. Corre el cierre y apertura de periodos para la fecha indicada (por defecto hoy):
+  - vence los periodos cuyo `period_end` ya paso (lo no usado se pierde);
+  - abre el periodo vigente de cada empleado activo con mas de un ano, con los dias de la regla de su antiguedad;
+  - cancela las solicitudes de Vacaciones pendientes de periodos anteriores;
+  - avisa al empleado cuando se abre su periodo y una semana antes de que venza.
+
+  Es idempotente: correrlo dos veces el mismo dia no duplica nada. El servidor lo corre solo al arrancar y cada 24 horas (excepto con `NODE_ENV=test`). Responde un resumen: `created`, `expired`, `cancelled_requests`, `reminders` y `skipped` con el motivo.
+}

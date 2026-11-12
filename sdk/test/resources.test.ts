@@ -105,6 +105,9 @@ describe('rutas especiales', () => {
     await sdk.calendar.get({ from: '2026-11-01', to: '2026-11-30' });
     await sdk.dashboard.summary();
     await sdk.dashboard.me();
+    await sdk.notifications.list();
+    await sdk.notifications.markAllRead();
+    await sdk.vacationEntitlements.generate('2027-08-01');
 
     assert.deepEqual(sent(calls), [
       'GET /api/v1/users/2/branches',
@@ -116,6 +119,9 @@ describe('rutas especiales', () => {
       'GET /api/v1/calendar?from=2026-11-01&to=2026-11-30',
       'GET /api/v1/dashboard/summary',
       'GET /api/v1/dashboard/me',
+      'GET /api/v1/me/notifications',
+      'POST /api/v1/me/notifications/read',
+      'POST /api/v1/vacation-entitlements/generate',
     ]);
     assert.deepEqual(calls[1].body, { branch_ids: [5, 3] });
   });

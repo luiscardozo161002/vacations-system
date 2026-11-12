@@ -1,0 +1,15 @@
+meta {
+  name: List My Notifications
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/v1/me/notifications
+  body: none
+  auth: inherit
+}
+
+docs {
+  Ultimas 20 notificaciones del usuario actual y cuantas no ha leido (`unread`).
+}
