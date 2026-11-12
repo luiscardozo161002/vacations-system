@@ -1,5 +1,6 @@
 'use strict';
 
+const { requires } = require('../../lib/permissions');
 const service = require('./service');
 const schemas = require('./schemas');
 
@@ -14,6 +15,7 @@ const departmentsPlugin = {
         options: {
           description: 'List departments',
           tags: ['api', 'departments'],
+          auth: requires('departments:view'),
           validate: { query: schemas.list },
         },
         handler: (request) => service.list(request.query),
@@ -24,6 +26,7 @@ const departmentsPlugin = {
         options: {
           description: 'Get a department by ID',
           tags: ['api', 'departments'],
+          auth: requires('departments:view'),
           validate: { params: schemas.params },
         },
         handler: (request) => service.findById(request.params.departmentId),
@@ -34,6 +37,7 @@ const departmentsPlugin = {
         options: {
           description: 'Create a department',
           tags: ['api', 'departments'],
+          auth: requires('departments:create'),
           validate: { payload: schemas.create },
         },
         handler: async (request, h) => {
@@ -47,6 +51,7 @@ const departmentsPlugin = {
         options: {
           description: 'Update a department',
           tags: ['api', 'departments'],
+          auth: requires('departments:update'),
           validate: { params: schemas.params, payload: schemas.update },
         },
         handler: (request) => service.update(request.params.departmentId, request.payload),
@@ -57,6 +62,7 @@ const departmentsPlugin = {
         options: {
           description: 'Deactivate a department',
           tags: ['api', 'departments'],
+          auth: requires('departments:delete'),
           validate: { params: schemas.params },
         },
         handler: async (request, h) => {

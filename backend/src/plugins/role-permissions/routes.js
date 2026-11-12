@@ -1,5 +1,6 @@
 'use strict';
 
+const { requires } = require('../../lib/permissions');
 const service = require('./service');
 const schemas = require('./schemas');
 
@@ -14,6 +15,7 @@ const rolePermissionsPlugin = {
         options: {
           description: 'List role-permission assignments',
           tags: ['api', 'role-permissions'],
+          auth: requires('permissions:view'),
           validate: { query: schemas.list },
         },
         handler: (request) => service.list(request.query),
@@ -24,6 +26,7 @@ const rolePermissionsPlugin = {
         options: {
           description: 'Check whether a permission is assigned to a role',
           tags: ['api', 'role-permissions'],
+          auth: requires('permissions:view'),
           validate: { params: schemas.params },
         },
         handler: (request) => service.findById(request.params.roleId, request.params.permissionId),
@@ -34,6 +37,7 @@ const rolePermissionsPlugin = {
         options: {
           description: 'Assign a permission to a role',
           tags: ['api', 'role-permissions'],
+          auth: requires('permissions:update'),
           validate: { payload: schemas.create },
         },
         handler: async (request, h) => {
@@ -47,6 +51,7 @@ const rolePermissionsPlugin = {
         options: {
           description: 'Deactivate a role-permission assignment',
           tags: ['api', 'role-permissions'],
+          auth: requires('permissions:update'),
           validate: { params: schemas.params },
         },
         handler: async (request, h) => {

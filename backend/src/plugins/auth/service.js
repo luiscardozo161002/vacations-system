@@ -13,12 +13,14 @@ const addMinutes = (minutes) => addSeconds(minutes * 60);
 const addHours = (hours) => addSeconds(hours * 3600);
 const addDays = (days) => addSeconds(days * 86400);
 
-const issueAccessToken = (user) =>
-  Jwt.token.generate(
-    { user_id: user.user_id, role_id: user.role_id, employee_id: user.employee_id, username: user.username },
+const issueAccessToken = async (user) => {
+  const scope = await repository.findPermissionCodes(user.role_id);
+  return Jwt.token.generate(
+    { user_id: user.user_id, role_id: user.role_id, employee_id: user.employee_id, username: user.username, scope },
     { key: config.auth.jwtSecret, algorithm: 'HS256' },
     { ttlSec: config.auth.accessTokenTtlSeconds }
   );
+};
 
 const issueSession = async (userId, context) => {
   const refreshToken = generateOpaqueToken();
@@ -78,7 +80,7 @@ const login = async ({ email, username, password: plainPassword }, context) => {
     last_login_ip: context.ip || null,
   });
 
-  const accessToken = issueAccessToken(user);
+  const accessToken = await issueAccessToken(user);
   const refreshToken = await issueSession(user.user_id, context);
 
   await repository.logAuditEvent(user.user_id, 'LOGIN_SUCCESS', context);
@@ -104,7 +106,7 @@ const refresh = async ({ refreshToken }, context) => {
 
   await repository.revokeSession(session.session_id);
   const newRefreshToken = await issueSession(user.user_id, context);
-  const accessToken = issueAccessToken(user);
+  const accessToken = await issueAccessToken(user);
 
   await repository.logAuditEvent(user.user_id, 'TOKEN_REFRESH', context);
 
@@ -206,7 +208,7 @@ const changePassword = async (userId, { currentPassword, newPassword }, context)
   await repository.logAuditEvent(userId, 'PASSWORD_CHANGED', context);
 
   const refreshToken = await issueSession(userId, context);
-  return { accessToken: issueAccessToken(user), refreshToken, expiresIn: config.auth.accessTokenTtlSeconds };
+  return { accessToken: await issueAccessToken(user), refreshToken, expiresIn: config.auth.accessTokenTtlSeconds };
 };
 
 module.exports = {

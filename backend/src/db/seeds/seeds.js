@@ -20,9 +20,6 @@ exports.seed = async function (knex) {
   await knex('password_reset_tokens').del();
   await knex('user_sessions').del();
   await knex('users').del();
-  await knex('role_permissions').del();
-  await knex('permissions').del();
-  await knex('roles').del();
   await knex('departments').update({ manager_employee_id: null });
   await knex('employees').del();
   await knex('departments').del();
@@ -100,38 +97,13 @@ exports.seed = async function (knex) {
 
   // ---------- AUTENTICACION Y AUTORIZACION ----------
 
-  await knex('roles').insert([
-    { role_id: 1, role_code: 'ADMIN', description: 'Administrador del sistema', status: 'active' },
-    { role_id: 2, role_code: 'HR', description: 'Recursos humanos / aprobador de avisos', status: 'active' },
-    { role_id: 3, role_code: 'EMPLOYEE', description: 'Empleado', status: 'active' },
-  ]);
-  await knex.raw("SELECT setval(pg_get_serial_sequence('roles','role_id'), (SELECT MAX(role_id) FROM roles))");
-
-  await knex('permissions').insert([
-    { permission_id: 1, permission_code: 'NOTICE_CREATE', description: 'Crear avisos de ausencia propios' },
-    { permission_id: 2, permission_code: 'NOTICE_READ_OWN', description: 'Ver los avisos propios y el saldo propio' },
-    { permission_id: 3, permission_code: 'NOTICE_READ_ALL', description: 'Ver avisos de todos los empleados' },
-    { permission_id: 4, permission_code: 'NOTICE_APPROVE', description: 'Aprobar o rechazar avisos' },
-    { permission_id: 5, permission_code: 'EMPLOYEE_MANAGE', description: 'Administrar el catalogo de empleados' },
-    { permission_id: 6, permission_code: 'REPORT_VIEW', description: 'Ver reportes de vacaciones y ausencias' },
-    { permission_id: 7, permission_code: 'USER_MANAGE', description: 'Administrar usuarios, roles y permisos' },
-  ]);
-  await knex.raw("SELECT setval(pg_get_serial_sequence('permissions','permission_id'), (SELECT MAX(permission_id) FROM permissions))");
-
-  await knex('role_permissions').insert([
-    { role_id: 1, permission_id: 1 }, { role_id: 1, permission_id: 2 }, { role_id: 1, permission_id: 3 },
-    { role_id: 1, permission_id: 4 }, { role_id: 1, permission_id: 5 }, { role_id: 1, permission_id: 6 },
-    { role_id: 1, permission_id: 7 }, // ADMIN: todo
-    { role_id: 2, permission_id: 1 }, { role_id: 2, permission_id: 2 }, { role_id: 2, permission_id: 3 },
-    { role_id: 2, permission_id: 4 }, { role_id: 2, permission_id: 5 }, { role_id: 2, permission_id: 6 }, // HR: todo menos USER_MANAGE
-    { role_id: 3, permission_id: 1 }, { role_id: 3, permission_id: 2 }, // EMPLOYEE: solo lo propio
-  ]);
+  const roleIds = Object.fromEntries((await knex('roles').select('role_id', 'role_code')).map((r) => [r.role_code, r.role_id]));
 
   await knex('users').insert([
-    { user_id: 1, employee_id: null, role_id: 1, username: 'sysadmin', email: 'sysadmin@grupo-jo.com', password_hash: devPasswordHash, status: 'active' },
-    { user_id: 2, employee_id: 5, role_id: 2, username: 'r.jimenez', email: 'r.jimenez@thh.com.mx', password_hash: devPasswordHash, status: 'active' },
-    { user_id: 3, employee_id: 11, role_id: 3, username: 'j.navarro', email: 'j.navarro@jo.com.mx', password_hash: devPasswordHash, status: 'active' },
-    { user_id: 4, employee_id: 1, role_id: 3, username: 'j.perez', email: 'j.perez@jo.com.mx', password_hash: devPasswordHash, status: 'active' },
+    { user_id: 1, employee_id: null, role_id: roleIds.SUPERUSER, username: 'sysadmin', email: 'sysadmin@grupo-jo.com', password_hash: devPasswordHash, status: 'active' },
+    { user_id: 2, employee_id: 5, role_id: roleIds.USER, username: 'r.jimenez', email: 'r.jimenez@thh.com.mx', password_hash: devPasswordHash, status: 'active' },
+    { user_id: 3, employee_id: 11, role_id: roleIds.EMPLOYEE, username: 'j.navarro', email: 'j.navarro@jo.com.mx', password_hash: devPasswordHash, status: 'active' },
+    { user_id: 4, employee_id: 1, role_id: roleIds.EMPLOYEE, username: 'j.perez', email: 'j.perez@jo.com.mx', password_hash: devPasswordHash, status: 'active' },
   ]);
   await knex.raw("SELECT setval(pg_get_serial_sequence('users','user_id'), (SELECT MAX(user_id) FROM users))");
 

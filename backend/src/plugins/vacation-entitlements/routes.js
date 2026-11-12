@@ -1,5 +1,6 @@
 'use strict';
 
+const { requires } = require('../../lib/permissions');
 const service = require('./service');
 const schemas = require('./schemas');
 
@@ -14,6 +15,7 @@ const vacationEntitlementsPlugin = {
         options: {
           description: 'List vacation entitlements',
           tags: ['api', 'vacation-entitlements'],
+          auth: requires('balances:view'),
           validate: { query: schemas.list },
         },
         handler: (request) => service.list(request.query),
@@ -24,6 +26,7 @@ const vacationEntitlementsPlugin = {
         options: {
           description: 'Get a vacation entitlement by ID',
           tags: ['api', 'vacation-entitlements'],
+          auth: requires('balances:view'),
           validate: { params: schemas.params },
         },
         handler: (request) => service.findById(request.params.entitlementId),
@@ -34,6 +37,7 @@ const vacationEntitlementsPlugin = {
         options: {
           description: 'Create a vacation entitlement',
           tags: ['api', 'vacation-entitlements'],
+          auth: requires('balances:update'),
           validate: { payload: schemas.create },
         },
         handler: async (request, h) => {
@@ -47,6 +51,7 @@ const vacationEntitlementsPlugin = {
         options: {
           description: 'Update a vacation entitlement',
           tags: ['api', 'vacation-entitlements'],
+          auth: requires('balances:update'),
           validate: { params: schemas.params, payload: schemas.update },
         },
         handler: (request) => service.update(request.params.entitlementId, request.payload),
@@ -57,6 +62,7 @@ const vacationEntitlementsPlugin = {
         options: {
           description: 'Deactivate a vacation entitlement',
           tags: ['api', 'vacation-entitlements'],
+          auth: requires('balances:update'),
           validate: { params: schemas.params },
         },
         handler: async (request, h) => {

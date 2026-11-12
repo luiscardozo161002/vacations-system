@@ -65,7 +65,15 @@ users N─N branches (user_branches)
 
 ## Autenticación y autorización
 
-JWT (`@hapi/jwt`) con access token de vida corta (15 min) + refresh token (7 días), contraseñas con `bcryptjs`, bloqueo de cuenta tras 5 intentos fallidos (15 min), tokens de reseteo de contraseña con expiración de 1 hora, y bitácora de auditoría (`auth_audit_log`) para eventos de seguridad. RBAC vía `roles` / `permissions` / `role_permissions`.
+JWT (`@hapi/jwt`) con access token de vida corta (15 min) + refresh token (7 días), contraseñas con `bcryptjs`, bloqueo de cuenta tras 5 intentos fallidos (15 min), tokens de reseteo de contraseña con expiración de 1 hora, y bitácora de auditoría (`auth_audit_log`) para eventos de seguridad.
+
+RBAC vía `roles` / `permissions` / `role_permissions`.
+
+- **Roles:** `SUPERUSER`, `USER` y `EMPLOYEE`.
+- **Permisos:** tienen la forma `modulo:accion` (`employees:view`, `approvals:review`…). La migración `rbac_matrix` siembra la matriz del PRD.
+- **Token:** el access token lleva los permisos del rol en `scope`. Cada ruta los pide con `auth: requires('modulo:accion')` (`backend/src/lib/permissions.js`); si pide varios, basta con tener uno.
+- **Sin permiso:** la ruta responde 403 `FORBIDDEN`.
+- **Cambios:** si se cambian los permisos de un rol, se aplican en el siguiente token, en un máximo de 15 minutos.
 
 ## Flujo de datos (ejemplo: listar empleados con un filtro)
 

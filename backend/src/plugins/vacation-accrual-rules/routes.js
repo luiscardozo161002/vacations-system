@@ -1,5 +1,6 @@
 'use strict';
 
+const { requires } = require('../../lib/permissions');
 const service = require('./service');
 const schemas = require('./schemas');
 
@@ -14,6 +15,7 @@ const vacationAccrualRulesPlugin = {
         options: {
           description: 'List vacation accrual rules',
           tags: ['api', 'vacation-accrual-rules'],
+          auth: requires('rules:view'),
           validate: { query: schemas.list },
         },
         handler: (request) => service.list(request.query),
@@ -24,6 +26,7 @@ const vacationAccrualRulesPlugin = {
         options: {
           description: 'Get a vacation accrual rule by ID',
           tags: ['api', 'vacation-accrual-rules'],
+          auth: requires('rules:view'),
           validate: { params: schemas.params },
         },
         handler: (request) => service.findById(request.params.ruleId),
@@ -34,6 +37,7 @@ const vacationAccrualRulesPlugin = {
         options: {
           description: 'Create a vacation accrual rule',
           tags: ['api', 'vacation-accrual-rules'],
+          auth: requires('rules:create'),
           validate: { payload: schemas.create },
         },
         handler: async (request, h) => {
@@ -47,6 +51,7 @@ const vacationAccrualRulesPlugin = {
         options: {
           description: 'Update a vacation accrual rule',
           tags: ['api', 'vacation-accrual-rules'],
+          auth: requires('rules:update'),
           validate: { params: schemas.params, payload: schemas.update },
         },
         handler: (request) => service.update(request.params.ruleId, request.payload),
@@ -57,6 +62,7 @@ const vacationAccrualRulesPlugin = {
         options: {
           description: 'Deactivate a vacation accrual rule',
           tags: ['api', 'vacation-accrual-rules'],
+          auth: requires('rules:delete'),
           validate: { params: schemas.params },
         },
         handler: async (request, h) => {

@@ -1,5 +1,6 @@
 'use strict';
 
+const { requires } = require('../../lib/permissions');
 const service = require('./service');
 const schemas = require('./schemas');
 
@@ -14,6 +15,7 @@ const authAuditLogPlugin = {
         options: {
           description: 'List auth audit log entries (read-only)',
           tags: ['api', 'auth-audit-log'],
+          auth: requires('audit:view'),
           validate: { query: schemas.list },
         },
         handler: (request) => service.list(request.query),
@@ -24,6 +26,7 @@ const authAuditLogPlugin = {
         options: {
           description: 'Get an auth audit log entry by ID',
           tags: ['api', 'auth-audit-log'],
+          auth: requires('audit:view'),
           validate: { params: schemas.params },
         },
         handler: (request) => service.findById(request.params.logId),

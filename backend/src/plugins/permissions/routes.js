@@ -1,5 +1,6 @@
 'use strict';
 
+const { requires } = require('../../lib/permissions');
 const service = require('./service');
 const schemas = require('./schemas');
 
@@ -14,6 +15,7 @@ const permissionsPlugin = {
         options: {
           description: 'List permissions',
           tags: ['api', 'permissions'],
+          auth: requires('permissions:view'),
           validate: { query: schemas.list },
         },
         handler: (request) => service.list(request.query),
@@ -24,6 +26,7 @@ const permissionsPlugin = {
         options: {
           description: 'Get a permission by ID',
           tags: ['api', 'permissions'],
+          auth: requires('permissions:view'),
           validate: { params: schemas.params },
         },
         handler: (request) => service.findById(request.params.permissionId),
@@ -34,6 +37,7 @@ const permissionsPlugin = {
         options: {
           description: 'Create a permission',
           tags: ['api', 'permissions'],
+          auth: requires('permissions:update'),
           validate: { payload: schemas.create },
         },
         handler: async (request, h) => {
@@ -47,6 +51,7 @@ const permissionsPlugin = {
         options: {
           description: 'Update a permission',
           tags: ['api', 'permissions'],
+          auth: requires('permissions:update'),
           validate: { params: schemas.params, payload: schemas.update },
         },
         handler: (request) => service.update(request.params.permissionId, request.payload),
@@ -57,6 +62,7 @@ const permissionsPlugin = {
         options: {
           description: 'Deactivate a permission',
           tags: ['api', 'permissions'],
+          auth: requires('permissions:update'),
           validate: { params: schemas.params },
         },
         handler: async (request, h) => {

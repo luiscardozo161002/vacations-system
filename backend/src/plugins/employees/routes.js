@@ -1,5 +1,6 @@
 'use strict';
 
+const { requires } = require('../../lib/permissions');
 const service = require('./service');
 const schemas = require('./schemas');
 
@@ -14,6 +15,7 @@ const employeesPlugin = {
         options: {
           description: 'List employees',
           tags: ['api', 'employees'],
+          auth: requires('employees:view'),
           validate: { query: schemas.list },
         },
         handler: (request) => service.list(request.query),
@@ -24,6 +26,7 @@ const employeesPlugin = {
         options: {
           description: 'Get an employee by ID',
           tags: ['api', 'employees'],
+          auth: requires('employees:view'),
           validate: { params: schemas.params },
         },
         handler: (request) => service.findById(request.params.employeeId),
@@ -34,6 +37,7 @@ const employeesPlugin = {
         options: {
           description: 'Create an employee',
           tags: ['api', 'employees'],
+          auth: requires('employees:create'),
           validate: { payload: schemas.create },
         },
         handler: async (request, h) => {
@@ -47,6 +51,7 @@ const employeesPlugin = {
         options: {
           description: 'Update an employee',
           tags: ['api', 'employees'],
+          auth: requires('employees:update'),
           validate: { params: schemas.params, payload: schemas.update },
         },
         handler: (request) => service.update(request.params.employeeId, request.payload),
@@ -57,6 +62,7 @@ const employeesPlugin = {
         options: {
           description: 'Deactivate an employee',
           tags: ['api', 'employees'],
+          auth: requires('employees:delete'),
           validate: { params: schemas.params },
         },
         handler: async (request, h) => {

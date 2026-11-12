@@ -1,5 +1,6 @@
 'use strict';
 
+const { requires } = require('../../lib/permissions');
 const service = require('./service');
 const schemas = require('./schemas');
 
@@ -14,6 +15,7 @@ const companyPlugin = {
         options: {
           description: 'List companies',
           tags: ['api', 'companies'],
+          auth: requires('companies:view'),
           validate: { query: schemas.list },
         },
         handler: (request) => service.list(request.query),
@@ -24,6 +26,7 @@ const companyPlugin = {
         options: {
           description: 'Get a company by ID',
           tags: ['api', 'companies'],
+          auth: requires('companies:view'),
           validate: { params: schemas.params },
         },
         handler: (request) => service.findById(request.params.companyId),
@@ -34,6 +37,7 @@ const companyPlugin = {
         options: {
           description: 'Create a company',
           tags: ['api', 'companies'],
+          auth: requires('companies:create'),
           validate: { payload: schemas.create },
         },
         handler: async (request, h) => {
@@ -47,6 +51,7 @@ const companyPlugin = {
         options: {
           description: 'Update a company',
           tags: ['api', 'companies'],
+          auth: requires('companies:update'),
           validate: { params: schemas.params, payload: schemas.update },
         },
         handler: (request) => service.update(request.params.companyId, request.payload),
@@ -57,6 +62,7 @@ const companyPlugin = {
         options: {
           description: 'Deactivate a company',
           tags: ['api', 'companies'],
+          auth: requires('companies:delete'),
           validate: { params: schemas.params },
         },
         handler: async (request, h) => {

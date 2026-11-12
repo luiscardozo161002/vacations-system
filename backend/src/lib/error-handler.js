@@ -205,6 +205,10 @@ module.exports = {
         return h.continue;
       }
 
+      if (response.output.statusCode === 403) {
+        return send(h, 403, 'FORBIDDEN', 'No tienes permiso para esta accion');
+      }
+
       if (response.output.statusCode !== 500) {
         const status = response.output.statusCode;
         return send(h, status, `HTTP_${status}`, response.output.payload.message);

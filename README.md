@@ -105,12 +105,12 @@ Carga datos dummy (empresas, departamentos, turnos, empleados, usuarios, vacacio
 
 Usuarios de prueba (todos con la contraseña `Vacaciones2026!`, solo para desarrollo):
 
-| Usuario     | Correo                  | Rol      | Empleado vinculado      |
-|-------------|-------------------------|----------|--------------------------|
-| `sysadmin`  | sysadmin@grupo-jo.com   | ADMIN    | —                        |
-| `r.jimenez` | r.jimenez@thh.com.mx    | HR       | Roberto Jimenez Cruz     |
-| `j.navarro` | j.navarro@jo.com.mx     | EMPLOYEE | Jorge Luis Navarro       |
-| `j.perez`   | j.perez@jo.com.mx       | EMPLOYEE | Juan Perez Lopez         |
+| Usuario     | Correo                  | Rol       | Empleado vinculado      |
+|-------------|-------------------------|-----------|--------------------------|
+| `sysadmin`  | sysadmin@grupo-jo.com   | SUPERUSER | —                        |
+| `r.jimenez` | r.jimenez@thh.com.mx    | USER      | Roberto Jimenez Cruz     |
+| `j.navarro` | j.navarro@jo.com.mx     | EMPLOYEE  | Jorge Luis Navarro       |
+| `j.perez`   | j.perez@jo.com.mx       | EMPLOYEE  | Juan Perez Lopez         |
 
 ### 5. Levantar el servidor
 
@@ -256,14 +256,13 @@ El frontend usa `@vacations/sdk` como paquete local del workspace, sin publicarl
 
 **Shell y rutas:** el sidebar y la topbar son los del prototipo. Las 14 pantallas tienen su ruta (`/dashboard`, `/empleados`, `/solicitudes`…), y las que todavía no existen muestran qué ticket las construye. El menú solo enseña los módulos que permite el rol. Entrar por URL a uno prohibido, o a una ruta que no existe, lleva al primer módulo permitido, como en el prototipo.
 
-Mientras VM-013 no define la matriz de permisos, cada módulo pide uno de los permisos que ya existen en la base. Así cada rol ve lo mismo que en el prototipo:
+Cada módulo pide su permiso `modulo:view` (por ejemplo `employees:view`); Configuración no pide ninguno. El menú queda así por rol:
 
-| Módulos | Permiso | Roles que lo ven |
-|---|---|---|
-| Dashboard y Configuración | ninguno | todos |
-| Solicitudes, Calendario, Días y Avisos | `NOTICE_READ_OWN` | Superusuario, Usuario y Empleado |
-| Empleados, Departamentos, Empresas, Turnos y Reglas | `EMPLOYEE_MANAGE` | Superusuario y Usuario |
-| Usuarios, Roles y permisos, y Auditoría | `USER_MANAGE` | Superusuario |
+| Rol | Módulos |
+|---|---|
+| Superusuario | Todos |
+| Usuario | Todos menos Usuarios, Roles y permisos, y Auditoría |
+| Empleado | Dashboard, Solicitudes, Calendario, Días, Avisos y Configuración |
 
 La configuración vive en [frontend/src/app/navigation.ts](frontend/src/app/navigation.ts).
 

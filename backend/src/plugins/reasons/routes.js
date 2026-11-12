@@ -1,5 +1,6 @@
 'use strict';
 
+const { requires } = require('../../lib/permissions');
 const service = require('./service');
 const schemas = require('./schemas');
 
@@ -14,6 +15,7 @@ const reasonsPlugin = {
         options: {
           description: 'List absence reasons',
           tags: ['api', 'reasons'],
+          auth: requires('reasons:view'),
           validate: { query: schemas.list },
         },
         handler: (request) => service.list(request.query),
@@ -24,6 +26,7 @@ const reasonsPlugin = {
         options: {
           description: 'Get a reason by ID',
           tags: ['api', 'reasons'],
+          auth: requires('reasons:view'),
           validate: { params: schemas.params },
         },
         handler: (request) => service.findById(request.params.reasonId),
@@ -34,6 +37,7 @@ const reasonsPlugin = {
         options: {
           description: 'Create a reason',
           tags: ['api', 'reasons'],
+          auth: requires('reasons:create'),
           validate: { payload: schemas.create },
         },
         handler: async (request, h) => {
@@ -47,6 +51,7 @@ const reasonsPlugin = {
         options: {
           description: 'Update a reason',
           tags: ['api', 'reasons'],
+          auth: requires('reasons:update'),
           validate: { params: schemas.params, payload: schemas.update },
         },
         handler: (request) => service.update(request.params.reasonId, request.payload),
@@ -57,6 +62,7 @@ const reasonsPlugin = {
         options: {
           description: 'Deactivate a reason',
           tags: ['api', 'reasons'],
+          auth: requires('reasons:delete'),
           validate: { params: schemas.params },
         },
         handler: async (request, h) => {

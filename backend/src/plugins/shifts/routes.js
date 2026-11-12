@@ -1,5 +1,6 @@
 'use strict';
 
+const { requires } = require('../../lib/permissions');
 const service = require('./service');
 const schemas = require('./schemas');
 
@@ -14,6 +15,7 @@ const shiftsPlugin = {
         options: {
           description: 'List shifts',
           tags: ['api', 'shifts'],
+          auth: requires('shifts:view'),
           validate: { query: schemas.list },
         },
         handler: (request) => service.list(request.query),
@@ -24,6 +26,7 @@ const shiftsPlugin = {
         options: {
           description: 'Get a shift by ID',
           tags: ['api', 'shifts'],
+          auth: requires('shifts:view'),
           validate: { params: schemas.params },
         },
         handler: (request) => service.findById(request.params.shiftId),
@@ -34,6 +37,7 @@ const shiftsPlugin = {
         options: {
           description: 'Replace the weekly schedule of a shift (all 7 days at once)',
           tags: ['api', 'shifts'],
+          auth: requires('shifts:update'),
           validate: { params: schemas.params, payload: schemas.schedule },
         },
         handler: (request) => service.replaceSchedule(request.params.shiftId, request.payload),
@@ -44,6 +48,7 @@ const shiftsPlugin = {
         options: {
           description: 'Create a shift',
           tags: ['api', 'shifts'],
+          auth: requires('shifts:create'),
           validate: { payload: schemas.create },
         },
         handler: async (request, h) => {
@@ -57,6 +62,7 @@ const shiftsPlugin = {
         options: {
           description: 'Update a shift',
           tags: ['api', 'shifts'],
+          auth: requires('shifts:update'),
           validate: { params: schemas.params, payload: schemas.update },
         },
         handler: (request) => service.update(request.params.shiftId, request.payload),
@@ -67,6 +73,7 @@ const shiftsPlugin = {
         options: {
           description: 'Deactivate a shift',
           tags: ['api', 'shifts'],
+          auth: requires('shifts:delete'),
           validate: { params: schemas.params },
         },
         handler: async (request, h) => {

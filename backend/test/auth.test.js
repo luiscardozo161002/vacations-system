@@ -102,8 +102,8 @@ describe('GET /auth/me', () => {
     const res = await server.inject({ url: '/api/v1/auth/me', headers: { authorization: `Bearer ${token}` } });
 
     assert.equal(res.statusCode, 200);
-    assert.equal(res.result.role.role_code, 'HR');
+    assert.equal(res.result.role.role_code, 'USER');
     assert.equal(res.result.employee.employee_id, 5);
-    assert.ok(res.result.permissions.includes('NOTICE_APPROVE'));
+    assert.ok(res.result.permissions.includes('approvals:review'));
   });
 });

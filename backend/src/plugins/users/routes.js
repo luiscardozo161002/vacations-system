@@ -1,5 +1,6 @@
 'use strict';
 
+const { requires } = require('../../lib/permissions');
 const service = require('./service');
 const schemas = require('./schemas');
 
@@ -14,6 +15,7 @@ const usersPlugin = {
         options: {
           description: 'List users (never returns password_hash)',
           tags: ['api', 'users'],
+          auth: requires('users:view'),
           validate: { query: schemas.list },
         },
         handler: (request) => service.list(request.query),
@@ -24,6 +26,7 @@ const usersPlugin = {
         options: {
           description: 'Get a user by ID (never returns password_hash)',
           tags: ['api', 'users'],
+          auth: requires('users:view'),
           validate: { params: schemas.params },
         },
         handler: (request) => service.findById(request.params.userId),
@@ -34,6 +37,7 @@ const usersPlugin = {
         options: {
           description: 'Create a user (password is hashed before storing)',
           tags: ['api', 'users'],
+          auth: requires('users:create'),
           validate: { payload: schemas.create },
         },
         handler: async (request, h) => {
@@ -47,6 +51,7 @@ const usersPlugin = {
         options: {
           description: 'Update a user (password is re-hashed if sent)',
           tags: ['api', 'users'],
+          auth: requires('users:update'),
           validate: { params: schemas.params, payload: schemas.update },
         },
         handler: (request) => service.update(request.params.userId, request.payload),
@@ -57,6 +62,7 @@ const usersPlugin = {
         options: {
           description: 'Deactivate a user',
           tags: ['api', 'users'],
+          auth: requires('users:delete'),
           validate: { params: schemas.params },
         },
         handler: async (request, h) => {
