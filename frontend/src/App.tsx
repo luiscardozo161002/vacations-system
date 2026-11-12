@@ -11,6 +11,8 @@ import { CalendarPage } from './features/calendar/pages/CalendarPage';
 import { DashboardPage } from './features/dashboard/pages/DashboardPage';
 import { DepartmentsPage } from './features/departments/pages/DepartmentsPage';
 import { CompaniesPage } from './features/companies/pages/CompaniesPage';
+import { ShiftsPage } from './features/shifts/pages/ShiftsPage';
+import { RulesPage } from './features/rules/pages/RulesPage';
 import { SettingsPage } from './features/settings/pages/SettingsPage';
 import { LoginPage } from './features/auth/pages/LoginPage';
 import { useAuth } from './features/auth/auth-context';
@@ -24,6 +26,8 @@ const PAGES: Record<string, ReactNode> = {
   '/calendario': <CalendarPage />,
   '/departamentos': <DepartmentsPage />,
   '/empresas': <CompaniesPage />,
+  '/turnos': <ShiftsPage />,
+  '/reglas': <RulesPage />,
   '/configuracion': <SettingsPage />,
 };
 

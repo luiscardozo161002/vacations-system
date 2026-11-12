@@ -311,6 +311,15 @@ La configuración vive en [frontend/src/app/navigation.ts](frontend/src/app/navi
 
 **Empresas:** tiene pestañas de datos fiscales, sucursales con su número de empleados y empleados con su departamento y sede. El Superusuario elige la empresa en un selector.
 
+**Turnos y horarios:**
+- **Tarjetas:** cada turno muestra su horario resumido (por ejemplo "Lun-Vie 07:00–15:00; Sáb 08:00–13:00") y cuántos empleados lo tienen.
+- **Editor por bloques:** cada bloque es un grupo de días con un mismo horario. Al guardar se arman los 7 días y se mandan con `replaceSchedule`. El editor no deja poner un día en dos bloques ni una salida antes de la entrada.
+
+**Reglas de acumulación:**
+- **Tabla:** la antigüedad y los días que otorga la LFT.
+- **Edición:** RH edita los días. Solo el Superusuario crea reglas.
+- **Validación:** la API rechaza rangos que se crucen con otra regla del mismo año (`409 RULE_OVERLAP`).
+
 **Dashboard:**
 - **Superusuario y RH:** ven los indicadores de su alcance, las próximas ausencias, los empleados por departamento (con la sede cuando el nombre se repite) y la actividad reciente.
 - **Empleado:** ve su perfil, su saldo con horas y sus últimas solicitudes y avisos. En "Días" el empleado también llega a esta vista.
