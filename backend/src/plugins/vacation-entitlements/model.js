@@ -14,7 +14,7 @@ class VacationEntitlement extends Model {
   static get jsonSchema() {
     return {
       type: 'object',
-      required: ['employee_id', 'period_year', 'years_of_service', 'rule_id', 'total_days'],
+      required: ['employee_id', 'period_year', 'years_of_service', 'rule_id', 'total_days', 'period_start', 'period_end'],
       additionalProperties: false,
       properties: {
         entitlement_id: { type: 'integer' },
@@ -24,6 +24,9 @@ class VacationEntitlement extends Model {
         rule_id: { type: 'integer' },
         total_days: { type: 'integer' },
         used_days: { type: 'integer' },
+        used_hours: { type: 'number' },
+        period_start: { type: 'string', format: 'date' },
+        period_end: { type: 'string', format: 'date' },
         remaining_days: { type: 'integer' },
         generated_at: { type: 'string' },
         status: { type: 'string', enum: ['active', 'inactive'] },

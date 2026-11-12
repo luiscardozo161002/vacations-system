@@ -3,6 +3,7 @@
 const Joi = require('joi');
 
 const id = Joi.number().integer().positive();
+const isoDate = Joi.string().pattern(/^\d{4}-\d{2}-\d{2}$/).message('El formato es YYYY-MM-DD');
 
 const fields = {
   employee_id: id,
@@ -11,6 +12,9 @@ const fields = {
   rule_id: id,
   total_days: Joi.number().integer().min(0),
   used_days: Joi.number().integer().min(0),
+  used_hours: Joi.number().min(0).precision(2),
+  period_start: isoDate,
+  period_end: isoDate,
   status: Joi.string().valid('active', 'inactive'),
 };
 
@@ -21,6 +25,9 @@ const create = Joi.object({
   rule_id: fields.rule_id.required(),
   total_days: fields.total_days.required(),
   used_days: fields.used_days.default(0),
+  used_hours: fields.used_hours.default(0),
+  period_start: fields.period_start.required(),
+  period_end: fields.period_end.required(),
   status: fields.status.default('active'),
 }).unknown(false);
 

@@ -74,6 +74,14 @@ users N─N branches (user_branches)
 - **Cambios de estado.** Solo con `POST /notices/{id}/approve | reject | cancel`, y `PATCH` ya no toca el estado. Cada acción es un `UPDATE … WHERE status IN (…)`, así que dos peticiones simultáneas no pueden aplicar dos transiciones; si no cambia ninguna fila, responde 409 `INVALID_TRANSITION`.
 - **Quién puede.** `users.review_actions` guarda qué acciones puede hacer cada Usuario de RH (por defecto las tres); sin la acción, responde 403 `REVIEW_ACTION_FORBIDDEN`. El Empleado solo cancela sus solicitudes pendientes.
 
+## Saldo de vacaciones
+
+- **Cálculo.** `lib/request-breakdown.js` (puro) calcula días, horas y días de descanso de un rango según el horario del turno. `lib/balance.js` convierte días y horas a horas totales y de regreso. Un día equivale a la jornada del turno.
+- **Evaluación.** `plugins/notices/balance.js` revisa una solicitud contra el periodo vigente (`vacation_entitlements` con `period_start <= hoy <= period_end`). La usan `POST /notices/preview`, que responde 200 con `error` si algo no se cumple, y el alta, la edición y la aprobación, que responden 422 con el mismo código.
+- **Descuento.** Se descuenta al aprobar una solicitud de Vacaciones, o al registrar un aviso de Vacaciones de RH, y se devuelve al cancelar una aprobada. Cada movimiento ocurre en la misma transacción que el cambio de estado y bloquea la fila del saldo (`SELECT … FOR UPDATE`), así que dos operaciones simultáneas no pueden pasarse del saldo.
+- **Qué guarda cada aviso.** `days_taken`, `hours_taken` y el `entitlement_id` del que descontó. El saldo guarda `used_days` y `used_hours`; cuando las horas suman una jornada, pasan a días.
+- **Fechas.** `pg` devuelve las columnas `DATE` como texto `YYYY-MM-DD` y las `NUMERIC` como número (`src/db/index.js`), para no depender de la zona horaria del servidor.
+
 ## Autenticación y autorización
 
 JWT (`@hapi/jwt`) con access token de vida corta (15 min) + refresh token (7 días), contraseñas con `bcryptjs`, bloqueo de cuenta tras 5 intentos fallidos (15 min), tokens de reseteo de contraseña con expiración de 1 hora, y bitácora de auditoría (`auth_audit_log`) para eventos de seguridad.

@@ -34,6 +34,17 @@ const noticesPlugin = {
       },
       {
         method: 'POST',
+        path: '/api/v1/notices/preview',
+        options: {
+          description: 'Preview the days, hours and balance a request would use',
+          tags: ['api', 'notices'],
+          auth: requires('requests:create', 'notices:create'),
+          validate: { payload: schemas.preview },
+        },
+        handler: (request) => service.preview(request.payload, request.auth.credentials),
+      },
+      {
+        method: 'POST',
         path: '/api/v1/notices',
         options: {
           description: 'Create an absence notice',

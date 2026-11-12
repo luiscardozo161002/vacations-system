@@ -20,12 +20,14 @@ body:json {
     "period_year": 2030,
     "years_of_service": 2,
     "rule_id": 2,
-    "total_days": 14
+    "total_days": 14,
+    "period_start": "2030-05-15",
+    "period_end": "2031-05-14"
   }
 }
 
 docs {
-  Requeridos: `employee_id`, `period_year`, `years_of_service`, `rule_id`, `total_days`. `used_days` opcional (default 0).
+  Requeridos: `employee_id`, `period_year`, `years_of_service`, `rule_id`, `total_days`, `period_start`, `period_end` (de aniversario a aniversario). `used_days` y `used_hours` opcionales (default 0).
 
   Errores: `422 INVALID_EMPLOYEE` / `INVALID_RULE` si los ids no existen; `409 VACATION_ENTITLEMENT_EXISTS` si ya existe un saldo para ese empleado en ese periodo.
 }

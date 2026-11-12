@@ -5,7 +5,6 @@ const Joi = require('joi');
 const id = Joi.number().integer().positive();
 const isoDateString = Joi.string().pattern(/^\d{4}-\d{2}-\d{2}$/).message('El formato es YYYY-MM-DD');
 const timeString = Joi.string().pattern(/^\d{2}:\d{2}(:\d{2})?$/).message('El formato es HH:MM').allow(null);
-const nonNegativeInt = Joi.number().integer().min(0).allow(null);
 
 const fields = {
   reason_id: id,
@@ -13,8 +12,6 @@ const fields = {
   absence_end_date: isoDateString,
   absence_start_time: timeString,
   absence_end_time: timeString,
-  remaining_days: nonNegativeInt,
-  remaining_hours: nonNegativeInt,
   remarks: Joi.string().max(255).allow(null),
 };
 
@@ -24,6 +21,15 @@ const create = Joi.object({
   reason_id: fields.reason_id.required(),
   absence_start_date: fields.absence_start_date.required(),
   absence_end_date: fields.absence_end_date.required(),
+}).unknown(false);
+
+const preview = Joi.object({
+  employee_id: id.required(),
+  reason_id: fields.reason_id.required(),
+  absence_start_date: fields.absence_start_date.required(),
+  absence_end_date: fields.absence_end_date.required(),
+  absence_start_time: fields.absence_start_time,
+  absence_end_time: fields.absence_end_time,
 }).unknown(false);
 
 const update = Joi.object(fields).min(1).unknown(false);
@@ -44,4 +50,4 @@ const list = Joi.object({
   pageSize: Joi.number().integer().min(1).max(100).default(20),
 }).unknown(false);
 
-module.exports = { create, update, params, list };
+module.exports = { create, preview, update, params, list };

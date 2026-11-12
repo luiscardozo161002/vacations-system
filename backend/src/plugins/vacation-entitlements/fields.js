@@ -9,6 +9,9 @@ const EDITABLE_FIELDS = [
   'rule_id',
   'total_days',
   'used_days',
+  'used_hours',
+  'period_start',
+  'period_end',
   'status',
 ];
 const COLUMNS = [ID_COLUMN, ...EDITABLE_FIELDS, 'remaining_days', 'generated_at'];

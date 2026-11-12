@@ -73,4 +73,4 @@ const computeRequestBreakdown = ({ schedule, startDate, endDate, startTime = nul
   };
 };
 
-module.exports = { computeRequestBreakdown };
+module.exports = { computeRequestBreakdown, shiftDailyHours };

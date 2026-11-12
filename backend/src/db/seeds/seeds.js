@@ -181,14 +181,17 @@ exports.seed = async function (knex) {
   // Saldo del periodo actual: la antiguedad se calcula en la propia consulta con age().
   // Daniela Castro Rios (employee_id = 10) no genera fila si aun no cumple su primer anio.
   await knex.raw(`
-    INSERT INTO vacation_entitlements (employee_id, period_year, years_of_service, rule_id, total_days, used_days)
+    INSERT INTO vacation_entitlements
+        (employee_id, period_year, years_of_service, rule_id, total_days, used_days, period_start, period_end)
     SELECT
         e.employee_id,
         EXTRACT(YEAR FROM CURRENT_DATE)::int,
         EXTRACT(YEAR FROM age(CURRENT_DATE, e.start_date))::int AS years_of_service,
         r.rule_id,
         r.vacation_days,
-        0
+        0,
+        (e.start_date + make_interval(years => EXTRACT(YEAR FROM age(CURRENT_DATE, e.start_date))::int))::date,
+        (e.start_date + make_interval(years => EXTRACT(YEAR FROM age(CURRENT_DATE, e.start_date))::int + 1) - INTERVAL '1 day')::date
     FROM employees e
     JOIN vacation_accrual_rules r
         ON EXTRACT(YEAR FROM age(CURRENT_DATE, e.start_date))::int BETWEEN r.years_from AND COALESCE(r.years_to, 999)
@@ -220,17 +223,17 @@ exports.seed = async function (knex) {
   await knex.raw(`
     INSERT INTO notices
         (employee_id, reason_id, approved_by, status, absence_start_date, absence_end_date,
-         absence_start_time, absence_end_time, remaining_days, remarks, request_date, approved_at)
+         absence_start_time, absence_end_time, days_taken, remarks, request_date, approved_at)
     VALUES
-    (1,  5, 2,    'approved', CURRENT_DATE - 20, CURRENT_DATE - 16, NULL,    NULL,    7,   'Vacaciones de fin de anio',                                now() - INTERVAL '25 days', now() - INTERVAL '24 days'),
-    (2,  1, NULL, 'pending',  CURRENT_DATE,      CURRENT_DATE,      '09:00', '11:00', NULL,'Cita medica',                                              now() - INTERVAL '1 day',   NULL),
-    (5,  5, 1,    'approved', CURRENT_DATE - 40, CURRENT_DATE - 31, NULL,    NULL,    12,  'Vacaciones familiares',                                   now() - INTERVAL '45 days', now() - INTERVAL '44 days'),
-    (6,  4, 2,    'approved', CURRENT_DATE - 10, CURRENT_DATE - 8,  NULL,    NULL,    NULL,'Entrega en sucursal Pachuca',                              now() - INTERVAL '12 days', now() - INTERVAL '11 days'),
-    (7,  3, NULL, 'approved', CURRENT_DATE,      CURRENT_DATE,      NULL,    NULL,    NULL,'Dia de cumpleanos',                                        now(),                      now()),
-    (9,  6, NULL, 'pending',  CURRENT_DATE + 3,  CURRENT_DATE + 3,  '07:00', '15:00', NULL,'Compensacion por guardia',                                 now(),                      NULL),
-    (11, 2, 2,    'rejected', CURRENT_DATE - 5,  CURRENT_DATE - 5,  NULL,    NULL,    NULL,'No procede, sin causa justificada',                        now() - INTERVAL '6 days',  now() - INTERVAL '5 days'),
-    (12, 7, 2,    'approved', CURRENT_DATE - 2,  CURRENT_DATE + 1,  NULL,    NULL,    NULL,'Nacimiento de hijo',                                       now() - INTERVAL '3 days',  now() - INTERVAL '2 days'),
-    (8,  8, 2,    'approved', CURRENT_DATE - 7,  CURRENT_DATE - 4,  NULL,    NULL,    NULL,'Fallecimiento de familiar directo',                        now() - INTERVAL '7 days',  now() - INTERVAL '7 days'),
-    (10, 5, 2,    'rejected', CURRENT_DATE + 5,  CURRENT_DATE + 9,  NULL,    NULL,    NULL,'Sin antiguedad suficiente: no ha cumplido su primer anio', now(),                      now())
+    (1,  5, 2,    'approved', CURRENT_DATE - 20, CURRENT_DATE - 16, NULL,    NULL,    5,   'Vacaciones de fin de anio',                                now() - INTERVAL '25 days', now() - INTERVAL '24 days'),
+    (2,  1, NULL, 'pending',  CURRENT_DATE,      CURRENT_DATE,      '09:00', '11:00', 0,   'Cita medica',                                              now() - INTERVAL '1 day',   NULL),
+    (5,  5, 1,    'approved', CURRENT_DATE - 40, CURRENT_DATE - 31, NULL,    NULL,    10,  'Vacaciones familiares',                                   now() - INTERVAL '45 days', now() - INTERVAL '44 days'),
+    (6,  4, 2,    'approved', CURRENT_DATE - 10, CURRENT_DATE - 8,  NULL,    NULL,    0,   'Entrega en sucursal Pachuca',                              now() - INTERVAL '12 days', now() - INTERVAL '11 days'),
+    (7,  3, NULL, 'approved', CURRENT_DATE,      CURRENT_DATE,      NULL,    NULL,    0,   'Dia de cumpleanos',                                        now(),                      now()),
+    (9,  6, NULL, 'pending',  CURRENT_DATE + 3,  CURRENT_DATE + 3,  '07:00', '15:00', 0,   'Compensacion por guardia',                                 now(),                      NULL),
+    (11, 2, 2,    'rejected', CURRENT_DATE - 5,  CURRENT_DATE - 5,  NULL,    NULL,    0,   'No procede, sin causa justificada',                        now() - INTERVAL '6 days',  now() - INTERVAL '5 days'),
+    (12, 7, 2,    'approved', CURRENT_DATE - 2,  CURRENT_DATE + 1,  NULL,    NULL,    0,   'Nacimiento de hijo',                                       now() - INTERVAL '3 days',  now() - INTERVAL '2 days'),
+    (8,  8, 2,    'approved', CURRENT_DATE - 7,  CURRENT_DATE - 4,  NULL,    NULL,    0,   'Fallecimiento de familiar directo',                        now() - INTERVAL '7 days',  now() - INTERVAL '7 days'),
+    (10, 5, 2,    'rejected', CURRENT_DATE + 5,  CURRENT_DATE + 9,  NULL,    NULL,    0,   'Sin antiguedad suficiente: no ha cumplido su primer anio', now(),                      now())
   `);
 };

@@ -1,6 +1,7 @@
 'use strict';
 
 const repository = require('./repository');
+const balance = require('./balance');
 const db = require('../../db');
 const { AppError } = require('../../lib/app-error');
 const { EDITABLE_FIELDS, CREATE_FIELDS } = require('./fields');
@@ -8,6 +9,8 @@ const { scopeFrom, allowsEmployee } = require('../../lib/data-scope');
 
 const REVIEW_PERMISSION = 'approvals:review';
 const REGISTER_PERMISSION = 'notices:create';
+
+const SCHEDULE_FIELDS = ['reason_id', 'absence_start_date', 'absence_end_date', 'absence_start_time', 'absence_end_time'];
 
 const ACTIONS = {
   approve: { verb: 'aprobar', from: ['pending'], to: 'approved' },
@@ -32,6 +35,17 @@ const pick = (data, fields) => {
   return result;
 };
 
+const takenFrom = (evaluation) => ({
+  days_taken: evaluation.breakdown.days,
+  hours_taken: evaluation.breakdown.hours,
+});
+
+const ensureEmployeeInScope = async (credentials, employeeId) => {
+  if (!(await allowsEmployee(scopeFrom(credentials), employeeId))) {
+    throw new AppError('INVALID_EMPLOYEE', 'El empleado no existe');
+  }
+};
+
 const list = (filters, scope) => repository.list(filters, scope);
 
 const findById = async (noticeId, scope) => {
@@ -40,30 +54,54 @@ const findById = async (noticeId, scope) => {
   return notice;
 };
 
+const preview = async (data, credentials) => {
+  await ensureEmployeeInScope(credentials, data.employee_id);
+  return balance.toResponse(await balance.evaluate(db, data));
+};
+
 const create = async (data, credentials) => {
-  if (!(await allowsEmployee(scopeFrom(credentials), data.employee_id))) {
-    throw new AppError('INVALID_EMPLOYEE', 'El empleado no existe');
-  }
+  await ensureEmployeeInScope(credentials, data.employee_id);
+  const registersNotice = credentials.scope.includes(REGISTER_PERMISSION);
 
-  const record = { ...pick(data, CREATE_FIELDS), created_by: credentials.user_id };
+  return db.transaction(async (trx) => {
+    const evaluation = await balance.evaluate(trx, data, { lock: registersNotice });
+    balance.assertValid(evaluation);
 
-  if (credentials.scope.includes(REGISTER_PERMISSION)) {
-    return repository.create({
-      ...record,
-      kind: 'notice',
-      status: 'approved',
-      approved_by: credentials.user_id,
-      approved_at: db.fn.now(),
-    });
-  }
+    const record = { ...pick(data, CREATE_FIELDS), ...takenFrom(evaluation), created_by: credentials.user_id };
 
-  return repository.create({ ...record, kind: 'request', status: 'pending' });
+    if (!registersNotice) {
+      return repository.create({ ...record, kind: 'request', status: 'pending' }, trx);
+    }
+
+    return repository.create(
+      {
+        ...record,
+        kind: 'notice',
+        status: 'approved',
+        approved_by: credentials.user_id,
+        approved_at: trx.fn.now(),
+        entitlement_id: await balance.discount(trx, evaluation),
+      },
+      trx
+    );
+  });
 };
 
 const update = async (noticeId, data, scope) => {
-  const notice = await repository.update(noticeId, pick(data, EDITABLE_FIELDS), scope);
-  if (!notice) throw new AppError('NOTICE_NOT_FOUND', 'El aviso no existe');
-  return notice;
+  const current = await findById(noticeId, scope);
+  const changes = pick(data, EDITABLE_FIELDS);
+
+  if (!SCHEDULE_FIELDS.some((field) => changes[field] !== undefined)) {
+    return repository.update(noticeId, changes, scope);
+  }
+
+  if (current.status !== 'pending') {
+    throw new AppError('NOTICE_LOCKED', 'Solo se pueden cambiar fechas y motivo de un aviso pendiente');
+  }
+
+  const evaluation = await balance.evaluate(db, { ...current, ...changes });
+  balance.assertValid(evaluation);
+  return repository.update(noticeId, { ...changes, ...takenFrom(evaluation) }, scope);
 };
 
 const rejectionMessage = (rule, notice) => {
@@ -73,8 +111,26 @@ const rejectionMessage = (rule, notice) => {
   return `No se puede ${rule.verb} un aviso ${STATUS_LABELS[notice.status]}`;
 };
 
+const applyBalance = async (trx, notice) => {
+  if (notice.status === 'cancelled') {
+    await balance.refund(trx, notice);
+    return notice;
+  }
+
+  if (notice.status !== 'approved') return notice;
+
+  const evaluation = await balance.evaluate(trx, notice, { lock: true });
+  balance.assertValid(evaluation);
+  return repository.patchById(
+    notice.notice_id,
+    { ...takenFrom(evaluation), entitlement_id: await balance.discount(trx, evaluation) },
+    trx
+  );
+};
+
 const resolve = async (noticeId, action, credentials) => {
-  await findById(noticeId, scopeFrom(credentials));
+  const scope = scopeFrom(credentials);
+  await findById(noticeId, scope);
   const isReviewer = credentials.scope.includes(REVIEW_PERMISSION);
 
   if (isReviewer) {
@@ -86,13 +142,14 @@ const resolve = async (noticeId, action, credentials) => {
 
   const rule = isReviewer ? ACTIONS[action] : OWNER_CANCEL;
   const patch = action === 'approve' ? { approved_by: credentials.user_id, approved_at: db.fn.now() } : {};
-  const updated = await repository.transition(noticeId, rule, patch);
 
-  if (!updated) {
-    const current = await repository.findById(noticeId, scopeFrom(credentials));
-    throw new AppError('INVALID_TRANSITION', rejectionMessage(rule, current));
-  }
-  return updated;
+  return db.transaction(async (trx) => {
+    const updated = await repository.transition(noticeId, rule, patch, trx);
+    if (!updated) {
+      throw new AppError('INVALID_TRANSITION', rejectionMessage(rule, await repository.findById(noticeId, scope)));
+    }
+    return applyBalance(trx, updated);
+  });
 };
 
-module.exports = { list, findById, create, update, resolve };
+module.exports = { list, findById, preview, create, update, resolve };

@@ -27,7 +27,7 @@ const list = async ({ employee_id, reason_id, kind, status, from, to, sort, page
 const findById = (noticeId, scope) =>
   forEmployees(Notice.query().select(COLUMNS).where('notice_id', noticeId), scope, 'employee_id').first();
 
-const create = (data) => Notice.query().insert(data).returning(COLUMNS);
+const create = (data, trx) => Notice.query(trx).insert(data).returning(COLUMNS);
 
 const update = async (noticeId, data, scope) => {
   const [notice] = await forEmployees(Notice.query().where('notice_id', noticeId), scope, 'employee_id')
@@ -36,8 +36,13 @@ const update = async (noticeId, data, scope) => {
   return notice || null;
 };
 
-const transition = async (noticeId, { from, to, onlyBeforeStart = [] }, patch = {}) => {
-  const [notice] = await Notice.query()
+const patchById = async (noticeId, data, trx) => {
+  const [notice] = await Notice.query(trx).where('notice_id', noticeId).patch(data).returning(COLUMNS);
+  return notice;
+};
+
+const transition = async (noticeId, { from, to, onlyBeforeStart = [] }, patch, trx) => {
+  const [notice] = await Notice.query(trx)
     .where('notice_id', noticeId)
     .where((query) => {
       query.whereIn(
@@ -61,4 +66,4 @@ const findReviewActions = (userId) =>
     .first('review_actions')
     .then((row) => row?.review_actions ?? []);
 
-module.exports = { list, findById, create, update, transition, findReviewActions };
+module.exports = { list, findById, create, update, patchById, transition, findReviewActions };

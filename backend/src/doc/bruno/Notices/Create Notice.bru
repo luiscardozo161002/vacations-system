@@ -29,5 +29,7 @@ docs {
   - Empleado: crea una solicitud (`kind = request`) pendiente, solo para si mismo.
   - RH: registra un aviso (`kind = notice`) ya aprobado por quien lo registra, para empleados de sus sedes.
 
-  Errores: `422 INVALID_EMPLOYEE` si el empleado no existe o esta fuera del alcance; `422 INVALID_REASON` si el motivo no existe. La base valida con un CHECK que `absence_end_date >= absence_start_date` (400 generico si se incumple).
+  `days_taken` y `hours_taken` los calcula el servidor con el turno del empleado. Un aviso de Vacaciones de RH descuenta el saldo al registrarse.
+
+  Errores: `422 INVALID_EMPLOYEE` si el empleado no existe o esta fuera del alcance; `422 INVALID_REASON` si el motivo no existe. Ademas, las mismas reglas que `Preview Notice` (`INSUFFICIENT_BALANCE`, `OUTSIDE_PERIOD`, etc.) responden 422. La base valida con un CHECK que `absence_end_date >= absence_start_date` (400 generico si se incumple).
 }

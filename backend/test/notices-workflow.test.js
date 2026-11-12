@@ -178,9 +178,9 @@ describe('Filtros', () => {
 
   it('from y to devuelven las ausencias que se cruzan con el rango', async () => {
     const res = await call('SUPERUSER', 'GET', `/notices?from=${FUTURE}&to=${FUTURE}&pageSize=100`);
-    const dates = res.result.data.map((row) => [new Date(row.absence_start_date), new Date(row.absence_end_date)]);
+    const rows = res.result.data;
 
-    assert.ok(dates.length > 0);
-    assert.ok(dates.every(([start, end]) => start <= new Date(`${FUTURE}T23:59:59`) && end >= new Date(`${FUTURE}T00:00:00`)));
+    assert.ok(rows.length > 0);
+    assert.ok(rows.every((row) => row.absence_start_date <= FUTURE && row.absence_end_date >= FUTURE));
   });
 });

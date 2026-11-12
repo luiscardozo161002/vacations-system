@@ -7,8 +7,6 @@ const EDITABLE_FIELDS = [
   'absence_end_date',
   'absence_start_time',
   'absence_end_time',
-  'remaining_days',
-  'remaining_hours',
   'remarks',
 ];
 const CREATE_FIELDS = ['employee_id', ...EDITABLE_FIELDS];
@@ -18,6 +16,9 @@ const COLUMNS = [
   'kind',
   'status',
   ...EDITABLE_FIELDS,
+  'days_taken',
+  'hours_taken',
+  'entitlement_id',
   'created_by',
   'approved_by',
   'approved_at',

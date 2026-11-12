@@ -1,0 +1,32 @@
+meta {
+  name: Preview Notice
+  type: http
+  seq: 8
+}
+
+post {
+  url: {{baseUrl}}/api/v1/notices/preview
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "employee_id": 1,
+    "reason_id": 5,
+    "absence_start_date": "2027-01-11",
+    "absence_end_date": "2027-01-15"
+  }
+}
+
+docs {
+  Calcula sin guardar cuanto consume una ausencia segun el turno del empleado: `breakdown` (`days`, `hours`, `rest_days`, `daily_hours`).
+
+  Si el motivo descuenta vacaciones, `balance` trae el periodo vigente, lo disponible y lo que quedaria (`remaining`).
+
+  Siempre responde 200; si la solicitud no se podria crear, `error` trae el mismo `code` y `message` que daria `POST /notices` con 422 (`INSUFFICIENT_BALANCE`, `NO_VACATION_YET`, `NO_ACTIVE_PERIOD`, `OUTSIDE_PERIOD`, `NO_WORKING_DAYS`, `INVALID_RANGE`).
+}
