@@ -88,7 +88,25 @@ export function AbsenceDetail({ notice, user, can, onClose, onChanged }: Absence
     }
   };
 
-  const hasActions = canApprove || canReject || canCancel;
+  const downloadPdf = async () => {
+    setWorking(true);
+    try {
+      const file = await sdk.notices.pdf(notice.notice_id);
+      const url = URL.createObjectURL(file);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `aviso-${notice.notice_id}.pdf`;
+      link.click();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      showToast(getErrorMessage(err));
+    } finally {
+      setWorking(false);
+    }
+  };
+
+  const canDownload = notice.status === 'approved';
+  const hasActions = canApprove || canReject || canCancel || canDownload;
 
   return (
     <>
@@ -98,6 +116,11 @@ export function AbsenceDetail({ notice, user, can, onClose, onChanged }: Absence
         footer={
           hasActions ? (
             <>
+              {canDownload && (
+                <button type="button" className="btn btn-secondary" onClick={downloadPdf} disabled={working}>
+                  <Icon name="download" /> Descargar PDF
+                </button>
+              )}
               {canCancel && (
                 <button type="button" className="btn btn-secondary" onClick={() => setConfirming('cancel')} disabled={working}>
                   Cancelar

@@ -334,6 +334,11 @@ La configuración vive en [frontend/src/app/navigation.ts](frontend/src/app/navi
 - **Tabla:** usuario, fecha, evento y resultado, con filtro por resultado y búsqueda por usuario o evento.
 - **Renovaciones de sesión (`TOKEN_REFRESH`):** no se muestran, salvo que se pidan con `event_type`.
 
+**PDF del aviso:**
+- **Dónde:** el detalle de una solicitud o aviso aprobado tiene "Descargar PDF".
+- **Formato:** el de RH, en hoja carta con dos copias. Lleva logo, razón social, dirección fiscal, RFC y teléfono de la empresa del empleado, un renglón de días y/o de horas, los días y horas restantes y las líneas de firma.
+- **Cómo se genera:** lo hace el servidor con PDFKit (`GET /notices/{id}/pdf`). Los logos se descargan una vez y quedan en memoria; si no se pueden bajar, el PDF sale sin logo.
+
 **Periodos y avisos:**
 - **Proceso diario:** cada día el servidor abre los periodos nuevos y vence los terminados, sin arrastrar días.
 - **Avisos:** avisa al empleado cuando se abre su periodo y una semana antes de que venza, con los días que le quedan.
