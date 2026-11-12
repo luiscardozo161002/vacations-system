@@ -85,6 +85,7 @@ users N─N branches (user_branches)
 - **Qué guarda cada aviso.** `days_taken`, `hours_taken` y el `entitlement_id` del que descontó. El saldo guarda `used_days` y `used_hours`; cuando las horas suman una jornada, pasan a días.
 - **Festivos.** `lib/holidays.js` calcula los descansos obligatorios del Art. 74 LFT de cada año, sin tabla que mantener. Los lunes movibles se calculan por año, y el 1 de octubre se agrega cada 6 años desde 2024. El cálculo de una solicitud no los descuenta, y pedir solo festivos responde 422 `MANDATORY_REST_DAY`.
 - **Calendario.** `GET /calendar?from&to` (máximo 62 días) devuelve en una sola llamada las ausencias aprobadas y pendientes del alcance del usuario y los festivos del rango. El Empleado ve las suyas y, si su departamento tiene `calendar_shared`, también las de sus compañeros.
+- **PDF.** `plugins/notices/pdf.js` arma con PDFKit el aviso en el formato de RH (dos copias en una hoja carta). Solo se genera para avisos aprobados y dentro del alcance. Mientras no haya teléfono por empresa, usa el que dio RH para las tres. La fecha de solicitud se toma en horario de Ciudad de México.
 - **Periodos.** `lib/periods.js` calcula el periodo vigente de aniversario a aniversario. `plugins/vacation-entitlements/rollover.js` es idempotente:
   - vence lo que ya terminó (lo no usado se pierde);
   - abre el periodo vigente con la regla de la antigüedad;

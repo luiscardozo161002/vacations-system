@@ -78,6 +78,7 @@ describe('sdk.notices', () => {
     await sdk.notices.approve(7);
     await sdk.notices.reject(7);
     await sdk.notices.cancel(7);
+    await sdk.notices.pdf(7);
 
     assert.deepEqual(sent(calls), [
       'GET /api/v1/notices?kind=request&from=2027-01-01&to=2027-01-31',
@@ -87,6 +88,7 @@ describe('sdk.notices', () => {
       'POST /api/v1/notices/7/approve',
       'POST /api/v1/notices/7/reject',
       'POST /api/v1/notices/7/cancel',
+      'GET /api/v1/notices/7/pdf',
     ]);
     assert.deepEqual(calls[1].body, request);
   });

@@ -7,6 +7,8 @@ const { AppError } = require('../../lib/app-error');
 const { EDITABLE_FIELDS, CREATE_FIELDS } = require('./fields');
 const { scopeFrom, allowsEmployee } = require('../../lib/data-scope');
 const { findEmployeeDetails } = require('../../lib/employee-details');
+const { renderNoticePdf } = require('./pdf');
+const entitlements = require('../vacation-entitlements/service');
 
 const REVIEW_PERMISSION = 'approvals:review';
 const REGISTER_PERMISSION = 'notices:create';
@@ -182,4 +184,25 @@ const resolve = async (noticeId, action, credentials) => {
   return describe(notice);
 };
 
-module.exports = { list, findById, preview, create, update, resolve };
+const findCompany = (employeeId) =>
+  db('employees as e')
+    .join('departments as d', 'd.department_id', 'e.department_id')
+    .join('branches as b', 'b.branch_id', 'd.branch_id')
+    .join('company as c', 'c.company_id', 'b.company_id')
+    .where('e.employee_id', employeeId)
+    .first('c.company_name', 'c.rfc', 'c.logo', 'c.location', 'c.phone_number');
+
+const pdf = async (noticeId, scope) => {
+  const notice = await findById(noticeId, scope);
+  if (notice.status !== 'approved') {
+    throw new AppError('NOTICE_NOT_APPROVED', 'Solo se puede descargar el PDF de un aviso aprobado');
+  }
+
+  const [company, balances] = await Promise.all([
+    findCompany(notice.employee_id),
+    entitlements.list({ employee_id: notice.employee_id, status: 'active', sort: '-period_start', page: 1, pageSize: 1 }, scope),
+  ]);
+  return renderNoticePdf({ notice, company, balance: balances.data[0] ?? null });
+};
+
+module.exports = { list, findById, preview, create, update, resolve, pdf };

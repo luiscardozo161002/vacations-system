@@ -60,13 +60,21 @@ export class HttpClient {
   }
 
   async request<T>(path: string, options: RequestOptions = {}): Promise<T> {
-    let response = await this.send(path, options);
+    return parseResponse<T>(await this.sendWithRefresh(path, options));
+  }
 
+  async requestBlob(path: string, options: RequestOptions = {}): Promise<Blob> {
+    const response = await this.sendWithRefresh(path, options);
+    if (!response.ok) return parseResponse<never>(response);
+    return response.blob();
+  }
+
+  private async sendWithRefresh(path: string, options: RequestOptions): Promise<Response> {
+    const response = await this.send(path, options);
     if (response.status === 401 && options.auth !== false && (await this.refreshSession())) {
-      response = await this.send(path, options);
+      return this.send(path, options);
     }
-
-    return parseResponse<T>(response);
+    return response;
   }
 
   refreshSession(): Promise<boolean> {

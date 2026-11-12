@@ -92,6 +92,39 @@ describe('errores', () => {
   });
 });
 
+describe('archivos', () => {
+  it('requestBlob devuelve el archivo tal cual', async () => {
+    const { http } = setup(() => new Response('%PDF-1.7', { status: 200, headers: { 'Content-Type': 'application/pdf' } }));
+
+    const blob = await http.requestBlob('/api/v1/notices/1/pdf');
+
+    assert.equal(blob.type, 'application/pdf');
+    assert.equal(await blob.text(), '%PDF-1.7');
+  });
+
+  it('requestBlob traduce los errores igual que request', async () => {
+    const { http } = setup(() => json(409, { error: { code: 'NOTICE_NOT_APPROVED', message: 'Solo hay PDF de avisos aprobados' } }));
+
+    await assert.rejects(http.requestBlob('/api/v1/notices/1/pdf'), (err: unknown) => {
+      assert.ok(err instanceof SdkHttpError);
+      assert.equal(err.code, 'NOTICE_NOT_APPROVED');
+      return true;
+    });
+  });
+
+  it('requestBlob renueva la sesión en un 401 y reintenta', async () => {
+    let attempts = 0;
+    const { http } = setup((call) => {
+      if (call.url.endsWith(REFRESH_PATH)) return json(200, { accessToken: 'a2', refreshToken: 'r2' });
+      attempts += 1;
+      return attempts === 1 ? json(401, {}) : new Response('%PDF', { status: 200 });
+    });
+
+    assert.equal(await (await http.requestBlob('/api/v1/notices/1/pdf')).text(), '%PDF');
+    assert.equal(attempts, 2);
+  });
+});
+
 describe('renovación de sesión', () => {
   const expiredThenOk = (call: { url: string; headers: Record<string, string> }) => {
     if (call.url.endsWith(REFRESH_PATH)) return json(200, { accessToken: 'a2', refreshToken: 'r2', expiresIn: 900 });

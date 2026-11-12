@@ -99,6 +99,10 @@ export class NoticesResource {
     return this.http.request<Notice>(`${PATH}/${noticeId}`, { method: 'PATCH', body: input });
   }
 
+  pdf(noticeId: number): Promise<Blob> {
+    return this.http.requestBlob(`${PATH}/${noticeId}/pdf`);
+  }
+
   approve(noticeId: number): Promise<Notice> {
     return this.http.request<Notice>(`${PATH}/${noticeId}/approve`, { method: 'POST' });
   }

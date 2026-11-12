@@ -12,6 +12,9 @@ module.exports = [
         require: 'readonly',
         console: 'readonly',
         __dirname: 'readonly',
+        fetch: 'readonly',
+        AbortSignal: 'readonly',
+        Buffer: 'readonly',
       },
     },
     rules: {

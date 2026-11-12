@@ -33,6 +33,23 @@ const noticesPlugin = {
         handler: (request) => service.findById(request.params.noticeId, scopeFrom(request.auth.credentials)),
       },
       {
+        method: 'GET',
+        path: '/api/v1/notices/{noticeId}/pdf',
+        options: {
+          description: 'Absence notice PDF in the RH format, only for approved notices',
+          tags: ['api', 'notices'],
+          auth: requires('requests:view', 'notices:view'),
+          validate: { params: schemas.params },
+        },
+        handler: async (request, h) => {
+          const file = await service.pdf(request.params.noticeId, scopeFrom(request.auth.credentials));
+          return h
+            .response(file)
+            .type('application/pdf')
+            .header('Content-Disposition', `inline; filename="aviso-${request.params.noticeId}.pdf"`);
+        },
+      },
+      {
         method: 'POST',
         path: '/api/v1/notices/preview',
         options: {

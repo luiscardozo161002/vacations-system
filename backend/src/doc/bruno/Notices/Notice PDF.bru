@@ -1,0 +1,21 @@
+meta {
+  name: Notice PDF
+  type: http
+  seq: 9
+}
+
+get {
+  url: {{baseUrl}}/api/v1/notices/:noticeId/pdf
+  body: none
+  auth: inherit
+}
+
+params:path {
+  noticeId: 1
+}
+
+docs {
+  PDF del aviso de ausencia con el formato de RH: dos copias en una hoja carta separadas por linea punteada, con logo, razon social, direccion fiscal, RFC y telefono de la empresa del empleado; NO. (id del aviso), fecha de solicitud, No. Trab., nombre, departamento, encargado (Recursos Humanos), motivo, renglon de DIAS y/o de HORAS, dias y horas restantes del periodo, observaciones y tres lineas de firma.
+
+  Solo para avisos aprobados y dentro del alcance del usuario. Errores: `409 NOTICE_NOT_APPROVED`, `404 NOTICE_NOT_FOUND`.
+}
