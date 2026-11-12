@@ -1,7 +1,6 @@
 import type { ReactNode } from 'react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router';
 import { Shell } from './app/Shell';
-import { PendingPage } from './app/PendingPage';
 import { NAV_GROUPS, visibleGroups } from './app/navigation';
 import { EmployeesPage } from './features/employees/pages/EmployeesPage';
 import { RequestsPage } from './features/requests/pages/RequestsPage';
@@ -14,6 +13,8 @@ import { CompaniesPage } from './features/companies/pages/CompaniesPage';
 import { ShiftsPage } from './features/shifts/pages/ShiftsPage';
 import { RulesPage } from './features/rules/pages/RulesPage';
 import { UsersPage } from './features/users/pages/UsersPage';
+import { PermissionsPage } from './features/permissions/pages/PermissionsPage';
+import { AuditPage } from './features/audit/pages/AuditPage';
 import { SettingsPage } from './features/settings/pages/SettingsPage';
 import { LoginPage } from './features/auth/pages/LoginPage';
 import { useAuth } from './features/auth/auth-context';
@@ -30,6 +31,8 @@ const PAGES: Record<string, ReactNode> = {
   '/turnos': <ShiftsPage />,
   '/reglas': <RulesPage />,
   '/usuarios': <UsersPage />,
+  '/permisos': <PermissionsPage />,
+  '/auditoria': <AuditPage />,
   '/configuracion': <SettingsPage />,
 };
 
@@ -51,7 +54,7 @@ function App() {
               path={item.path}
               element={
                 item.permission === null || can(item.permission) ? (
-                  (PAGES[item.path] ?? <PendingPage item={item} />)
+                  PAGES[item.path]
                 ) : (
                   <Navigate to={firstAllowed} replace />
                 )

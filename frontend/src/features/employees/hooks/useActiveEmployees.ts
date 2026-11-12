@@ -2,19 +2,10 @@ import { useEffect, useState } from 'react';
 import type { Employee } from '@vacations/sdk';
 import { sdk } from '../../../lib/sdk';
 import { getErrorMessage } from '../../../lib/get-error-message';
+import { listAll } from '../../../lib/list-all';
 
-const PAGE_SIZE = 100;
-
-const loadAll = async (signal: AbortSignal): Promise<Employee[]> => {
-  const params = { status: 'active' as const, pageSize: PAGE_SIZE, sort: 'employee_name' };
-  const first = await sdk.employees.list({ ...params, page: 1 }, { signal });
-  const rest = await Promise.all(
-    Array.from({ length: first.pagination.totalPages - 1 }, (_, index) =>
-      sdk.employees.list({ ...params, page: index + 2 }, { signal }),
-    ),
-  );
-  return [first, ...rest].flatMap((page) => page.data);
-};
+const loadAll = (signal: AbortSignal): Promise<Employee[]> =>
+  listAll((params, options) => sdk.employees.list(params, options), { status: 'active' as const, sort: 'employee_name' }, signal);
 
 export function useActiveEmployees(enabled = true) {
   const [employees, setEmployees] = useState<Employee[]>([]);

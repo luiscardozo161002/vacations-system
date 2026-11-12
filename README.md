@@ -273,7 +273,7 @@ El frontend usa `@vacations/sdk` como paquete local del workspace, sin publicarl
 
 **Login:** se entra con correo y contraseña. En desarrollo, la pantalla muestra las cuentas de prueba para autocompletarlas; en el build de producción no aparecen. La sesión se guarda en `localStorage` con **Recordarme**, o en `sessionStorage` sin esa opción, y se renueva sola. Si el refresh token ya no sirve, regresa al login con el aviso de sesión expirada.
 
-**Shell y rutas:** el sidebar y la topbar son los del prototipo. Las 14 pantallas tienen su ruta (`/dashboard`, `/empleados`, `/solicitudes`…), y las que todavía no existen muestran qué ticket las construye. El menú solo enseña los módulos que permite el rol. Entrar por URL a uno prohibido, o a una ruta que no existe, lleva al primer módulo permitido, como en el prototipo.
+**Shell y rutas:** el sidebar y la topbar son los del prototipo. Las 14 pantallas tienen su ruta (`/dashboard`, `/empleados`, `/solicitudes`…) y funcionan con datos reales. El menú solo enseña los módulos que permite el rol. Entrar por URL a uno prohibido, o a una ruta que no existe, lleva al primer módulo permitido, como en el prototipo.
 
 Cada módulo pide su permiso `modulo:view` (por ejemplo `employees:view`); Configuración no pide ninguno. El menú queda así por rol:
 
@@ -325,6 +325,14 @@ La configuración vive en [frontend/src/app/navigation.ts](frontend/src/app/navi
 - **Alta:** con usuario, correo, contraseña inicial, rol y empleado vinculado (opcional).
 - **Asignación organizacional:** a los usuarios de RH se les marcan sus sedes y las acciones que pueden hacer (aprobar, rechazar y cancelar). Los cambios aplican en su siguiente token.
 - **Desactivar:** se puede desactivar y reactivar con confirmación. Un usuario desactivado ya no puede entrar.
+
+**Roles y permisos:**
+- **Matriz:** módulos contra roles, como la del prototipo. Cada casilla es el permiso `modulo:view` (o `approvals:review` en Aprobaciones).
+- **Cambios:** solo el Superusuario la edita, y su columna queda fija. Al marcar o desmarcar se activa o desactiva el permiso en `role_permissions`, y aplica en el siguiente token del rol.
+
+**Auditoría:**
+- **Tabla:** usuario, fecha, evento y resultado, con filtro por resultado y búsqueda por usuario o evento.
+- **Renovaciones de sesión (`TOKEN_REFRESH`):** no se muestran, salvo que se pidan con `event_type`.
 
 **Dashboard:**
 - **Superusuario y RH:** ven los indicadores de su alcance, las próximas ausencias, los empleados por departamento (con la sede cuando el nombre se repite) y la actividad reciente.
