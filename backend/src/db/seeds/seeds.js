@@ -1,6 +1,7 @@
 /* Data dummy para desarrollo local, basada en vacations_db_postgresql.sql (raiz del repo). */
 
 const password = require('../../lib/password');
+const { computeRequestBreakdown } = require('../../lib/request-breakdown');
 
 const DEV_PASSWORD = 'Vacaciones2026!';
 
@@ -199,20 +200,14 @@ exports.seed = async function (knex) {
        AND r.effective_year = (SELECT MAX(effective_year) FROM vacation_accrual_rules WHERE effective_year <= EXTRACT(YEAR FROM CURRENT_DATE)::int)
   `);
 
-  await knex('vacation_entitlements')
-    .where({ employee_id: 1, period_year: knex.raw('EXTRACT(YEAR FROM CURRENT_DATE)::int') })
-    .update({ used_days: 5 });
-  await knex('vacation_entitlements')
-    .where({ employee_id: 5, period_year: knex.raw('EXTRACT(YEAR FROM CURRENT_DATE)::int') })
-    .update({ used_days: 10 });
 
   // ---------- AVISOS DE AUSENCIA ----------
 
   await knex('reasons').insert([
     { reason_id: 1, description: 'Permiso Personal', requires_approval: true, affects_vacation_balance: false },
     { reason_id: 2, description: 'Castigo', requires_approval: true, affects_vacation_balance: false },
-    { reason_id: 3, description: 'Onomastico', requires_approval: false, affects_vacation_balance: false },
-    { reason_id: 4, description: 'Comision De Trabajo', requires_approval: true, affects_vacation_balance: false },
+    { reason_id: 3, description: 'Onomástico', requires_approval: true, affects_vacation_balance: false },
+    { reason_id: 4, description: 'Comisión De Trabajo', requires_approval: true, affects_vacation_balance: false },
     { reason_id: 5, description: 'Vacaciones', requires_approval: true, affects_vacation_balance: true },
     { reason_id: 6, description: 'Tiempo Por Tiempo', requires_approval: true, affects_vacation_balance: false },
     { reason_id: 7, description: 'Natalicio', requires_approval: true, affects_vacation_balance: false },
@@ -235,5 +230,52 @@ exports.seed = async function (knex) {
     (12, 7, 2,    'approved', CURRENT_DATE - 2,  CURRENT_DATE + 1,  NULL,    NULL,    0,   'Nacimiento de hijo',                                       now() - INTERVAL '3 days',  now() - INTERVAL '2 days'),
     (8,  8, 2,    'approved', CURRENT_DATE - 7,  CURRENT_DATE - 4,  NULL,    NULL,    0,   'Fallecimiento de familiar directo',                        now() - INTERVAL '7 days',  now() - INTERVAL '7 days'),
     (10, 5, 2,    'rejected', CURRENT_DATE + 5,  CURRENT_DATE + 9,  NULL,    NULL,    0,   'Sin antiguedad suficiente: no ha cumplido su primer anio', now(),                      now())
+  `);
+
+  const seededNotices = await knex('notices as n')
+    .join('employees as e', 'e.employee_id', 'n.employee_id')
+    .select(
+      'n.notice_id',
+      'e.shift_id',
+      'n.absence_start_time',
+      'n.absence_end_time',
+      knex.raw("to_char(n.absence_start_date, 'YYYY-MM-DD') AS start_date"),
+      knex.raw("to_char(n.absence_end_date, 'YYYY-MM-DD') AS end_date")
+    );
+  const schedules = await knex('shift_schedules').select('shift_id', 'day_of_week', 'is_working_day', 'check_in_time', 'check_out_time');
+
+  for (const notice of seededNotices) {
+    const breakdown = computeRequestBreakdown({
+      schedule: schedules.filter((day) => day.shift_id === notice.shift_id),
+      startDate: notice.start_date,
+      endDate: notice.end_date,
+      startTime: notice.absence_start_time,
+      endTime: notice.absence_end_time,
+    });
+    await knex('notices')
+      .where('notice_id', notice.notice_id)
+      .update({ days_taken: breakdown.fullDays, hours_taken: breakdown.partialHours });
+  }
+
+  await knex.raw(`
+    UPDATE notices n
+    SET entitlement_id = ve.entitlement_id
+    FROM vacation_entitlements ve, reasons r
+    WHERE ve.employee_id = n.employee_id
+      AND r.reason_id = n.reason_id
+      AND r.affects_vacation_balance
+      AND n.status = 'approved'
+      AND n.absence_start_date BETWEEN ve.period_start AND ve.period_end
+  `);
+  await knex.raw(`
+    UPDATE vacation_entitlements ve
+    SET used_days = used.days, used_hours = used.hours
+    FROM (
+      SELECT entitlement_id, SUM(days_taken) AS days, SUM(hours_taken) AS hours
+      FROM notices
+      WHERE entitlement_id IS NOT NULL
+      GROUP BY entitlement_id
+    ) used
+    WHERE ve.entitlement_id = used.entitlement_id
   `);
 };

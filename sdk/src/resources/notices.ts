@@ -32,6 +32,7 @@ export interface Notice {
 
 export interface ListNoticesParams extends ListParams {
   employee_id?: number;
+  department_id?: number;
   reason_id?: number;
   kind?: NoticeKind;
   status?: NoticeStatus;

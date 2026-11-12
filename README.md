@@ -285,6 +285,11 @@ Cada módulo pide su permiso `modulo:view` (por ejemplo `employees:view`); Confi
 
 La configuración vive en [frontend/src/app/navigation.ts](frontend/src/app/navigation.ts).
 
+**Solicitudes:**
+- **Lista:** tiene filtro de estado y, para RH, de departamento. El Empleado ve solo las suyas y RH solo las de sus sedes.
+- **Nueva solicitud:** solo para quien tiene empleado vinculado. Muestra el cálculo en vivo con `sdk.notices.preview` y no deja enviar si hay un error.
+- **Detalle:** según el usuario, aprueba, rechaza o cancela, siguiendo sus permisos y las acciones de revisión que tiene.
+
 **Recuperar contraseña:** "¿Olvidaste tu contraseña?" pide el correo y luego el código. Fuera de producción el código se llena solo con el `devToken` de la API. En producción hará falta el envío por correo (VM-054).
 
 ## Próximos pasos

@@ -3,11 +3,12 @@ import type { Department } from '@vacations/sdk';
 import { sdk } from '../../../lib/sdk';
 import { getErrorMessage } from '../../../lib/get-error-message';
 
-export function useDepartments() {
+export function useDepartments(enabled = true) {
   const [departments, setDepartments] = useState<Department[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!enabled) return;
     const controller = new AbortController();
 
     sdk.departments
@@ -19,7 +20,7 @@ export function useDepartments() {
       });
 
     return () => controller.abort();
-  }, []);
+  }, [enabled]);
 
   return { departments, error };
 }

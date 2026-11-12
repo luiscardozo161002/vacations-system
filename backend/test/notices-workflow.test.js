@@ -176,6 +176,13 @@ describe('Filtros', () => {
     assert.ok(notices.result.data.every((row) => row.kind === 'notice'));
   });
 
+  it('department_id devuelve solo avisos de empleados de ese departamento', async () => {
+    const res = await call('SUPERUSER', 'GET', '/notices?department_id=2&pageSize=100');
+
+    assert.ok(res.result.data.length > 0);
+    assert.ok(res.result.data.every((row) => row.department_name === 'Fletes y Acarreos'));
+  });
+
   it('from y to devuelven las ausencias que se cruzan con el rango', async () => {
     const res = await call('SUPERUSER', 'GET', `/notices?from=${FUTURE}&to=${FUTURE}&pageSize=100`);
     const rows = res.result.data;

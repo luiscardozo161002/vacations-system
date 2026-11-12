@@ -8,11 +8,17 @@ const { forEmployees } = require('../../lib/data-scope');
 
 const DEFAULT_SORT = [{ column: 'notice_id', order: 'asc' }];
 
-const list = async ({ employee_id, reason_id, kind, status, from, to, sort, page = 1, pageSize = 20 }, scope) => {
+const list = async (
+  { employee_id, department_id, reason_id, kind, status, from, to, sort, page = 1, pageSize = 20 },
+  scope
+) => {
   const query = Notice.query().select(COLUMNS).orderBy(buildOrderBy(sort, COLUMNS, DEFAULT_SORT));
   forEmployees(query, scope, 'employee_id');
 
   if (employee_id !== undefined) query.where('employee_id', employee_id);
+  if (department_id !== undefined) {
+    query.whereIn('employee_id', db('employees').where('department_id', department_id).select('employee_id'));
+  }
   if (reason_id !== undefined) query.where('reason_id', reason_id);
   if (kind !== undefined) query.where('kind', kind);
   if (status !== undefined) query.where('status', status);

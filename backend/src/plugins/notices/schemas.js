@@ -40,6 +40,7 @@ const params = Joi.object({
 
 const list = Joi.object({
   employee_id: id,
+  department_id: id,
   reason_id: id,
   kind: Joi.string().valid('request', 'notice'),
   status: Joi.string().valid('pending', 'approved', 'rejected', 'cancelled'),
