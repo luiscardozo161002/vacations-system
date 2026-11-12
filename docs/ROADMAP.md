@@ -26,18 +26,21 @@ Estado al 2026-11-09.
 | 🟡 | `DESIGN_SYSTEM.md` contradice el diseño nuevo; el frontend usa `--accent: #aa3bff` |
 | ✅ | Documentación movida a `/docs` (VM-003) |
 
-## 3. Decisiones de modelo pendientes
+## 3. Decisiones de modelo
 
-| Tema | Diseño | BD actual | Propuesta |
-|---|---|---|---|
-| Roles | Superusuario / Usuario / Empleado | ADMIN / HR / EMPLOYEE | Renombrar a `SUPERUSER / USER / EMPLOYEE` |
-| Permisos | Matriz 14 módulos × view/create/update/delete/special | 7 códigos planos | Sembrar como `modulo:accion` y validar con scopes de Hapi en el JWT |
-| Empresa / sedes | 1 empresa con N sucursales; Usuario ve solo sus sedes | Cada fila de `company` = empresa + estado | Tabla `branches` (empresa 1→N sedes), `departments.branch_id`, `user_branches` (multi-tenant) |
-| Solicitudes vs Avisos | Pantallas separadas | Una tabla `notices` | Una tabla, filtro `?kind=vacation\|absence` según `reasons.affects_vacation_balance` |
-| Horas | Saldo en días y horas según turno | `vacation_entitlements` solo `used_days` | Agregar `used_hours`; renombrar `remaining_days/hours` a `days_taken/hours_taken` |
-| "Estados que puede revisar" | Checkbox por usuario | No existe | Confirmar con producto; si aplica, columna `text[]` en `users` |
-| Correo del empleado | Visible en perfil | Solo en `users` | `employees.email` nullable |
-| Auditoría | Eventos de negocio | Solo login | Generalizar a `audit_log` con `result` |
+Resueltas con RH el 2026-11-12. Las reglas completas están en `PRD.md`.
+
+| Tema | Decisión |
+|---|---|
+| Roles | `SUPERUSER / USER / EMPLOYEE` (hoy ADMIN / HR / EMPLOYEE) |
+| Permisos | Matriz del prototipo ajustada (tabla en el PRD), sembrada como `modulo:accion` y validada con scopes de Hapi |
+| Empresa / sedes | 3 empresas y 7 sedes: `branches`, `departments.branch_id`, `user_branches` |
+| Solicitudes vs Avisos | Una tabla `notices`; la solicitud la crea el empleado (`pending`), el aviso lo crea RH (`approved`) |
+| Horas | `vacation_entitlements.used_hours`; `notices.days_taken/hours_taken` |
+| "Estados que puede revisar" | Acciones permitidas por Usuario de RH (aprobar, rechazar, cancelar), todas activas por defecto |
+| Periodo | Por aniversario; lo no usado se elimina al abrir el siguiente |
+| Festivos | Art. 74 LFT calculados por año; no se descuentan |
+| Auditoría | Generalizar a `audit_log` con `result` |
 
 ## 4. Estrategia de ramas
 

@@ -47,6 +47,22 @@ company, shifts (con su horario semanal anidado), departments, employees, roles,
 
 Cada plugin sigue el mismo patrón: `model.js` (Objection), `schemas.js` (Joi), `fields.js` (columnas expuestas), `service.js` (lógica + queries), `routes.js` (handlers Hapi). Las respuestas de error pasan por un `onPreResponse` global (`lib/error-handler.js`) que traduce errores de Postgres (constraints reales, verificados contra `pg_constraint`) a mensajes legibles.
 
+## Empresas, sedes y alcance de datos
+
+```
+company 1─N branches 1─N departments 1─N employees
+users N─N branches (user_branches)
+```
+
+- `company` guarda la empresa: razón social, RFC, logo, teléfono y dirección fiscal (`location`).
+- `branches` guarda la sede (código, nombre y estado) y pertenece a una empresa. Cada departamento cuelga de una sede (`departments.branch_id`).
+- `user_branches` dice qué sedes atiende cada Usuario de RH.
+- **Alcance:**
+  - Superusuario ve todo.
+  - Usuario ve solo lo que cuelga de sus sedes.
+  - Empleado ve solo lo suyo (`employee_id` del token).
+  - Leer un registro fuera del alcance responde 404.
+
 ## Autenticación y autorización
 
 JWT (`@hapi/jwt`) con access token de vida corta (15 min) + refresh token (7 días), contraseñas con `bcryptjs`, bloqueo de cuenta tras 5 intentos fallidos (15 min), tokens de reseteo de contraseña con expiración de 1 hora, y bitácora de auditoría (`auth_audit_log`) para eventos de seguridad. RBAC vía `roles` / `permissions` / `role_permissions`.
