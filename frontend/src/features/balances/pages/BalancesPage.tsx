@@ -1,4 +1,8 @@
 import { useMemo, useState } from 'react';
+import { sdk } from '../../../lib/sdk';
+import { getErrorMessage } from '../../../lib/get-error-message';
+import { Icon } from '../../../components/Icon';
+import { useToast } from '../../../components/toast-context';
 import type { VacationEntitlement } from '@vacations/sdk';
 import { formatDate } from '../../../lib/format';
 import { DataTable, type Column } from '../../../components/DataTable';
@@ -32,10 +36,27 @@ const columns: Column<VacationEntitlement>[] = [
   },
 ];
 
-function BalancesTable() {
+function BalancesTable({ canGenerate }: { canGenerate: boolean }) {
+  const showToast = useToast();
   const [page, setPage] = useState(1);
+  const [generating, setGenerating] = useState(false);
   const params = useMemo(() => ({ status: 'active' as const, page, pageSize: PAGE_SIZE }), [page]);
-  const { data, loading, error } = useBalances(params);
+  const { data, loading, error, reload } = useBalances(params);
+
+  const generate = async () => {
+    setGenerating(true);
+    try {
+      const summary = await sdk.vacationEntitlements.generate();
+      showToast(
+        `Periodos al día: ${summary.created} abiertos, ${summary.expired} vencidos y ${summary.reminders} avisos enviados.`
+      );
+      reload();
+    } catch (err) {
+      showToast(getErrorMessage(err));
+    } finally {
+      setGenerating(false);
+    }
+  };
 
   return (
     <>
@@ -44,6 +65,13 @@ function BalancesTable() {
           <h1>Días de vacaciones</h1>
           <p className="page-sub">Saldo por empleado: días y horas otorgados, usados y disponibles, por periodo.</p>
         </div>
+        {canGenerate && (
+          <div className="page-actions">
+            <button type="button" className="btn btn-secondary" onClick={generate} disabled={generating}>
+              <Icon name="calendar-check" /> Generar periodos
+            </button>
+          </div>
+        )}
       </div>
 
       <DataTable
@@ -64,6 +92,7 @@ function BalancesTable() {
 }
 
 export function BalancesPage() {
-  const { can } = useAuth();
-  return can('employees:view') ? <BalancesTable /> : <EmployeeDashboard />;
+  const { user, can } = useAuth();
+  if (!can('employees:view')) return <EmployeeDashboard />;
+  return <BalancesTable canGenerate={user?.role.role_code === 'SUPERUSER'} />;
 }

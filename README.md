@@ -334,6 +334,12 @@ La configuración vive en [frontend/src/app/navigation.ts](frontend/src/app/navi
 - **Tabla:** usuario, fecha, evento y resultado, con filtro por resultado y búsqueda por usuario o evento.
 - **Renovaciones de sesión (`TOKEN_REFRESH`):** no se muestran, salvo que se pidan con `event_type`.
 
+**Periodos y avisos:**
+- **Proceso diario:** cada día el servidor abre los periodos nuevos y vence los terminados, sin arrastrar días.
+- **Avisos:** avisa al empleado cuando se abre su periodo y una semana antes de que venza, con los días que le quedan.
+- **Superusuario:** puede correr el proceso con "Generar periodos" en la pantalla de Días.
+- **Campana:** en la topbar se ven los avisos; al abrirla se marcan como leídos.
+
 **Dashboard:**
 - **Superusuario y RH:** ven los indicadores de su alcance, las próximas ausencias, los empleados por departamento (con la sede cuando el nombre se repite) y la actividad reciente.
 - **Empleado:** ve su perfil, su saldo con horas y sus últimas solicitudes y avisos. En "Días" el empleado también llega a esta vista.

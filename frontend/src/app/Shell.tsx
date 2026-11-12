@@ -4,6 +4,7 @@ import { Icon } from '../components/Icon';
 import { ToastProvider } from '../components/ToastProvider';
 import { useAuth } from '../features/auth/auth-context';
 import { ProfileDrawer } from '../features/auth/components/ProfileDrawer';
+import { NotificationBell } from './NotificationBell';
 import { initials } from '../lib/format';
 import { getTheme, subscribeTheme, toggleTheme } from '../lib/appearance';
 import { ROLE_LABELS, findNavItem, visibleGroups } from './navigation';
@@ -125,6 +126,7 @@ export function Shell() {
                 >
                   <Icon name={theme === 'dark' ? 'moon' : 'sun'} />
                 </button>
+                <NotificationBell />
               </div>
             </header>
 
