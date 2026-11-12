@@ -102,6 +102,7 @@ describe('rutas especiales', () => {
     await sdk.rolePermissions.remove(1, 4);
     await sdk.shifts.replaceSchedule(1, []);
     await sdk.auditLog.list({ event_type: 'LOGIN_FAILED' });
+    await sdk.calendar.get({ from: '2026-11-01', to: '2026-11-30' });
 
     assert.deepEqual(sent(calls), [
       'GET /api/v1/users/2/branches',
@@ -110,6 +111,7 @@ describe('rutas especiales', () => {
       'DELETE /api/v1/role-permissions/1/4',
       'PUT /api/v1/shifts/1/schedule',
       'GET /api/v1/auth-audit-log?event_type=LOGIN_FAILED',
+      'GET /api/v1/calendar?from=2026-11-01&to=2026-11-30',
     ]);
     assert.deepEqual(calls[1].body, { branch_ids: [5, 3] });
   });

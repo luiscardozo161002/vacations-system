@@ -35,7 +35,7 @@ const shiftDailyHours = (schedule) => {
   return toHours(firstWorkingDay.check_out_time) - toHours(firstWorkingDay.check_in_time);
 };
 
-const computeRequestBreakdown = ({ schedule, startDate, endDate, startTime = null, endTime = null }) => {
+const computeRequestBreakdown = ({ schedule, startDate, endDate, startTime = null, endTime = null, holidays = [] }) => {
   const dates = datesBetween(startDate, endDate);
   const startHour = startTime ? toHours(startTime) : null;
   const endHour = endTime ? toHours(endTime) : null;
@@ -44,11 +44,17 @@ const computeRequestBreakdown = ({ schedule, startDate, endDate, startTime = nul
   let fullDays = 0;
   let partialHours = 0;
   let restDays = 0;
+  let holidayDays = 0;
+  const holidaySet = new Set(holidays);
 
   dates.forEach((date, index) => {
     const block = workingBlock(schedule, date);
     if (!block) {
       restDays += 1;
+      return;
+    }
+    if (holidaySet.has(date.toISOString().slice(0, 10))) {
+      holidayDays += 1;
       return;
     }
 
@@ -69,6 +75,7 @@ const computeRequestBreakdown = ({ schedule, startDate, endDate, startTime = nul
     fullDays,
     partialHours: round2(partialHours % dailyHours),
     restDays,
+    holidayDays,
     dailyHours,
   };
 };

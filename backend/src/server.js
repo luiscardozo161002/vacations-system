@@ -23,6 +23,7 @@ const rolePermissionsPlugin = require('./plugins/role-permissions/routes');
 const vacationAccrualRulesPlugin = require('./plugins/vacation-accrual-rules/routes');
 const vacationEntitlementsPlugin = require('./plugins/vacation-entitlements/routes');
 const noticesPlugin = require('./plugins/notices/routes');
+const calendarPlugin = require('./plugins/calendar/routes');
 const usersPlugin = require('./plugins/users/routes');
 const authAuditLogPlugin = require('./plugins/auth-audit-log/routes');
 const authPlugin = require('./plugins/auth/routes');
@@ -86,6 +87,7 @@ const createServer = async () => {
     vacationAccrualRulesPlugin,
     vacationEntitlementsPlugin,
     noticesPlugin,
+    calendarPlugin,
     usersPlugin,
     authAuditLogPlugin,
     authPlugin,

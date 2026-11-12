@@ -3,6 +3,7 @@
 const { AppError } = require('../../lib/app-error');
 const { computeRequestBreakdown, shiftDailyHours } = require('../../lib/request-breakdown');
 const { EPSILON, toTotalHours, splitHours, describe } = require('../../lib/balance');
+const { holidaysBetween } = require('../../lib/holidays');
 
 const findEmployee = (trx, employeeId) =>
   trx('employees')
@@ -79,11 +80,13 @@ const evaluate = async (trx, request, { lock = false } = {}) => {
     endDate: request.absence_end_date,
     startTime: request.absence_start_time,
     endTime: request.absence_end_time,
+    holidays: holidaysBetween(request.absence_start_date, request.absence_end_date).map((holiday) => holiday.date),
   });
   const breakdown = {
     days: result.fullDays,
     hours: result.partialHours,
     rest_days: result.restDays,
+    holidays: result.holidayDays,
     daily_hours: dailyHours,
   };
   const requested = toTotalHours(breakdown.days, breakdown.hours, dailyHours);
@@ -93,7 +96,9 @@ const evaluate = async (trx, request, { lock = false } = {}) => {
       breakdown,
       affects_balance: reason.affects_vacation_balance,
       balance: null,
-      error: problem('NO_WORKING_DAYS', 'Las fechas elegidas caen en días de descanso del turno'),
+      error: result.holidayDays
+        ? problem('MANDATORY_REST_DAY', 'Ese día no se puede porque es descanso obligatorio por la Ley Federal del Trabajo')
+        : problem('NO_WORKING_DAYS', 'Las fechas elegidas caen en días de descanso del turno'),
     };
   }
 

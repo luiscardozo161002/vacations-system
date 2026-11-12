@@ -59,6 +59,7 @@ export interface NoticePreview {
     days: number;
     hours: number;
     rest_days: number;
+    holidays: number;
     daily_hours: number;
   } | null;
   affects_balance: boolean;

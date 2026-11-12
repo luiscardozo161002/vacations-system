@@ -1,0 +1,22 @@
+meta {
+  name: Get Calendar
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/v1/calendar?from=2026-11-01&to=2026-11-30
+  body: none
+  auth: inherit
+}
+
+params:query {
+  from: 2026-11-01
+  to: 2026-11-30
+}
+
+docs {
+  Ausencias aprobadas y pendientes que se cruzan con el rango, con nombre del empleado, departamento y motivo, y los festivos de la LFT del rango. Respeta el alcance: RH ve sus sedes y el Empleado solo lo suyo.
+
+  Errores: `422 INVALID_RANGE` si `to` es anterior a `from`; `422 RANGE_TOO_LONG` si el rango pasa de 62 dias.
+}

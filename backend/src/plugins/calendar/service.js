@@ -1,0 +1,52 @@
+'use strict';
+
+const db = require('../../db');
+const { AppError } = require('../../lib/app-error');
+const { forEmployees } = require('../../lib/data-scope');
+const { holidaysBetween } = require('../../lib/holidays');
+
+const MAX_RANGE_DAYS = 62;
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+const rangeDays = (from, to) => (Date.parse(`${to}T00:00:00Z`) - Date.parse(`${from}T00:00:00Z`)) / DAY_MS + 1;
+
+const findAbsences = (from, to, scope) => {
+  const query = db('notices as n')
+    .join('employees as e', 'e.employee_id', 'n.employee_id')
+    .join('departments as d', 'd.department_id', 'e.department_id')
+    .join('reasons as r', 'r.reason_id', 'n.reason_id')
+    .whereIn('n.status', ['approved', 'pending'])
+    .where('n.absence_end_date', '>=', from)
+    .where('n.absence_start_date', '<=', to)
+    .orderBy(['n.absence_start_date', 'e.employee_name'])
+    .select(
+      'n.notice_id',
+      'n.employee_id',
+      'e.employee_name',
+      'd.department_name',
+      'r.description as reason_description',
+      'n.kind',
+      'n.status',
+      'n.absence_start_date',
+      'n.absence_end_date',
+      'n.absence_start_time',
+      'n.absence_end_time'
+    );
+  return forEmployees(query, scope, 'n.employee_id');
+};
+
+const getCalendar = async ({ from, to }, scope) => {
+  if (to < from) throw new AppError('INVALID_RANGE', 'La fecha final debe ser igual o posterior a la inicial');
+  if (rangeDays(from, to) > MAX_RANGE_DAYS) {
+    throw new AppError('RANGE_TOO_LONG', `El rango admite máximo ${MAX_RANGE_DAYS} días`);
+  }
+
+  return {
+    from,
+    to,
+    holidays: holidaysBetween(from, to),
+    absences: await findAbsences(from, to, scope),
+  };
+};
+
+module.exports = { getCalendar };

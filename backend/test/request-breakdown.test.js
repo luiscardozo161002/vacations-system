@@ -30,7 +30,7 @@ const breakdown = (schedule, startDate, endDate, startTime, endTime) =>
 
 describe('computeRequestBreakdown', () => {
   it('un día completo cuenta como 1 día', () => {
-    assert.deepEqual(breakdown(OFICINAS, MONDAY, MONDAY), { fullDays: 1, partialHours: 0, restDays: 0, dailyHours: 9 });
+    assert.deepEqual(breakdown(OFICINAS, MONDAY, MONDAY), { fullDays: 1, partialHours: 0, restDays: 0, holidayDays: 0, dailyHours: 9 });
   });
 
   it('lunes a viernes completos son 5 días', () => {
@@ -42,6 +42,7 @@ describe('computeRequestBreakdown', () => {
       fullDays: 0,
       partialHours: 4,
       restDays: 0,
+      holidayDays: 0,
       dailyHours: 9,
     });
   });
@@ -56,19 +57,19 @@ describe('computeRequestBreakdown', () => {
   });
 
   it('un rango que cruza el fin de semana no cuenta sábado ni domingo en Oficinas', () => {
-    assert.deepEqual(breakdown(OFICINAS, FRIDAY, NEXT_MONDAY), { fullDays: 2, partialHours: 0, restDays: 2, dailyHours: 9 });
+    assert.deepEqual(breakdown(OFICINAS, FRIDAY, NEXT_MONDAY), { fullDays: 2, partialHours: 0, restDays: 2, holidayDays: 0, dailyHours: 9 });
   });
 
   it('un rango que solo cae en fin de semana no consume nada', () => {
-    assert.deepEqual(breakdown(OFICINAS, SATURDAY, SUNDAY), { fullDays: 0, partialHours: 0, restDays: 2, dailyHours: 9 });
+    assert.deepEqual(breakdown(OFICINAS, SATURDAY, SUNDAY), { fullDays: 0, partialHours: 0, restDays: 2, holidayDays: 0, dailyHours: 9 });
   });
 
   it('en Operaciones el sábado corto completo cuenta como día', () => {
-    assert.deepEqual(breakdown(OPERACIONES, SATURDAY, SATURDAY), { fullDays: 1, partialHours: 0, restDays: 0, dailyHours: 8 });
+    assert.deepEqual(breakdown(OPERACIONES, SATURDAY, SATURDAY), { fullDays: 1, partialHours: 0, restDays: 0, holidayDays: 0, dailyHours: 8 });
   });
 
   it('en Operaciones una semana completa son 6 días y el domingo es descanso', () => {
-    assert.deepEqual(breakdown(OPERACIONES, MONDAY, SUNDAY), { fullDays: 6, partialHours: 0, restDays: 1, dailyHours: 8 });
+    assert.deepEqual(breakdown(OPERACIONES, MONDAY, SUNDAY), { fullDays: 6, partialHours: 0, restDays: 1, holidayDays: 0, dailyHours: 8 });
   });
 
   it('en Operaciones de viernes 13:00 a sábado 13:00 son 1 día y 2 horas', () => {
@@ -76,6 +77,7 @@ describe('computeRequestBreakdown', () => {
       fullDays: 1,
       partialHours: 2,
       restDays: 0,
+      holidayDays: 0,
       dailyHours: 8,
     });
   });
@@ -85,11 +87,12 @@ describe('computeRequestBreakdown', () => {
       fullDays: 1,
       partialHours: 4,
       restDays: 0,
+      holidayDays: 0,
       dailyHours: 9,
     });
   });
 
   it('un turno sin días laborables usa 8 horas de referencia', () => {
-    assert.deepEqual(breakdown(week({}), MONDAY, TUESDAY), { fullDays: 0, partialHours: 0, restDays: 2, dailyHours: 8 });
+    assert.deepEqual(breakdown(week({}), MONDAY, TUESDAY), { fullDays: 0, partialHours: 0, restDays: 2, holidayDays: 0, dailyHours: 8 });
   });
 });

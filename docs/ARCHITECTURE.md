@@ -83,6 +83,8 @@ users N─N branches (user_branches)
 - **Evaluación.** `plugins/notices/balance.js` revisa una solicitud contra el periodo vigente (`vacation_entitlements` con `period_start <= hoy <= period_end`). La usan `POST /notices/preview`, que responde 200 con `error` si algo no se cumple, y el alta, la edición y la aprobación, que responden 422 con el mismo código.
 - **Descuento.** Se descuenta al aprobar una solicitud de Vacaciones, o al registrar un aviso de Vacaciones de RH, y se devuelve al cancelar una aprobada. Cada movimiento ocurre en la misma transacción que el cambio de estado y bloquea la fila del saldo (`SELECT … FOR UPDATE`), así que dos operaciones simultáneas no pueden pasarse del saldo.
 - **Qué guarda cada aviso.** `days_taken`, `hours_taken` y el `entitlement_id` del que descontó. El saldo guarda `used_days` y `used_hours`; cuando las horas suman una jornada, pasan a días.
+- **Festivos.** `lib/holidays.js` calcula los descansos obligatorios del Art. 74 LFT de cada año, sin tabla que mantener. Los lunes movibles se calculan por año, y el 1 de octubre se agrega cada 6 años desde 2024. El cálculo de una solicitud no los descuenta, y pedir solo festivos responde 422 `MANDATORY_REST_DAY`.
+- **Calendario.** `GET /calendar?from&to` (máximo 62 días) devuelve en una sola llamada las ausencias aprobadas y pendientes del alcance del usuario y los festivos del rango.
 - **Fechas.** `pg` devuelve las columnas `DATE` como texto `YYYY-MM-DD` y las `NUMERIC` como número (`src/db/index.js`), para no depender de la zona horaria del servidor.
 
 ## Autenticación y autorización

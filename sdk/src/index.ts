@@ -15,6 +15,7 @@ import { RolesResource } from './resources/roles';
 import { PermissionsResource } from './resources/permissions';
 import { RolePermissionsResource } from './resources/role-permissions';
 import { AuditLogResource } from './resources/audit-log';
+import { CalendarResource } from './resources/calendar';
 
 export * from './core/http-client';
 export * from './core/api-error';
@@ -37,6 +38,7 @@ export * from './resources/roles';
 export * from './resources/permissions';
 export * from './resources/role-permissions';
 export * from './resources/audit-log';
+export * from './resources/calendar';
 
 export class VacationsSdk {
   readonly auth: AuthResource;
@@ -55,6 +57,7 @@ export class VacationsSdk {
   readonly permissions: PermissionsResource;
   readonly rolePermissions: RolePermissionsResource;
   readonly auditLog: AuditLogResource;
+  readonly calendar: CalendarResource;
 
   constructor(options: SdkClientOptions) {
     const http = new HttpClient(options);
@@ -74,5 +77,6 @@ export class VacationsSdk {
     this.permissions = new PermissionsResource(http);
     this.rolePermissions = new RolePermissionsResource(http);
     this.auditLog = new AuditLogResource(http);
+    this.calendar = new CalendarResource(http);
   }
 }

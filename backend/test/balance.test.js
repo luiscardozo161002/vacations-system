@@ -4,6 +4,7 @@ const { describe, it, before, beforeEach, after } = require('node:test');
 const assert = require('node:assert/strict');
 const { setTimeout: wait } = require('node:timers/promises');
 const createServer = require('../src/server');
+const { holidaysOfYear } = require('../src/lib/holidays');
 const db = require('../src/db');
 
 const PASSWORD = 'Vacaciones2026!';
@@ -84,7 +85,7 @@ describe('POST /notices/preview', () => {
     const res = await call('EMPLOYEE', 'POST', '/notices/preview', vacation(MONDAY, FRIDAY));
 
     assert.equal(res.statusCode, 200);
-    assert.deepEqual(res.result.breakdown, { days: 5, hours: 0, rest_days: 0, daily_hours: 8 });
+    assert.deepEqual(res.result.breakdown, { days: 5, hours: 0, rest_days: 0, holidays: 0, daily_hours: 8 });
     assert.deepEqual(res.result.balance.available, { days: 7, hours: 0 });
     assert.deepEqual(res.result.balance.remaining, { days: 2, hours: 0 });
     assert.equal(res.result.error, null);
@@ -97,7 +98,7 @@ describe('POST /notices/preview', () => {
       absence_end_time: '15:00',
     }));
 
-    assert.deepEqual(res.result.breakdown, { days: 0, hours: 2, rest_days: 0, daily_hours: 8 });
+    assert.deepEqual(res.result.breakdown, { days: 0, hours: 2, rest_days: 0, holidays: 0, daily_hours: 8 });
     assert.deepEqual(res.result.balance.remaining, { days: 6, hours: 6 });
   });
 
@@ -133,6 +134,15 @@ describe('Reglas al crear', () => {
 
     assert.equal(res.statusCode, 422);
     assert.equal(res.result.error.code, 'OUTSIDE_PERIOD');
+  });
+
+  it('rechaza pedir solo un festivo, para cualquier rol', async () => {
+    const holiday = holidaysOfYear(new Date().getFullYear() + 1).find((day) => day.name === 'Día de la Revolución').date;
+    const res = await call('USER', 'POST', '/notices', { ...vacation(holiday), reason_id: PERSONAL_LEAVE });
+
+    assert.equal(res.statusCode, 422);
+    assert.equal(res.result.error.code, 'MANDATORY_REST_DAY');
+    assert.equal(res.result.error.message, 'Ese día no se puede porque es descanso obligatorio por la Ley Federal del Trabajo');
   });
 
   it('rechaza una ausencia que solo cae en días de descanso', async () => {
