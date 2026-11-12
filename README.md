@@ -295,6 +295,12 @@ La configuración vive en [frontend/src/app/navigation.ts](frontend/src/app/navi
 - **Formulario:** es el mismo de Solicitudes, con el cálculo en vivo. Un aviso de Vacaciones descuenta el saldo al registrarse.
 - **Empleado:** ve sus avisos en "Mis avisos", sin poder crearlos.
 
+**Días:**
+- **Qué muestra:** el saldo del periodo vigente de cada empleado. Antigüedad, días otorgados, usados y disponibles, y horas usadas y disponibles según la jornada de su turno.
+- **Empleado:** por ahora ve solo su fila. Cuando exista el dashboard de empleado (VM-038), esta pantalla lo llevará ahí, como en el prototipo.
+
+**Diálogos de confirmación:** tienen un solo botón con la acción (por ejemplo "Cancelar" o "Rechazar"). Para cerrarlos sin hacer nada se usa la X o la tecla Escape.
+
 **Recuperar contraseña:** "¿Olvidaste tu contraseña?" pide el correo y luego el código. Fuera de producción el código se llena solo con el `devToken` de la API. En producción hará falta el envío por correo (VM-054).
 
 ## Próximos pasos

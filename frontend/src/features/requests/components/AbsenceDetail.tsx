@@ -25,7 +25,6 @@ const LABELS = {
     title: 'Detalle de solicitud',
     noun: 'la solicitud',
     subject: 'Solicitud',
-    cancel: 'Cancelar solicitud',
     days: 'Días solicitados',
     done: { approve: 'aprobada', reject: 'rechazada', cancel: 'cancelada' },
   },
@@ -33,7 +32,6 @@ const LABELS = {
     title: 'Detalle del aviso',
     noun: 'el aviso',
     subject: 'Aviso',
-    cancel: 'Cancelar aviso',
     days: 'Días',
     done: { approve: 'aprobado', reject: 'rechazado', cancel: 'cancelado' },
   },
@@ -102,7 +100,7 @@ export function AbsenceDetail({ notice, user, can, onClose, onChanged }: Absence
             <>
               {canCancel && (
                 <button type="button" className="btn btn-secondary" onClick={() => setConfirming('cancel')} disabled={working}>
-                  {labels.cancel}
+                  Cancelar
                 </button>
               )}
               {canReject && (
@@ -176,13 +174,13 @@ export function AbsenceDetail({ notice, user, can, onClose, onChanged }: Absence
 
       {confirming && confirming !== 'approve' && (
         <ConfirmDialog
-          title={confirming === 'reject' ? `Rechazar ${labels.subject.toLowerCase()}` : labels.cancel}
+          title={`${confirming === 'reject' ? 'Rechazar' : 'Cancelar'} ${labels.subject.toLowerCase()}`}
           message={
             <>
               ¿Confirmas {confirming === 'reject' ? 'rechazar' : 'cancelar'} {labels.noun} de <strong>{notice.employee_name}</strong>?
             </>
           }
-          confirmLabel={confirming === 'reject' ? 'Rechazar' : labels.cancel}
+          confirmLabel={confirming === 'reject' ? 'Rechazar' : 'Cancelar'}
           onConfirm={() => run(confirming)}
           onCancel={() => setConfirming(null)}
         />

@@ -40,14 +40,9 @@ export function ConfirmDialog({ title, message, confirmLabel = 'Confirmar', onCo
       title={title}
       onClose={onCancel}
       footer={
-        <>
-          <button type="button" className="btn btn-secondary" onClick={onCancel}>
-            Cancelar
-          </button>
-          <button type="button" className="btn btn-primary" onClick={onConfirm} autoFocus>
-            {confirmLabel}
-          </button>
-        </>
+        <button type="button" className="btn btn-primary" onClick={onConfirm} autoFocus>
+          {confirmLabel}
+        </button>
       }
     >
       <p>{message}</p>
