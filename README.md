@@ -304,6 +304,13 @@ La configuración vive en [frontend/src/app/navigation.ts](frontend/src/app/navi
 - **Perfil:** un drawer con los datos del empleado, su antigüedad, el saldo del periodo vigente y el historial de solicitudes y avisos.
 - **Botones:** dar de alta, editar y dar de baja aparecen solo con el permiso correspondiente.
 
+**Departamentos:**
+- **Tarjetas:** cada departamento muestra su responsable, sus empleados activos y si comparte su calendario.
+- **Formulario:** pide nombre, código, sede, responsable y si sus empleados ven las ausencias del departamento.
+- **Permisos:** RH edita los de sus sedes. Solo el Superusuario crea departamentos.
+
+**Empresas:** tiene pestañas de datos fiscales, sucursales con su número de empleados y empleados con su departamento y sede. El Superusuario elige la empresa en un selector.
+
 **Dashboard:**
 - **Superusuario y RH:** ven los indicadores de su alcance, las próximas ausencias, los empleados por departamento (con la sede cuando el nombre se repite) y la actividad reciente.
 - **Empleado:** ve su perfil, su saldo con horas y sus últimas solicitudes y avisos. En "Días" el empleado también llega a esta vista.

@@ -9,6 +9,8 @@ import { NoticesPage } from './features/requests/pages/NoticesPage';
 import { BalancesPage } from './features/balances/pages/BalancesPage';
 import { CalendarPage } from './features/calendar/pages/CalendarPage';
 import { DashboardPage } from './features/dashboard/pages/DashboardPage';
+import { DepartmentsPage } from './features/departments/pages/DepartmentsPage';
+import { CompaniesPage } from './features/companies/pages/CompaniesPage';
 import { SettingsPage } from './features/settings/pages/SettingsPage';
 import { LoginPage } from './features/auth/pages/LoginPage';
 import { useAuth } from './features/auth/auth-context';
@@ -20,6 +22,8 @@ const PAGES: Record<string, ReactNode> = {
   '/avisos': <NoticesPage />,
   '/dias': <BalancesPage />,
   '/calendario': <CalendarPage />,
+  '/departamentos': <DepartmentsPage />,
+  '/empresas': <CompaniesPage />,
   '/configuracion': <SettingsPage />,
 };
 
