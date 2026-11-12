@@ -1,0 +1,15 @@
+meta {
+  name: Get My Summary
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/api/v1/dashboard/me
+  body: none
+  auth: inherit
+}
+
+docs {
+  Resumen del empleado vinculado al usuario: perfil, saldo del periodo vigente y sus ultimas 5 solicitudes y 5 avisos. 404 `EMPLOYEE_NOT_FOUND` si el usuario no tiene empleado.
+}

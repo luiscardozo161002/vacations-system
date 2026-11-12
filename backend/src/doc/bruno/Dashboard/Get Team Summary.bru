@@ -1,0 +1,15 @@
+meta {
+  name: Get Team Summary
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/v1/dashboard/summary
+  body: none
+  auth: inherit
+}
+
+docs {
+  Indicadores del equipo dentro del alcance del usuario: empleados activos, ausentes hoy, solicitudes pendientes, vacaciones en los proximos 30 dias, proximas ausencias, empleados por departamento (con codigo de sede) y actividad reciente. Requiere `employees:view`.
+}

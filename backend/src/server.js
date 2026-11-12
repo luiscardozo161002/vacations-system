@@ -24,6 +24,7 @@ const vacationAccrualRulesPlugin = require('./plugins/vacation-accrual-rules/rou
 const vacationEntitlementsPlugin = require('./plugins/vacation-entitlements/routes');
 const noticesPlugin = require('./plugins/notices/routes');
 const calendarPlugin = require('./plugins/calendar/routes');
+const dashboardPlugin = require('./plugins/dashboard/routes');
 const usersPlugin = require('./plugins/users/routes');
 const authAuditLogPlugin = require('./plugins/auth-audit-log/routes');
 const authPlugin = require('./plugins/auth/routes');
@@ -88,6 +89,7 @@ const createServer = async () => {
     vacationEntitlementsPlugin,
     noticesPlugin,
     calendarPlugin,
+    dashboardPlugin,
     usersPlugin,
     authAuditLogPlugin,
     authPlugin,
