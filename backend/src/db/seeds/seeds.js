@@ -19,10 +19,12 @@ exports.seed = async function (knex) {
   await knex('auth_audit_log').del();
   await knex('password_reset_tokens').del();
   await knex('user_sessions').del();
+  await knex('user_branches').del();
   await knex('users').del();
   await knex('departments').update({ manager_employee_id: null });
   await knex('employees').del();
   await knex('departments').del();
+  await knex('branches').del();
   await knex('shift_schedules').del();
   await knex('shifts').del();
   await knex('company').del();
@@ -30,14 +32,46 @@ exports.seed = async function (knex) {
   // ---------- ORGANIZACION ----------
 
   await knex('company').insert([
-    { company_id: 1, folio: 'JO_HGO', company_name: 'JUAREZ DE ORIENTE S.A. DE C.V.', company_branch: 'Hidalgo', status: 'active' },
-    { company_id: 2, folio: 'JO_PUE', company_name: 'JUAREZ DE ORIENTE S.A. DE C.V.', company_branch: 'Puebla', status: 'active' },
-    { company_id: 3, folio: 'JO_CAM', company_name: 'JUAREZ DE ORIENTE S.A. DE C.V.', company_branch: 'Campeche', status: 'active' },
-    { company_id: 4, folio: 'THH_HGO', company_name: 'TRANSPORTES HIDRO-HIDALGUENSES S.A. DE C.V.', company_branch: 'Hidalgo', status: 'active' },
-    { company_id: 5, folio: 'THH_AGS', company_name: 'TRANSPORTES HIDRO-HIDALGUENSES S.A. DE C.V.', company_branch: 'Aguascalientes', status: 'active' },
-    { company_id: 6, folio: 'UMJ_HGO', company_name: 'UNIDAD MEDICA INTEGRAL HIDALGUENSE S.A. DE C.V.', company_branch: 'Hidalgo', status: 'active' },
+    {
+      company_id: 1,
+      folio: 'JOR',
+      company_name: 'JUÁREZ DE ORIENTE S.A. DE C.V.',
+      rfc: 'JOR070518U13',
+      logo: 'https://i.ibb.co/1G6wdv02/Logo-JO-Profile.png',
+      location: '4 Norte 8 B5, Col. Centro, Tecamachalco, Puebla, CP. 75480',
+      status: 'active',
+    },
+    {
+      company_id: 2,
+      folio: 'THH',
+      company_name: 'TRANSPORTES HIDRO HIDALGUENSES S.A. DE C.V.',
+      rfc: 'THH981218DS0',
+      logo: 'https://i.ibb.co/v8HXL7F/thh-oficial-copia.png',
+      location: 'Av. Tulancingo, No. 103, San Miguel Vindhó, Tula de Allende, Hidalgo',
+      status: 'active',
+    },
+    {
+      company_id: 3,
+      folio: 'UMJ',
+      company_name: 'UNIDAD MÉDICA INTEGRAL HIDALGUENSE, C.J. S.A. de C.V.',
+      rfc: 'UMI1007285C1',
+      logo: 'https://i.ibb.co/n8sQ05Xq/umj-logo-transparente.png',
+      location: 'Zimapán s/n, Colonia San Miguel Vindhó, Tula de Allende, Hidalgo C.P. 42842',
+      status: 'active',
+    },
   ]);
   await knex.raw("SELECT setval(pg_get_serial_sequence('company','company_id'), (SELECT MAX(company_id) FROM company))");
+
+  await knex('branches').insert([
+    { branch_id: 1, company_id: 1, code: 'JOR_CAMP', branch_name: 'Campeche' },
+    { branch_id: 2, company_id: 1, code: 'JOR_PUEB', branch_name: 'Puebla' },
+    { branch_id: 3, company_id: 1, code: 'JOR_HGO', branch_name: 'Hidalgo' },
+    { branch_id: 4, company_id: 2, code: 'THH_AGS', branch_name: 'Aguascalientes' },
+    { branch_id: 5, company_id: 2, code: 'THH_HGO', branch_name: 'Hidalgo' },
+    { branch_id: 6, company_id: 2, code: 'THH_PUE', branch_name: 'Puebla' },
+    { branch_id: 7, company_id: 3, code: 'UMJ_HGO', branch_name: 'Hidalgo' },
+  ]);
+  await knex.raw("SELECT setval(pg_get_serial_sequence('branches','branch_id'), (SELECT MAX(branch_id) FROM branches))");
 
   await knex('shifts').insert([
     { shift_id: 1, code: 'OFICINAS', shift_name: 'Oficinas', number_days: 5 },
@@ -63,14 +97,14 @@ exports.seed = async function (knex) {
   ]);
 
   await knex('departments').insert([
-    { department_id: 1, company_id: 4, code: 'EXP', department_name: 'Explotacion', status: 'active' },
-    { department_id: 2, company_id: 4, code: 'FYA', department_name: 'Fletes y Acarreos', status: 'active' },
-    { department_id: 3, company_id: 1, code: 'ADM', department_name: 'Administracion', status: 'active' },
-    { department_id: 4, company_id: 1, code: 'CMSP', department_name: 'Casa de Materiales', status: 'active' },
-    { department_id: 5, company_id: 5, code: 'TMC', department_name: 'Taller Mecanico Condesa', status: 'active' },
-    { department_id: 6, company_id: 6, code: 'UMIJ', department_name: 'Unidad Medica', status: 'active' },
-    { department_id: 7, company_id: 2, code: 'TX', department_name: 'Trituracion Xirgo', status: 'active' },
-    { department_id: 8, company_id: 4, code: 'ADM', department_name: 'Administracion', status: 'active' },
+    { department_id: 1, branch_id: 5, code: 'EXP', department_name: 'Explotacion', status: 'active' },
+    { department_id: 2, branch_id: 5, code: 'FYA', department_name: 'Fletes y Acarreos', status: 'active' },
+    { department_id: 3, branch_id: 3, code: 'ADM', department_name: 'Administracion', status: 'active' },
+    { department_id: 4, branch_id: 3, code: 'CMSP', department_name: 'Casa de Materiales', status: 'active' },
+    { department_id: 5, branch_id: 4, code: 'TMC', department_name: 'Taller Mecanico Condesa', status: 'active' },
+    { department_id: 6, branch_id: 7, code: 'UMIJ', department_name: 'Unidad Medica', status: 'active' },
+    { department_id: 7, branch_id: 2, code: 'TX', department_name: 'Trituracion Xirgo', status: 'active' },
+    { department_id: 8, branch_id: 5, code: 'ADM', department_name: 'Administracion', status: 'active' },
   ]);
   await knex.raw("SELECT setval(pg_get_serial_sequence('departments','department_id'), (SELECT MAX(department_id) FROM departments))");
 
@@ -106,6 +140,8 @@ exports.seed = async function (knex) {
     { user_id: 4, employee_id: 1, role_id: roleIds.EMPLOYEE, username: 'j.perez', email: 'j.perez@jo.com.mx', password_hash: devPasswordHash, status: 'active' },
   ]);
   await knex.raw("SELECT setval(pg_get_serial_sequence('users','user_id'), (SELECT MAX(user_id) FROM users))");
+
+  await knex('user_branches').insert([{ user_id: 2, branch_id: 5 }]);
 
   await knex('user_sessions').insert([
     { user_id: 2, refresh_token_hash: 'REFRESH_TOKEN_HASH_DEMO_1', ip_address: '10.0.0.15', user_agent: 'Mozilla/5.0 (Windows NT 10.0)', issued_at: knex.fn.now(), expires_at: knex.raw("now() + interval '7 days'") },

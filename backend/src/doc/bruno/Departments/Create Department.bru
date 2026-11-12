@@ -16,7 +16,7 @@ headers {
 
 body:json {
   {
-    "company_id": 1,
+    "branch_id": 5,
     "code": "DEP-01",
     "department_name": "Recursos Humanos",
     "manager_employee_id": null,
@@ -25,7 +25,7 @@ body:json {
 }
 
 docs {
-  Requeridos: `company_id`, `code`, `department_name`. `manager_employee_id` es opcional (acepta `null`). `status` es opcional (default `active`).
+  Requeridos: `branch_id`, `code`, `department_name`. `manager_employee_id` es opcional (acepta `null`). `status` es opcional (default `active`).
 
-  Errores: `422 INVALID_COMPANY` / `INVALID_MANAGER` si los ids no existen; `409 DEPARTMENT_CODE_EXISTS` si `code` ya esta en uso dentro de la empresa.
+  Errores: `422 INVALID_BRANCH` / `INVALID_MANAGER` si los ids no existen o estan fuera de las sedes del usuario; `409 DEPARTMENT_CODE_EXISTS` si `code` ya esta en uso dentro de la sede.
 }

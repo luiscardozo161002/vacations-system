@@ -21,6 +21,9 @@ export function Shell() {
 
   const displayName = user?.employee?.employee_name ?? user?.username ?? '';
   const roleLabel = user ? (ROLE_LABELS[user.role.role_code] ?? user.role.description) : '';
+  const branches = user?.role.role_code === 'SUPERUSER' ? [] : (user?.branches ?? []);
+  const companyLabel =
+    branches.length > 1 ? `${branches[0].company_name} · ${branches.length} sedes` : branches[0]?.company_name;
 
   useEffect(() => {
     localStorage.setItem(COLLAPSED_KEY, collapsed ? '1' : '0');
@@ -105,6 +108,14 @@ export function Shell() {
                 <strong id="breadcrumb-current">{findNavItem(pathname)?.title ?? 'Resumen'}</strong>
               </div>
               <div className="topbar-right">
+                {companyLabel && (
+                  <div className="company-select" id="company-select">
+                    <span data-icon="building-2" style={{ width: 15, height: 15 }}>
+                      <Icon name="building-2" />
+                    </span>
+                    <span id="company-select-name">{companyLabel}</span>
+                  </div>
+                )}
                 <button
                   type="button"
                   className="icon-btn"

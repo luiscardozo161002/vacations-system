@@ -112,6 +112,8 @@ Usuarios de prueba (todos con la contraseña `Vacaciones2026!`, solo para desarr
 | `j.navarro` | j.navarro@jo.com.mx     | EMPLOYEE  | Jorge Luis Navarro       |
 | `j.perez`   | j.perez@jo.com.mx       | EMPLOYEE  | Juan Perez Lopez         |
 
+El seed carga las 3 empresas (JOR, THH y UMJ) con sus 7 sedes. `r.jimenez` atiende solo la sede THH_HGO, así que como Usuario ve 8 de los 12 empleados.
+
 ### 5. Levantar el servidor
 
 ```bash

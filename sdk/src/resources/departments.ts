@@ -5,7 +5,7 @@ export type DepartmentStatus = 'active' | 'inactive';
 
 export interface Department {
   department_id: number;
-  company_id: number;
+  branch_id: number;
   code: string;
   department_name: string;
   manager_employee_id: number | null;
@@ -15,7 +15,7 @@ export interface Department {
 }
 
 export interface ListDepartmentsParams {
-  company_id?: number;
+  branch_id?: number;
   status?: DepartmentStatus;
   sort?: string;
   page?: number;
@@ -23,7 +23,7 @@ export interface ListDepartmentsParams {
 }
 
 export interface CreateDepartmentInput {
-  company_id: number;
+  branch_id: number;
   code: string;
   department_name: string;
   manager_employee_id?: number | null;
@@ -31,7 +31,7 @@ export interface CreateDepartmentInput {
 }
 
 export interface UpdateDepartmentInput {
-  company_id?: number;
+  branch_id?: number;
   code?: string;
   department_name?: string;
   manager_employee_id?: number | null;

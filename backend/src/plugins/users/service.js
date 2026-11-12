@@ -43,4 +43,15 @@ const remove = async (userId) => {
   return user;
 };
 
-module.exports = { list, findById, create, update, remove };
+const findBranches = async (userId) => {
+  await findById(userId);
+  return repository.findBranches(userId);
+};
+
+const replaceBranches = async (userId, branchIds) => {
+  await findById(userId);
+  await repository.replaceBranches(userId, [...new Set(branchIds)]);
+  return repository.findBranches(userId);
+};
+
+module.exports = { list, findById, create, update, remove, findBranches, replaceBranches };

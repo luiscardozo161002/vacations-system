@@ -18,6 +18,14 @@ export interface LoginResult extends SessionTokens {
   };
 }
 
+export interface UserBranch {
+  branch_id: number;
+  company_id: number;
+  company_name: string;
+  code: string;
+  branch_name: string;
+}
+
 export interface CurrentUser {
   user_id: number;
   username: string;
@@ -36,6 +44,7 @@ export interface CurrentUser {
     department_id: number;
     shift_id: number;
   } | null;
+  branches: UserBranch[];
   permissions: string[];
 }
 

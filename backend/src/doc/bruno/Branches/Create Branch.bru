@@ -1,0 +1,29 @@
+meta {
+  name: Create Branch
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/api/v1/branches
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "company_id": 2,
+    "code": "THH_TEST",
+    "branch_name": "Sede de prueba"
+  }
+}
+
+docs {
+  Requeridos: `company_id`, `code`, `branch_name`. `status` opcional (default `active`).
+
+  Errores: `409 BRANCH_CODE_EXISTS` si `code` ya esta en uso. `422 INVALID_COMPANY` si la empresa no existe.
+}

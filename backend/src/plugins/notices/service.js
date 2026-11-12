@@ -3,6 +3,7 @@
 const repository = require('./repository');
 const { AppError } = require('../../lib/app-error');
 const { EDITABLE_FIELDS } = require('./fields');
+const { allowsEmployee } = require('../../lib/data-scope');
 
 const pick = (data) => {
   const result = {};
@@ -12,24 +13,34 @@ const pick = (data) => {
   return result;
 };
 
-const list = (filters) => repository.list(filters);
+const checkReferences = async (data, scope) => {
+  if (data.employee_id !== undefined && !(await allowsEmployee(scope, data.employee_id))) {
+    throw new AppError('INVALID_EMPLOYEE', 'El empleado no existe');
+  }
+};
 
-const findById = async (noticeId) => {
-  const notice = await repository.findById(noticeId);
+const list = (filters, scope) => repository.list(filters, scope);
+
+const findById = async (noticeId, scope) => {
+  const notice = await repository.findById(noticeId, scope);
   if (!notice) throw new AppError('NOTICE_NOT_FOUND', 'El aviso no existe');
   return notice;
 };
 
-const create = (data) => repository.create(pick(data));
+const create = async (data, scope) => {
+  await checkReferences(data, scope);
+  return repository.create(pick(data));
+};
 
-const update = async (noticeId, data) => {
-  const notice = await repository.update(noticeId, pick(data));
+const update = async (noticeId, data, scope) => {
+  await checkReferences(data, scope);
+  const notice = await repository.update(noticeId, pick(data), scope);
   if (!notice) throw new AppError('NOTICE_NOT_FOUND', 'El aviso no existe');
   return notice;
 };
 
-const remove = async (noticeId) => {
-  const notice = await repository.remove(noticeId);
+const remove = async (noticeId, scope) => {
+  const notice = await repository.remove(noticeId, scope);
   if (!notice) throw new AppError('NOTICE_NOT_FOUND', 'El aviso no existe');
   return notice;
 };

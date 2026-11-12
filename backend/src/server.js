@@ -14,6 +14,7 @@ const employeesPlugin = require('./plugins/employees/routes');
 const departmentsPlugin = require('./plugins/departments/routes');
 const shiftsPlugin = require('./plugins/shifts/routes');
 const companyPlugin = require('./plugins/company/routes');
+const branchesPlugin = require('./plugins/branches/routes');
 const reasonsPlugin = require('./plugins/reasons/routes');
 const rolesPlugin = require('./plugins/roles/routes');
 const permissionsPlugin = require('./plugins/permissions/routes');
@@ -72,6 +73,7 @@ const createServer = async () => {
     departmentsPlugin,
     shiftsPlugin,
     companyPlugin,
+    branchesPlugin,
     reasonsPlugin,
     rolesPlugin,
     permissionsPlugin,

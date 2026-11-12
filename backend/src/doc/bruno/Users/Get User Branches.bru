@@ -1,0 +1,19 @@
+meta {
+  name: Get User Branches
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{baseUrl}}/api/v1/users/:userId/branches
+  body: none
+  auth: inherit
+}
+
+params:path {
+  userId: 2
+}
+
+docs {
+  Sedes asignadas al usuario. 404 `USER_NOT_FOUND` si el usuario no existe.
+}

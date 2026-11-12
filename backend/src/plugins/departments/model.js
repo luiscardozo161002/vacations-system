@@ -14,11 +14,11 @@ class Department extends Model {
   static get jsonSchema() {
     return {
       type: 'object',
-      required: ['company_id', 'code', 'department_name'],
+      required: ['branch_id', 'code', 'department_name'],
       additionalProperties: false,
       properties: {
         department_id: { type: 'integer' },
-        company_id: { type: 'integer' },
+        branch_id: { type: 'integer' },
         code: { type: 'string', maxLength: 20 },
         department_name: { type: 'string', maxLength: 150 },
         manager_employee_id: { type: ['integer', 'null'] },

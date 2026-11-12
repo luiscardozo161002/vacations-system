@@ -12,24 +12,24 @@ const pick = (data) => {
   return result;
 };
 
-const list = (filters) => repository.list(filters);
+const list = (filters, scope) => repository.list(filters, scope);
 
-const findById = async (companyId) => {
-  const company = await repository.findById(companyId);
+const findById = async (companyId, scope) => {
+  const company = await repository.findById(companyId, scope);
   if (!company) throw new AppError('COMPANY_NOT_FOUND', 'La empresa no existe');
   return company;
 };
 
 const create = (data) => repository.create(pick(data));
 
-const update = async (companyId, data) => {
-  const company = await repository.update(companyId, pick(data));
+const update = async (companyId, data, scope) => {
+  const company = await repository.update(companyId, pick(data), scope);
   if (!company) throw new AppError('COMPANY_NOT_FOUND', 'La empresa no existe');
   return company;
 };
 
-const remove = async (companyId) => {
-  const company = await repository.remove(companyId);
+const remove = async (companyId, scope) => {
+  const company = await repository.remove(companyId, scope);
   if (!company) throw new AppError('COMPANY_NOT_FOUND', 'La empresa no existe');
   return company;
 };

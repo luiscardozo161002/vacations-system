@@ -1,0 +1,29 @@
+meta {
+  name: Update Branch
+  type: http
+  seq: 4
+}
+
+patch {
+  url: {{baseUrl}}/api/v1/branches/:branchId
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+}
+
+params:path {
+  branchId: 5
+}
+
+body:json {
+  {
+    "branch_name": "Hidalgo"
+  }
+}
+
+docs {
+  Todos los campos opcionales, al menos uno requerido: `company_id`, `code`, `branch_name`, `status`.
+}

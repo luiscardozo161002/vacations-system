@@ -70,6 +70,28 @@ const usersPlugin = {
           return h.response().code(204);
         },
       },
+      {
+        method: 'GET',
+        path: '/api/v1/users/{userId}/branches',
+        options: {
+          description: 'List the branches assigned to a user',
+          tags: ['api', 'users'],
+          auth: requires('users:view'),
+          validate: { params: schemas.params },
+        },
+        handler: (request) => service.findBranches(request.params.userId),
+      },
+      {
+        method: 'PUT',
+        path: '/api/v1/users/{userId}/branches',
+        options: {
+          description: 'Replace the branches assigned to a user',
+          tags: ['api', 'users'],
+          auth: requires('users:update'),
+          validate: { params: schemas.params, payload: schemas.branches },
+        },
+        handler: (request) => service.replaceBranches(request.params.userId, request.payload.branch_ids),
+      },
     ]);
   },
 };

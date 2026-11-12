@@ -5,7 +5,7 @@ const Joi = require('joi');
 const id = Joi.number().integer().positive();
 
 const fields = {
-  company_id: id,
+  branch_id: id,
   code: Joi.string().max(20),
   department_name: Joi.string().max(150),
   manager_employee_id: id.allow(null),
@@ -13,7 +13,7 @@ const fields = {
 };
 
 const create = Joi.object({
-  company_id: fields.company_id.required(),
+  branch_id: fields.branch_id.required(),
   code: fields.code.required(),
   department_name: fields.department_name.required(),
   manager_employee_id: fields.manager_employee_id,
@@ -27,7 +27,7 @@ const params = Joi.object({
 });
 
 const list = Joi.object({
-  company_id: id,
+  branch_id: id,
   status: Joi.string().valid('active', 'inactive'),
   sort: Joi.string(),
   page: Joi.number().integer().min(1).default(1),

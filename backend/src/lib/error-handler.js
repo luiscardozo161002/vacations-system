@@ -10,6 +10,11 @@ const BUSINESS_STATUS = {
   DEPARTMENT_NOT_FOUND: 404,
   SHIFT_NOT_FOUND: 404,
   COMPANY_NOT_FOUND: 404,
+  BRANCH_NOT_FOUND: 404,
+  INVALID_BRANCH: 422,
+  INVALID_DEPARTMENT: 422,
+  INVALID_EMPLOYEE: 422,
+  INVALID_MANAGER: 422,
   REASON_NOT_FOUND: 404,
   ROLE_NOT_FOUND: 404,
   PERMISSION_NOT_FOUND: 404,
@@ -47,17 +52,35 @@ const DB_ERRORS = {
     code: 'INVALID_SHIFT',
     message: 'El turno no existe',
   },
-  uq_departments_company_code: {
+  uq_departments_branch_code: {
     sqlstate: '23505',
     status: 409,
     code: 'DEPARTMENT_CODE_EXISTS',
-    message: 'Ya existe un departamento con ese codigo en esa empresa',
+    message: 'Ya existe un departamento con ese codigo en esa sede',
   },
-  departments_company_id_foreign: {
+  departments_branch_id_foreign: {
+    sqlstate: '23503',
+    status: 422,
+    code: 'INVALID_BRANCH',
+    message: 'La sede no existe',
+  },
+  branches_code_unique: {
+    sqlstate: '23505',
+    status: 409,
+    code: 'BRANCH_CODE_EXISTS',
+    message: 'Ya existe una sede con ese codigo',
+  },
+  branches_company_id_foreign: {
     sqlstate: '23503',
     status: 422,
     code: 'INVALID_COMPANY',
     message: 'La empresa no existe',
+  },
+  user_branches_branch_id_foreign: {
+    sqlstate: '23503',
+    status: 422,
+    code: 'INVALID_BRANCH',
+    message: 'La sede no existe',
   },
   fk_departments_manager: {
     sqlstate: '23503',

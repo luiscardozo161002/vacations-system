@@ -20,7 +20,6 @@ class Company extends Model {
         company_id: { type: 'integer' },
         folio: { type: 'string', maxLength: 15 },
         company_name: { type: 'string', maxLength: 150 },
-        company_branch: { type: ['string', 'null'], maxLength: 100 },
         logo: { type: ['string', 'null'], maxLength: 255 },
         location: { type: ['string', 'null'], maxLength: 255 },
         phone_number: { type: ['string', 'null'], maxLength: 20 },

@@ -7,7 +7,6 @@ const id = Joi.number().integer().positive();
 const fields = {
   folio: Joi.string().max(15),
   company_name: Joi.string().max(150),
-  company_branch: Joi.string().max(100).allow(null),
   logo: Joi.string().max(255).allow(null),
   location: Joi.string().max(255).allow(null),
   phone_number: Joi.string().max(20).allow(null),
@@ -18,7 +17,6 @@ const fields = {
 const create = Joi.object({
   folio: fields.folio.required(),
   company_name: fields.company_name.required(),
-  company_branch: fields.company_branch,
   logo: fields.logo,
   location: fields.location,
   phone_number: fields.phone_number,

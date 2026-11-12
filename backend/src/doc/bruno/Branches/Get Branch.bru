@@ -1,0 +1,19 @@
+meta {
+  name: Get Branch
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/api/v1/branches/:branchId
+  body: none
+  auth: inherit
+}
+
+params:path {
+  branchId: 5
+}
+
+docs {
+  404 `BRANCH_NOT_FOUND` si el id no existe o no es una sede del usuario.
+}

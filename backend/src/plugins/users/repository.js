@@ -39,4 +39,21 @@ const remove = async (userId) => {
   return user || null;
 };
 
-module.exports = { list, findById, create, update, remove };
+const BRANCH_COLUMNS = ['b.branch_id', 'b.company_id', 'b.code', 'b.branch_name'];
+
+const findBranches = (userId) =>
+  db('user_branches as ub')
+    .join('branches as b', 'b.branch_id', 'ub.branch_id')
+    .where('ub.user_id', userId)
+    .orderBy('b.branch_id')
+    .select(BRANCH_COLUMNS);
+
+const replaceBranches = (userId, branchIds) =>
+  db.transaction(async (trx) => {
+    await trx('user_branches').where('user_id', userId).del();
+    if (branchIds.length) {
+      await trx('user_branches').insert(branchIds.map((branch_id) => ({ user_id: userId, branch_id })));
+    }
+  });
+
+module.exports = { list, findById, create, update, remove, findBranches, replaceBranches };

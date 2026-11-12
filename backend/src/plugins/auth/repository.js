@@ -57,6 +57,25 @@ const findPermissionCodes = (roleId) =>
     .orderBy('p.permission_code')
     .pluck('p.permission_code');
 
+const findRoleCode = (roleId) => db('roles').where('role_id', roleId).first('role_code').then((row) => row?.role_code ?? null);
+
+const BRANCH_COLUMNS = ['b.branch_id', 'b.company_id', 'c.company_name', 'b.code', 'b.branch_name'];
+
+const branchesQuery = () => db('branches as b').join('company as c', 'c.company_id', 'b.company_id').orderBy('b.branch_id');
+
+const findBranches = (userId) =>
+  branchesQuery()
+    .join('user_branches as ub', 'ub.branch_id', 'b.branch_id')
+    .where('ub.user_id', userId)
+    .select(BRANCH_COLUMNS);
+
+const findEmployeeBranch = (employeeId) =>
+  branchesQuery()
+    .join('departments as d', 'd.branch_id', 'b.branch_id')
+    .join('employees as e', 'e.department_id', 'd.department_id')
+    .where('e.employee_id', employeeId)
+    .select(BRANCH_COLUMNS);
+
 const createSession = (data) => UserSession.query().insert(data);
 
 const findActiveSessionByHash = (refreshTokenHash) =>
@@ -99,6 +118,9 @@ module.exports = {
   updateProfile,
   findProfile,
   findPermissionCodes,
+  findRoleCode,
+  findBranches,
+  findEmployeeBranch,
   createSession,
   findActiveSessionByHash,
   revokeSession,

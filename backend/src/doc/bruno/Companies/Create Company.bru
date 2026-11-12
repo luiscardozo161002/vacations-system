@@ -18,7 +18,6 @@ body:json {
   {
     "folio": "TEST_CO",
     "company_name": "Empresa de Prueba",
-    "company_branch": "Hidalgo",
     "logo": "https://example.com/logo.png",
     "location": "Av. Siempre Viva 123",
     "phone_number": "5551234567",
@@ -27,7 +26,7 @@ body:json {
 }
 
 docs {
-  Requeridos: `folio`, `company_name`. `company_branch`, `logo`, `location`, `phone_number`, `rfc` opcionales. `status` opcional (default `active`).
+  Requeridos: `folio`, `company_name`. `logo`, `location`, `phone_number`, `rfc` opcionales. `status` opcional (default `active`).
 
   Errores: `409 COMPANY_FOLIO_EXISTS` si `folio` ya esta en uso. `409 COMPANY_RFC_EXISTS` si `rfc` ya esta en uso.
 }

@@ -1,6 +1,7 @@
 'use strict';
 
 const { requires } = require('../../lib/permissions');
+const { scopeFrom } = require('../../lib/data-scope');
 const service = require('./service');
 const schemas = require('./schemas');
 
@@ -18,7 +19,7 @@ const employeesPlugin = {
           auth: requires('employees:view'),
           validate: { query: schemas.list },
         },
-        handler: (request) => service.list(request.query),
+        handler: (request) => service.list(request.query, scopeFrom(request.auth.credentials)),
       },
       {
         method: 'GET',
@@ -29,7 +30,7 @@ const employeesPlugin = {
           auth: requires('employees:view'),
           validate: { params: schemas.params },
         },
-        handler: (request) => service.findById(request.params.employeeId),
+        handler: (request) => service.findById(request.params.employeeId, scopeFrom(request.auth.credentials)),
       },
       {
         method: 'POST',
@@ -41,7 +42,7 @@ const employeesPlugin = {
           validate: { payload: schemas.create },
         },
         handler: async (request, h) => {
-          const employee = await service.create(request.payload);
+          const employee = await service.create(request.payload, scopeFrom(request.auth.credentials));
           return h.response(employee).code(201);
         },
       },
@@ -54,7 +55,7 @@ const employeesPlugin = {
           auth: requires('employees:update'),
           validate: { params: schemas.params, payload: schemas.update },
         },
-        handler: (request) => service.update(request.params.employeeId, request.payload),
+        handler: (request) => service.update(request.params.employeeId, request.payload, scopeFrom(request.auth.credentials)),
       },
       {
         method: 'DELETE',
@@ -66,7 +67,7 @@ const employeesPlugin = {
           validate: { params: schemas.params },
         },
         handler: async (request, h) => {
-          await service.remove(request.params.employeeId);
+          await service.remove(request.params.employeeId, scopeFrom(request.auth.credentials));
           return h.response().code(204);
         },
       },

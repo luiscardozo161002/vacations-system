@@ -29,6 +29,10 @@ const params = Joi.object({
   userId: id.required(),
 });
 
+const branches = Joi.object({
+  branch_ids: Joi.array().items(id).required(),
+}).unknown(false);
+
 const list = Joi.object({
   role_id: id,
   status: Joi.string().valid('active', 'inactive', 'locked'),
@@ -38,4 +42,4 @@ const list = Joi.object({
   pageSize: Joi.number().integer().min(1).max(100).default(20),
 }).unknown(false);
 
-module.exports = { create, update, params, list };
+module.exports = { create, update, params, list, branches };

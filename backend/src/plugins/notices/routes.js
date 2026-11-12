@@ -1,6 +1,7 @@
 'use strict';
 
 const { requires } = require('../../lib/permissions');
+const { scopeFrom } = require('../../lib/data-scope');
 const service = require('./service');
 const schemas = require('./schemas');
 
@@ -18,7 +19,7 @@ const noticesPlugin = {
           auth: requires('requests:view', 'notices:view'),
           validate: { query: schemas.list },
         },
-        handler: (request) => service.list(request.query),
+        handler: (request) => service.list(request.query, scopeFrom(request.auth.credentials)),
       },
       {
         method: 'GET',
@@ -29,7 +30,7 @@ const noticesPlugin = {
           auth: requires('requests:view', 'notices:view'),
           validate: { params: schemas.params },
         },
-        handler: (request) => service.findById(request.params.noticeId),
+        handler: (request) => service.findById(request.params.noticeId, scopeFrom(request.auth.credentials)),
       },
       {
         method: 'POST',
@@ -41,7 +42,7 @@ const noticesPlugin = {
           validate: { payload: schemas.create },
         },
         handler: async (request, h) => {
-          const notice = await service.create(request.payload);
+          const notice = await service.create(request.payload, scopeFrom(request.auth.credentials));
           return h.response(notice).code(201);
         },
       },
@@ -54,7 +55,7 @@ const noticesPlugin = {
           auth: requires('requests:update', 'notices:update'),
           validate: { params: schemas.params, payload: schemas.update },
         },
-        handler: (request) => service.update(request.params.noticeId, request.payload),
+        handler: (request) => service.update(request.params.noticeId, request.payload, scopeFrom(request.auth.credentials)),
       },
       {
         method: 'DELETE',
@@ -66,7 +67,7 @@ const noticesPlugin = {
           validate: { params: schemas.params },
         },
         handler: async (request, h) => {
-          await service.remove(request.params.noticeId);
+          await service.remove(request.params.noticeId, scopeFrom(request.auth.credentials));
           return h.response().code(204);
         },
       },

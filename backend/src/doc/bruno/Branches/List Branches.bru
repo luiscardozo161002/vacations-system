@@ -1,0 +1,22 @@
+meta {
+  name: List Branches
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/v1/branches?status=active&page=1&pageSize=20
+  body: none
+  auth: inherit
+}
+
+params:query {
+  status: active
+  page: 1
+  pageSize: 20
+  ~company_id: 2
+}
+
+docs {
+  Lista sedes paginada. Filtros opcionales: `company_id`, `status`. El Usuario solo ve sus sedes.
+}

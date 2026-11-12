@@ -43,7 +43,7 @@ frontend/
 
 ## Módulos del backend (plugins Hapi, uno por entidad)
 
-company, shifts (con su horario semanal anidado), departments, employees, roles, permissions, role-permissions, users, auth, auth-audit-log, vacation-accrual-rules, vacation-entitlements, reasons, notices.
+company, branches, shifts (con su horario semanal anidado), departments, employees, roles, permissions, role-permissions, users, auth, auth-audit-log, vacation-accrual-rules, vacation-entitlements, reasons, notices.
 
 Cada plugin sigue el mismo patrón: `model.js` (Objection), `schemas.js` (Joi), `fields.js` (columnas expuestas), `service.js` (lógica + queries), `routes.js` (handlers Hapi). Las respuestas de error pasan por un `onPreResponse` global (`lib/error-handler.js`) que traduce errores de Postgres (constraints reales, verificados contra `pg_constraint`) a mensajes legibles.
 
@@ -56,12 +56,17 @@ users N─N branches (user_branches)
 
 - `company` guarda la empresa: razón social, RFC, logo, teléfono y dirección fiscal (`location`).
 - `branches` guarda la sede (código, nombre y estado) y pertenece a una empresa. Cada departamento cuelga de una sede (`departments.branch_id`).
-- `user_branches` dice qué sedes atiende cada Usuario de RH.
+- `user_branches` dice qué sedes atiende cada Usuario de RH. El Superusuario las asigna con `PUT /users/{id}/branches`.
 - **Alcance:**
   - Superusuario ve todo.
   - Usuario ve solo lo que cuelga de sus sedes.
   - Empleado ve solo lo suyo (`employee_id` del token).
-  - Leer un registro fuera del alcance responde 404.
+  - Leer, editar o borrar un registro fuera del alcance responde 404. Apuntar a un departamento, sede o empleado fuera del alcance al crear o editar responde 422.
+- **Cómo se aplica:**
+  - El access token lleva `role` y `branch_ids`; un cambio de sedes se aplica en el siguiente token.
+  - Cada ruta convierte las credenciales con `scopeFrom` (`backend/src/lib/data-scope.js`).
+  - Los repositorios filtran con `inBranches`, `inCompanies`, `inDepartments` o `forEmployees`, y los servicios validan referencias con `allowsBranch`, `allowsDepartment` y `allowsEmployee`.
+  - Turnos, motivos y reglas son catálogos globales y no se filtran.
 
 ## Autenticación y autorización
 

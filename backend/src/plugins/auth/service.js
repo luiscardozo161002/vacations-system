@@ -14,9 +14,21 @@ const addHours = (hours) => addSeconds(hours * 3600);
 const addDays = (days) => addSeconds(days * 86400);
 
 const issueAccessToken = async (user) => {
-  const scope = await repository.findPermissionCodes(user.role_id);
+  const [scope, role, branches] = await Promise.all([
+    repository.findPermissionCodes(user.role_id),
+    repository.findRoleCode(user.role_id),
+    repository.findBranches(user.user_id),
+  ]);
   return Jwt.token.generate(
-    { user_id: user.user_id, role_id: user.role_id, employee_id: user.employee_id, username: user.username, scope },
+    {
+      user_id: user.user_id,
+      role_id: user.role_id,
+      role,
+      employee_id: user.employee_id,
+      username: user.username,
+      branch_ids: branches.map((branch) => branch.branch_id),
+      scope,
+    },
     { key: config.auth.jwtSecret, algorithm: 'HS256' },
     { ttlSec: config.auth.accessTokenTtlSeconds }
   );
@@ -167,7 +179,12 @@ const getMe = async (userId) => {
   const row = await repository.findProfile(userId);
   if (!row) throw new AppError('USER_NOT_FOUND', 'El usuario no existe');
 
-  const permissions = await repository.findPermissionCodes(row.role_id);
+  const [permissions, assignedBranches] = await Promise.all([
+    repository.findPermissionCodes(row.role_id),
+    repository.findBranches(userId),
+  ]);
+  const branches =
+    assignedBranches.length || !row.employee_id ? assignedBranches : await repository.findEmployeeBranch(row.employee_id);
 
   return {
     user_id: row.user_id,
@@ -185,6 +202,7 @@ const getMe = async (userId) => {
           shift_id: row.shift_id,
         }
       : null,
+    branches,
     permissions,
   };
 };

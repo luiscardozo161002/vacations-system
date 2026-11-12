@@ -4,11 +4,13 @@ const db = require('../../db');
 const Employee = require('./model');
 const { COLUMNS } = require('./fields');
 const { buildOrderBy, paginationMeta } = require('../../lib/list-query');
+const { forEmployees } = require('../../lib/data-scope');
 
 const DEFAULT_SORT = [{ column: 'employee_id', order: 'asc' }];
 
-const list = async ({ department_id, status, sort, page = 1, pageSize = 20 }) => {
+const list = async ({ department_id, status, sort, page = 1, pageSize = 20 }, scope) => {
   const query = Employee.query().select(COLUMNS).orderBy(buildOrderBy(sort, COLUMNS, DEFAULT_SORT));
+  forEmployees(query, scope, 'employee_id');
 
   if (department_id !== undefined) query.where('department_id', department_id);
   if (status !== undefined) query.where('status', status);
@@ -18,21 +20,20 @@ const list = async ({ department_id, status, sort, page = 1, pageSize = 20 }) =>
   return { data: results, pagination: paginationMeta(page, pageSize, total) };
 };
 
-const findById = (employeeId) => Employee.query().select(COLUMNS).findById(employeeId);
+const findById = (employeeId, scope) =>
+  forEmployees(Employee.query().select(COLUMNS).where('employee_id', employeeId), scope, 'employee_id').first();
 
 const create = (data) => Employee.query().insert(data).returning(COLUMNS);
 
-const update = async (employeeId, data) => {
-  const [employee] = await Employee.query()
-    .where('employee_id', employeeId)
+const update = async (employeeId, data, scope) => {
+  const [employee] = await forEmployees(Employee.query().where('employee_id', employeeId), scope, 'employee_id')
     .patch({ ...data, updated_at: db.fn.now() })
     .returning(COLUMNS);
   return employee || null;
 };
 
-const remove = async (employeeId) => {
-  const [employee] = await Employee.query()
-    .where('employee_id', employeeId)
+const remove = async (employeeId, scope) => {
+  const [employee] = await forEmployees(Employee.query().where('employee_id', employeeId), scope, 'employee_id')
     .patch({ status: 'inactive', updated_at: db.fn.now() })
     .returning(COLUMNS);
   return employee || null;
