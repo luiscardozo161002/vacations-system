@@ -320,6 +320,12 @@ La configuración vive en [frontend/src/app/navigation.ts](frontend/src/app/navi
 - **Edición:** RH edita los días. Solo el Superusuario crea reglas.
 - **Validación:** la API rechaza rangos que se crucen con otra regla del mismo año (`409 RULE_OVERLAP`).
 
+**Usuarios (Superusuario):**
+- **Tabla:** cada cuenta muestra su nombre, correo, rol, sedes y estado.
+- **Alta:** con usuario, correo, contraseña inicial, rol y empleado vinculado (opcional).
+- **Asignación organizacional:** a los usuarios de RH se les marcan sus sedes y las acciones que pueden hacer (aprobar, rechazar y cancelar). Los cambios aplican en su siguiente token.
+- **Desactivar:** se puede desactivar y reactivar con confirmación. Un usuario desactivado ya no puede entrar.
+
 **Dashboard:**
 - **Superusuario y RH:** ven los indicadores de su alcance, las próximas ausencias, los empleados por departamento (con la sede cuando el nombre se repite) y la actividad reciente.
 - **Empleado:** ve su perfil, su saldo con horas y sus últimas solicitudes y avisos. En "Días" el empleado también llega a esta vista.

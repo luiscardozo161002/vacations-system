@@ -13,6 +13,7 @@ import { DepartmentsPage } from './features/departments/pages/DepartmentsPage';
 import { CompaniesPage } from './features/companies/pages/CompaniesPage';
 import { ShiftsPage } from './features/shifts/pages/ShiftsPage';
 import { RulesPage } from './features/rules/pages/RulesPage';
+import { UsersPage } from './features/users/pages/UsersPage';
 import { SettingsPage } from './features/settings/pages/SettingsPage';
 import { LoginPage } from './features/auth/pages/LoginPage';
 import { useAuth } from './features/auth/auth-context';
@@ -28,6 +29,7 @@ const PAGES: Record<string, ReactNode> = {
   '/empresas': <CompaniesPage />,
   '/turnos': <ShiftsPage />,
   '/reglas': <RulesPage />,
+  '/usuarios': <UsersPage />,
   '/configuracion': <SettingsPage />,
 };
 

@@ -1,6 +1,7 @@
 const STATUS: Record<string, [string, string]> = {
   active: ['success', 'Activo'],
   inactive: ['neutral', 'Inactivo'],
+  locked: ['danger', 'Bloqueado'],
   pending: ['warning', 'Pendiente'],
   approved: ['success', 'Aprobada'],
   rejected: ['danger', 'Rechazada'],
