@@ -3,7 +3,7 @@
 const Joi = require('joi');
 
 const id = Joi.number().integer().positive();
-const isoDate = Joi.string().pattern(/^\d{4}-\d{2}-\d{2}$/).message('El formato es YYYY-MM-DD');
+const isoDate = Joi.string().pattern(/^\d{4}-\d{2}-\d{2}$/).message('El formato es AAAA-MM-DD');
 
 const fields = {
   employee_id: id,

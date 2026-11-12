@@ -9,6 +9,7 @@ const pkg = require('../package.json');
 
 require('./db');
 const errorHandler = require('./lib/error-handler');
+const { VALIDATION_MESSAGES } = require('./lib/validation-messages');
 const healthPlugin = require('./plugins/health');
 const employeesPlugin = require('./plugins/employees/routes');
 const departmentsPlugin = require('./plugins/departments/routes');
@@ -47,8 +48,12 @@ const createServer = async () => {
         origin: config.cors.origins,
       },
       validate: {
+        options: {
+          messages: VALIDATION_MESSAGES,
+          errors: { wrap: { label: false, array: false } },
+        },
         failAction: (_request, _h, err) => {
-          throw Boom.badRequest(err.message);
+          throw Boom.badRequest(err.message, { validation: true });
         },
       },
     },

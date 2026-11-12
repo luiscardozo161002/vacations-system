@@ -56,7 +56,7 @@ const login = async ({ email, username, password: plainPassword }, context) => {
 
   if (user.status === 'locked') {
     if (user.locked_until && new Date(user.locked_until) > new Date()) {
-      throw new AppError('ACCOUNT_LOCKED', 'La cuenta esta bloqueada temporalmente por demasiados intentos fallidos');
+      throw new AppError('ACCOUNT_LOCKED', 'La cuenta está bloqueada temporalmente por demasiados intentos fallidos');
     }
 
     await repository.updateUser(user.user_id, { status: 'active', failed_login_attempts: 0, locked_until: null });
@@ -65,7 +65,7 @@ const login = async ({ email, username, password: plainPassword }, context) => {
   }
 
   if (user.status !== 'active') {
-    throw new AppError('ACCOUNT_INACTIVE', 'El usuario no esta activo');
+    throw new AppError('ACCOUNT_INACTIVE', 'El usuario no está activo');
   }
 
   const validPassword = await password.verify(plainPassword, user.password_hash);
@@ -81,7 +81,7 @@ const login = async ({ email, username, password: plainPassword }, context) => {
     await repository.logAuditEvent(user.user_id, 'LOGIN_FAILED', context);
 
     if (locked) {
-      throw new AppError('ACCOUNT_LOCKED', 'La cuenta se bloqueo por demasiados intentos fallidos');
+      throw new AppError('ACCOUNT_LOCKED', 'La cuenta se bloqueó por demasiados intentos fallidos');
     }
     throw new AppError('INVALID_CREDENTIALS', 'Usuario o contraseña incorrectos');
   }
@@ -108,12 +108,12 @@ const login = async ({ email, username, password: plainPassword }, context) => {
 const refresh = async ({ refreshToken }, context) => {
   const session = await repository.findActiveSessionByHash(hashToken(refreshToken));
   if (!session) {
-    throw new AppError('INVALID_REFRESH_TOKEN', 'El refresh token no es valido o expiro');
+    throw new AppError('INVALID_REFRESH_TOKEN', 'La sesión no es válida o expiró');
   }
 
   const user = await repository.findUserById(session.user_id);
   if (!user || user.status !== 'active') {
-    throw new AppError('ACCOUNT_INACTIVE', 'El usuario no esta activo');
+    throw new AppError('ACCOUNT_INACTIVE', 'El usuario no está activo');
   }
 
   await repository.revokeSession(session.session_id);
@@ -150,7 +150,7 @@ const requestPasswordReset = async ({ email }, context) => {
   }
 
   return {
-    message: 'Si el correo existe, se genero un token de restablecimiento',
+    message: 'Si el correo existe, se generó un código de restablecimiento',
     ...(devToken ? { devToken } : {}),
   };
 };
@@ -158,7 +158,7 @@ const requestPasswordReset = async ({ email }, context) => {
 const confirmPasswordReset = async ({ token, newPassword }, context) => {
   const resetRow = await repository.findActiveResetTokenByHash(hashToken(token));
   if (!resetRow) {
-    throw new AppError('INVALID_RESET_TOKEN', 'El token de restablecimiento no es valido o expiro');
+    throw new AppError('INVALID_RESET_TOKEN', 'El código de restablecimiento no es válido o expiró');
   }
 
   const newHash = await password.hash(newPassword);

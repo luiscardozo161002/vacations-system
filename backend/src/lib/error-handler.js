@@ -48,7 +48,7 @@ const DB_ERRORS = {
     sqlstate: '23505',
     status: 409,
     code: 'EMPLOYEE_NUMBER_EXISTS',
-    message: 'El numero de empleado ya esta registrado',
+    message: 'El número de empleado ya está registrado',
   },
   employees_department_id_foreign: {
     sqlstate: '23503',
@@ -66,7 +66,7 @@ const DB_ERRORS = {
     sqlstate: '23505',
     status: 409,
     code: 'DEPARTMENT_CODE_EXISTS',
-    message: 'Ya existe un departamento con ese codigo en esa sede',
+    message: 'Ya existe un departamento con ese código en esa sede',
   },
   departments_branch_id_foreign: {
     sqlstate: '23503',
@@ -78,7 +78,7 @@ const DB_ERRORS = {
     sqlstate: '23505',
     status: 409,
     code: 'BRANCH_CODE_EXISTS',
-    message: 'Ya existe una sede con ese codigo',
+    message: 'Ya existe una sede con ese código',
   },
   branches_company_id_foreign: {
     sqlstate: '23503',
@@ -102,7 +102,7 @@ const DB_ERRORS = {
     sqlstate: '23505',
     status: 409,
     code: 'SHIFT_CODE_EXISTS',
-    message: 'Ya existe un turno con ese codigo',
+    message: 'Ya existe un turno con ese código',
   },
   company_folio_unique: {
     sqlstate: '23505',
@@ -120,19 +120,19 @@ const DB_ERRORS = {
     sqlstate: '23505',
     status: 409,
     code: 'REASON_DESCRIPTION_EXISTS',
-    message: 'Ya existe un motivo con esa descripcion',
+    message: 'Ya existe un motivo con esa descripción',
   },
   roles_role_code_unique: {
     sqlstate: '23505',
     status: 409,
     code: 'ROLE_CODE_EXISTS',
-    message: 'Ya existe un rol con ese codigo',
+    message: 'Ya existe un rol con ese código',
   },
   permissions_permission_code_unique: {
     sqlstate: '23505',
     status: 409,
     code: 'PERMISSION_CODE_EXISTS',
-    message: 'Ya existe un permiso con ese codigo',
+    message: 'Ya existe un permiso con ese código',
   },
   role_permissions_role_id_foreign: {
     sqlstate: '23503',
@@ -156,7 +156,7 @@ const DB_ERRORS = {
     sqlstate: '23503',
     status: 422,
     code: 'INVALID_RULE',
-    message: 'La regla de acumulacion no existe',
+    message: 'La regla de acumulación no existe',
   },
   uq_vacation_entitlements: {
     sqlstate: '23505',
@@ -186,13 +186,13 @@ const DB_ERRORS = {
     sqlstate: '23505',
     status: 409,
     code: 'USERNAME_EXISTS',
-    message: 'Ese nombre de usuario ya esta en uso',
+    message: 'Ese nombre de usuario ya está en uso',
   },
   users_email_unique: {
     sqlstate: '23505',
     status: 409,
     code: 'EMAIL_EXISTS',
-    message: 'Ese correo ya esta en uso',
+    message: 'Ese correo ya está en uso',
   },
   users_employee_id_unique: {
     sqlstate: '23505',
@@ -216,11 +216,28 @@ const DB_ERRORS = {
 
 const SQLSTATE_FALLBACK = {
   23505: { status: 409, code: 'DUPLICATE_RECORD', message: 'Ya existe un registro con esos datos' },
-  23503: { status: 409, code: 'RELATED_RECORDS', message: 'La operacion afecta registros relacionados' },
+  23503: { status: 409, code: 'RELATED_RECORDS', message: 'La operación afecta registros relacionados' },
   23514: { status: 400, code: 'INVALID_CONSTRAINT', message: 'Los datos incumplen una regla de integridad' },
   '08001': { status: 503, code: 'DATABASE_UNAVAILABLE', message: 'Servicio temporalmente no disponible' },
   '08006': { status: 503, code: 'DATABASE_UNAVAILABLE', message: 'Servicio temporalmente no disponible' },
   53300: { status: 503, code: 'DATABASE_UNAVAILABLE', message: 'Servicio temporalmente no disponible' },
+};
+
+const HTTP_ERRORS = {
+  401: ['UNAUTHORIZED', 'Tu sesión no es válida o expiró; inicia sesión de nuevo'],
+  403: ['FORBIDDEN', 'No tienes permiso para esta acción'],
+  404: ['NOT_FOUND', 'La ruta solicitada no existe'],
+  413: ['PAYLOAD_TOO_LARGE', 'La petición es demasiado grande'],
+  415: ['UNSUPPORTED_MEDIA_TYPE', 'El formato de la petición no es compatible'],
+};
+
+const HAPI_INVALID_JSON = 'Invalid request payload JSON format';
+
+const badRequest = (response) => {
+  const message = response.output.payload.message;
+  if (response.data?.validation) return ['VALIDATION_ERROR', message];
+  if (message === HAPI_INVALID_JSON) return ['INVALID_JSON', 'El cuerpo de la petición no es JSON válido'];
+  return ['BAD_REQUEST', message];
 };
 
 const send = (h, status, code, message) => {
@@ -238,14 +255,11 @@ module.exports = {
         return h.continue;
       }
 
-      if (response.output.statusCode === 403) {
-        return send(h, 403, 'FORBIDDEN', 'No tienes permiso para esta accion');
-      }
+      const status = response.output.statusCode;
 
-      if (response.output.statusCode !== 500) {
-        const status = response.output.statusCode;
-        return send(h, status, `HTTP_${status}`, response.output.payload.message);
-      }
+      if (status === 400) return send(h, 400, ...badRequest(response));
+      if (HTTP_ERRORS[status]) return send(h, status, ...HTTP_ERRORS[status]);
+      if (status !== 500) return send(h, status, `HTTP_${status}`, response.output.payload.message);
 
       const error = response.cause || response;
 
@@ -275,7 +289,7 @@ module.exports = {
         path: request.path,
       });
 
-      return send(h, 500, 'INTERNAL_ERROR', 'Ocurrio un error interno');
+      return send(h, 500, 'INTERNAL_ERROR', 'Ocurrió un error interno');
     });
   },
 };

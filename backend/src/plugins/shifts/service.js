@@ -25,7 +25,7 @@ const replaceSchedule = async (shiftId, days) => {
 
   const invalidDay = days.find((day) => day.is_working_day && day.check_out_time <= day.check_in_time);
   if (invalidDay) {
-    throw new AppError('INVALID_SCHEDULE', `La salida debe ser despues de la entrada (dia ${invalidDay.day_of_week})`);
+    throw new AppError('INVALID_SCHEDULE', `La salida debe ser después de la entrada (día ${invalidDay.day_of_week})`);
   }
 
   await repository.replaceSchedule(shiftId, days);

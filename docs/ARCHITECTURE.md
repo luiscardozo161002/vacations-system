@@ -45,7 +45,10 @@ frontend/
 
 company, branches, shifts (con su horario semanal anidado), departments, employees, roles, permissions, role-permissions, users, auth, auth-audit-log, vacation-accrual-rules, vacation-entitlements, reasons, notices.
 
-Cada plugin sigue el mismo patrón: `model.js` (Objection), `schemas.js` (Joi), `fields.js` (columnas expuestas), `service.js` (lógica + queries), `routes.js` (handlers Hapi). Las respuestas de error pasan por un `onPreResponse` global (`lib/error-handler.js`) que traduce errores de Postgres (constraints reales, verificados contra `pg_constraint`) a mensajes legibles.
+Cada plugin sigue el mismo patrón: `model.js` (Objection), `schemas.js` (Joi), `fields.js` (columnas expuestas), `service.js` (lógica + queries), `routes.js` (handlers Hapi). Las respuestas de error pasan por un `onPreResponse` global (`lib/error-handler.js`) que traduce errores de Postgres (constraints reales, verificados contra `pg_constraint`) a mensajes legibles. Todos los mensajes salen en español:
+
+- **Validación:** usa `lib/validation-messages.js` y responde `400 VALIDATION_ERROR`, por ejemplo "El campo department_id es obligatorio".
+- **Errores de Hapi:** salen con su propio código: `UNAUTHORIZED`, `NOT_FOUND`, `INVALID_JSON`, etc.
 
 ## Empresas, sedes y alcance de datos
 
