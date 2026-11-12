@@ -10,8 +10,8 @@ import { useAuth } from '../../auth/auth-context';
 import { useDepartments } from '../../departments/hooks/useDepartments';
 import { useReasons } from '../../reasons/hooks/useReasons';
 import { useNotices } from '../hooks/useNotices';
-import { RequestForm } from '../components/RequestForm';
-import { RequestDetail } from '../components/RequestDetail';
+import { AbsenceForm } from '../components/AbsenceForm';
+import { AbsenceDetail } from '../components/AbsenceDetail';
 
 const PAGE_SIZE = 10;
 
@@ -142,12 +142,19 @@ export function RequestsPage() {
         }}
       />
 
-      {formOpen && user && (
-        <RequestForm user={user} reasons={reasons} onClose={() => setFormOpen(false)} onSaved={handleSaved} />
+      {formOpen && user?.employee && (
+        <AbsenceForm
+          title="Nueva solicitud de aviso de ausencia"
+          submitLabel="Enviar solicitud"
+          reasons={reasons}
+          employee={user.employee}
+          onClose={() => setFormOpen(false)}
+          onSaved={handleSaved}
+        />
       )}
 
       {selected && user && (
-        <RequestDetail
+        <AbsenceDetail
           key={selected.notice_id}
           notice={selected}
           user={user}

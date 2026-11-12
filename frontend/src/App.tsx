@@ -5,6 +5,7 @@ import { PendingPage } from './app/PendingPage';
 import { NAV_GROUPS, visibleGroups } from './app/navigation';
 import { EmployeesPage } from './features/employees/pages/EmployeesPage';
 import { RequestsPage } from './features/requests/pages/RequestsPage';
+import { NoticesPage } from './features/requests/pages/NoticesPage';
 import { SettingsPage } from './features/settings/pages/SettingsPage';
 import { LoginPage } from './features/auth/pages/LoginPage';
 import { useAuth } from './features/auth/auth-context';
@@ -12,6 +13,7 @@ import { useAuth } from './features/auth/auth-context';
 const PAGES: Record<string, ReactNode> = {
   '/empleados': <EmployeesPage />,
   '/solicitudes': <RequestsPage />,
+  '/avisos': <NoticesPage />,
   '/configuracion': <SettingsPage />,
 };
 

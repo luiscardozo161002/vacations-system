@@ -290,6 +290,11 @@ La configuración vive en [frontend/src/app/navigation.ts](frontend/src/app/navi
 - **Nueva solicitud:** solo para quien tiene empleado vinculado. Muestra el cálculo en vivo con `sdk.notices.preview` y no deja enviar si hay un error.
 - **Detalle:** según el usuario, aprueba, rechaza o cancela, siguiendo sus permisos y las acciones de revisión que tiene.
 
+**Avisos:**
+- **Registro:** RH registra avisos ya aprobados para empleados de sus sedes. Busca al empleado por número o nombre y elige cualquier motivo, con fechas u horas.
+- **Formulario:** es el mismo de Solicitudes, con el cálculo en vivo. Un aviso de Vacaciones descuenta el saldo al registrarse.
+- **Empleado:** ve sus avisos en "Mis avisos", sin poder crearlos.
+
 **Recuperar contraseña:** "¿Olvidaste tu contraseña?" pide el correo y luego el código. Fuera de producción el código se llena solo con el `devToken` de la API. En producción hará falta el envío por correo (VM-054).
 
 ## Próximos pasos

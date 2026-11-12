@@ -232,6 +232,15 @@ exports.seed = async function (knex) {
     (10, 5, 2,    'rejected', CURRENT_DATE + 5,  CURRENT_DATE + 9,  NULL,    NULL,    0,   'Sin antiguedad suficiente: no ha cumplido su primer anio', now(),                      now())
   `);
 
+  await knex('notices')
+    .whereIn('reason_id', [3, 4, 7, 8])
+    .update({
+      kind: 'notice',
+      approved_by: knex.raw('COALESCE(approved_by, 2)'),
+      created_by: knex.raw('COALESCE(approved_by, 2)'),
+      approved_at: knex.raw('COALESCE(approved_at, request_date)'),
+    });
+
   const seededNotices = await knex('notices as n')
     .join('employees as e', 'e.employee_id', 'n.employee_id')
     .select(

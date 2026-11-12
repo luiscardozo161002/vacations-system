@@ -12,7 +12,7 @@ import { BreakdownBox } from './BreakdownBox';
 
 type Action = 'approve' | 'reject' | 'cancel';
 
-interface RequestDetailProps {
+interface AbsenceDetailProps {
   notice: Notice;
   user: CurrentUser;
   can: (permission: string) => boolean;
@@ -20,13 +20,27 @@ interface RequestDetailProps {
   onChanged: () => void;
 }
 
-const DONE: Record<Action, string> = {
-  approve: 'aprobada',
-  reject: 'rechazada',
-  cancel: 'cancelada',
-};
+const LABELS = {
+  request: {
+    title: 'Detalle de solicitud',
+    noun: 'la solicitud',
+    subject: 'Solicitud',
+    cancel: 'Cancelar solicitud',
+    days: 'Días solicitados',
+    done: { approve: 'aprobada', reject: 'rechazada', cancel: 'cancelada' },
+  },
+  notice: {
+    title: 'Detalle del aviso',
+    noun: 'el aviso',
+    subject: 'Aviso',
+    cancel: 'Cancelar aviso',
+    days: 'Días',
+    done: { approve: 'aprobado', reject: 'rechazado', cancel: 'cancelado' },
+  },
+} as const;
 
-export function RequestDetail({ notice, user, can, onClose, onChanged }: RequestDetailProps) {
+export function AbsenceDetail({ notice, user, can, onClose, onChanged }: AbsenceDetailProps) {
+  const labels = LABELS[notice.kind];
   const showToast = useToast();
   const [preview, setPreview] = useState<NoticePreview | null>(null);
   const [confirming, setConfirming] = useState<Action | null>(null);
@@ -68,7 +82,7 @@ export function RequestDetail({ notice, user, can, onClose, onChanged }: Request
     setWorking(true);
     try {
       await sdk.notices[action](notice.notice_id);
-      showToast(`Solicitud de ${notice.employee_name} ${DONE[action]}.`);
+      showToast(`${labels.subject} de ${notice.employee_name} ${labels.done[action]}.`);
       onChanged();
     } catch (err) {
       showToast(getErrorMessage(err));
@@ -81,14 +95,14 @@ export function RequestDetail({ notice, user, can, onClose, onChanged }: Request
   return (
     <>
       <Drawer
-        title="Detalle de solicitud"
+        title={labels.title}
         onClose={onClose}
         footer={
           hasActions ? (
             <>
               {canCancel && (
                 <button type="button" className="btn btn-secondary" onClick={() => setConfirming('cancel')} disabled={working}>
-                  Cancelar solicitud
+                  {labels.cancel}
                 </button>
               )}
               {canReject && (
@@ -109,20 +123,28 @@ export function RequestDetail({ notice, user, can, onClose, onChanged }: Request
           )
         }
       >
-        <div className="profile-head">
-          <div className="avatar">{initials(notice.employee_name ?? '')}</div>
-          <div>
-            <h2 style={{ fontSize: 16 }}>{notice.employee_name}</h2>
-            <p className="cell-sub">{notice.department_name}</p>
+        {notice.kind === 'request' && (
+          <div className="profile-head">
+            <div className="avatar">{initials(notice.employee_name ?? '')}</div>
+            <div>
+              <h2 style={{ fontSize: 16 }}>{notice.employee_name}</h2>
+              <p className="cell-sub">{notice.department_name}</p>
+            </div>
           </div>
-        </div>
+        )}
         <div className="kv-grid">
+          {notice.kind === 'notice' && (
+            <div className="kv-item">
+              <div className="k">Empleado</div>
+              <div className="v">{notice.employee_name}</div>
+            </div>
+          )}
           <div className="kv-item">
             <div className="k">Fecha y horario</div>
             <div className="v">{formatAbsenceRange(notice)}</div>
           </div>
           <div className="kv-item">
-            <div className="k">Días solicitados</div>
+            <div className="k">{labels.days}</div>
             <div className="v">{formatDaysHours(notice.days_taken, notice.hours_taken)}</div>
           </div>
           <div className="kv-item">
@@ -154,14 +176,13 @@ export function RequestDetail({ notice, user, can, onClose, onChanged }: Request
 
       {confirming && confirming !== 'approve' && (
         <ConfirmDialog
-          title={confirming === 'reject' ? 'Rechazar solicitud' : 'Cancelar solicitud'}
+          title={confirming === 'reject' ? `Rechazar ${labels.subject.toLowerCase()}` : labels.cancel}
           message={
             <>
-              ¿Confirmas {confirming === 'reject' ? 'rechazar' : 'cancelar'} la solicitud de{' '}
-              <strong>{notice.employee_name}</strong>?
+              ¿Confirmas {confirming === 'reject' ? 'rechazar' : 'cancelar'} {labels.noun} de <strong>{notice.employee_name}</strong>?
             </>
           }
-          confirmLabel={confirming === 'reject' ? 'Rechazar' : 'Cancelar solicitud'}
+          confirmLabel={confirming === 'reject' ? 'Rechazar' : labels.cancel}
           onConfirm={() => run(confirming)}
           onCancel={() => setConfirming(null)}
         />
