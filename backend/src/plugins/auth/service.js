@@ -192,6 +192,7 @@ const getMe = async (userId) => {
     email: row.email,
     status: row.status,
     last_login_at: row.last_login_at,
+    review_actions: row.review_actions,
     role: { role_id: row.role_id, role_code: row.role_code, description: row.role_description },
     employee: row.employee_id
       ? {

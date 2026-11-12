@@ -42,7 +42,7 @@ const noticesPlugin = {
           validate: { payload: schemas.create },
         },
         handler: async (request, h) => {
-          const notice = await service.create(request.payload, scopeFrom(request.auth.credentials));
+          const notice = await service.create(request.payload, request.auth.credentials);
           return h.response(notice).code(201);
         },
       },
@@ -58,18 +58,37 @@ const noticesPlugin = {
         handler: (request) => service.update(request.params.noticeId, request.payload, scopeFrom(request.auth.credentials)),
       },
       {
-        method: 'DELETE',
-        path: '/api/v1/notices/{noticeId}',
+        method: 'POST',
+        path: '/api/v1/notices/{noticeId}/approve',
         options: {
-          description: 'Cancel a notice',
+          description: 'Approve a pending request',
           tags: ['api', 'notices'],
-          auth: requires('requests:delete'),
+          auth: requires('approvals:review'),
           validate: { params: schemas.params },
         },
-        handler: async (request, h) => {
-          await service.remove(request.params.noticeId, scopeFrom(request.auth.credentials));
-          return h.response().code(204);
+        handler: (request) => service.resolve(request.params.noticeId, 'approve', request.auth.credentials),
+      },
+      {
+        method: 'POST',
+        path: '/api/v1/notices/{noticeId}/reject',
+        options: {
+          description: 'Reject a pending request',
+          tags: ['api', 'notices'],
+          auth: requires('approvals:review'),
+          validate: { params: schemas.params },
         },
+        handler: (request) => service.resolve(request.params.noticeId, 'reject', request.auth.credentials),
+      },
+      {
+        method: 'POST',
+        path: '/api/v1/notices/{noticeId}/cancel',
+        options: {
+          description: 'Cancel a request or notice',
+          tags: ['api', 'notices'],
+          auth: requires('approvals:review', 'requests:create'),
+          validate: { params: schemas.params },
+        },
+        handler: (request) => service.resolve(request.params.noticeId, 'cancel', request.auth.credentials),
       },
     ]);
   },

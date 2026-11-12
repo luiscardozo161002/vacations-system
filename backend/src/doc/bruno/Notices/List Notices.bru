@@ -16,8 +16,11 @@ params:query {
   pageSize: 20
   ~employee_id: 1
   ~reason_id: 1
+  ~kind: request
+  ~from: 2026-12-01
+  ~to: 2026-12-31
 }
 
 docs {
-  Ordena por `request_date` descendente (los mas recientes primero).
+  Filtros opcionales: `employee_id`, `reason_id`, `status`, `kind` (`request` solicitudes del empleado, `notice` avisos de RH) y `from`/`to` (ausencias que se cruzan con el rango). El Usuario ve solo sus sedes y el Empleado solo lo suyo.
 }

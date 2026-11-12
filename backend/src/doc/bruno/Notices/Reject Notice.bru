@@ -1,0 +1,21 @@
+meta {
+  name: Reject Notice
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{baseUrl}}/api/v1/notices/:noticeId/reject
+  body: none
+  auth: inherit
+}
+
+params:path {
+  noticeId: 1
+}
+
+docs {
+  Rechaza una solicitud pendiente. Requiere `approvals:review` y la accion `reject`.
+
+  Errores: `404 NOTICE_NOT_FOUND`, `409 INVALID_TRANSITION`, `403 REVIEW_ACTION_FORBIDDEN`.
+}

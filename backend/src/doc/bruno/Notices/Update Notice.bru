@@ -1,0 +1,29 @@
+meta {
+  name: Update Notice
+  type: http
+  seq: 4
+}
+
+patch {
+  url: {{baseUrl}}/api/v1/notices/:noticeId
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+}
+
+params:path {
+  noticeId: 1
+}
+
+body:json {
+  {
+    "remarks": "Observacion actualizada"
+  }
+}
+
+docs {
+  Edita motivo, fechas, horas y observaciones. No cambia el estado: para eso estan approve, reject y cancel.
+}

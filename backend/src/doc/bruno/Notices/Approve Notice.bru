@@ -1,30 +1,21 @@
 meta {
   name: Approve Notice
   type: http
-  seq: 4
+  seq: 5
 }
 
-patch {
-  url: {{baseUrl}}/api/v1/notices/:noticeId
-  body: json
+post {
+  url: {{baseUrl}}/api/v1/notices/:noticeId/approve
+  body: none
   auth: inherit
-}
-
-headers {
-  Content-Type: application/json
 }
 
 params:path {
   noticeId: 1
 }
 
-body:json {
-  {
-    "status": "approved",
-    "approved_by": 2
-  }
-}
-
 docs {
-  Actualizacion parcial generica: tambien sirve para rechazar (`"status": "rejected"`) o cualquier otro campo. No hay una regla de negocio que valide la transicion de estados (por ejemplo, aprobar un aviso ya rechazado): queda a criterio de quien llama.
+  Aprueba una solicitud pendiente. `approved_by` y `approved_at` los pone el servidor con el usuario del token. Requiere `approvals:review` y que el usuario tenga la accion `approve` en `review_actions`.
+
+  Errores: `404 NOTICE_NOT_FOUND` si no existe o es de otra sede; `409 INVALID_TRANSITION` si no esta pendiente; `403 REVIEW_ACTION_FORBIDDEN` si el usuario no puede aprobar.
 }

@@ -2,10 +2,7 @@
 
 const ID_COLUMN = 'notice_id';
 const EDITABLE_FIELDS = [
-  'employee_id',
   'reason_id',
-  'approved_by',
-  'status',
   'absence_start_date',
   'absence_end_date',
   'absence_start_time',
@@ -13,8 +10,18 @@ const EDITABLE_FIELDS = [
   'remaining_days',
   'remaining_hours',
   'remarks',
-  'approved_at',
 ];
-const COLUMNS = [ID_COLUMN, ...EDITABLE_FIELDS, 'request_date'];
+const CREATE_FIELDS = ['employee_id', ...EDITABLE_FIELDS];
+const COLUMNS = [
+  ID_COLUMN,
+  'employee_id',
+  'kind',
+  'status',
+  ...EDITABLE_FIELDS,
+  'created_by',
+  'approved_by',
+  'approved_at',
+  'request_date',
+];
 
-module.exports = { ID_COLUMN, EDITABLE_FIELDS, COLUMNS };
+module.exports = { ID_COLUMN, EDITABLE_FIELDS, CREATE_FIELDS, COLUMNS };

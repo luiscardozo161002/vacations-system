@@ -25,7 +25,9 @@ body:json {
 }
 
 docs {
-  Requeridos: `employee_id`, `reason_id`, `absence_start_date`, `absence_end_date`. `status` opcional (default `pending`).
+  Requeridos: `employee_id`, `reason_id`, `absence_start_date`, `absence_end_date`. El estado lo decide el servidor:
+  - Empleado: crea una solicitud (`kind = request`) pendiente, solo para si mismo.
+  - RH: registra un aviso (`kind = notice`) ya aprobado por quien lo registra, para empleados de sus sedes.
 
-  Errores: `422 INVALID_EMPLOYEE` / `INVALID_REASON` / `INVALID_APPROVER` si los ids no existen. La base valida con un CHECK que `absence_end_date >= absence_start_date` (400 generico si se incumple).
+  Errores: `422 INVALID_EMPLOYEE` si el empleado no existe o esta fuera del alcance; `422 INVALID_REASON` si el motivo no existe. La base valida con un CHECK que `absence_end_date >= absence_start_date` (400 generico si se incumple).
 }

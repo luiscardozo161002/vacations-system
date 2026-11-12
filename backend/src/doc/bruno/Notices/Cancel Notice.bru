@@ -1,11 +1,11 @@
 meta {
   name: Cancel Notice
   type: http
-  seq: 5
+  seq: 7
 }
 
-delete {
-  url: {{baseUrl}}/api/v1/notices/:noticeId
+post {
+  url: {{baseUrl}}/api/v1/notices/:noticeId/cancel
   body: none
   auth: inherit
 }
@@ -15,5 +15,7 @@ params:path {
 }
 
 docs {
-  No es baja logica con `status = 'inactive'` (esa tabla no admite ese valor): pone `status = 'cancelled'`. 204 sin contenido.
+  RH (con la accion `cancel`) cancela una pendiente o una aprobada que todavia no empieza. El empleado solo cancela sus solicitudes pendientes.
+
+  Errores: `404 NOTICE_NOT_FOUND`, `409 INVALID_TRANSITION` (por ejemplo "la ausencia ya empezo"), `403 REVIEW_ACTION_FORBIDDEN`.
 }

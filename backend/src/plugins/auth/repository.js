@@ -38,6 +38,7 @@ const findProfile = (userId) =>
       'u.email',
       'u.status',
       'u.last_login_at',
+      'u.review_actions',
       'r.role_id',
       'r.role_code',
       'r.description as role_description',

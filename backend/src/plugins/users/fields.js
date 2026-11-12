@@ -2,7 +2,7 @@
 
 const ID_COLUMN = 'user_id';
 
-const EDITABLE_FIELDS = ['employee_id', 'role_id', 'username', 'email', 'status'];
+const EDITABLE_FIELDS = ['employee_id', 'role_id', 'username', 'email', 'status', 'review_actions'];
 
 const SAFE_COLUMNS = [
   ID_COLUMN,

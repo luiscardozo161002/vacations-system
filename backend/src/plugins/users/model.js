@@ -11,6 +11,10 @@ class User extends Model {
     return 'user_id';
   }
 
+  static get jsonAttributes() {
+    return [];
+  }
+
   static get jsonSchema() {
     return {
       type: 'object',
@@ -24,6 +28,7 @@ class User extends Model {
         email: { type: 'string', maxLength: 120 },
         password_hash: { type: 'string', maxLength: 255 },
         status: { type: 'string', enum: ['active', 'inactive', 'locked'] },
+        review_actions: { type: 'array', items: { type: 'string', enum: ['approve', 'reject', 'cancel'] } },
         mfa_enabled: { type: 'boolean' },
         mfa_secret: { type: ['string', 'null'], maxLength: 255 },
         failed_login_attempts: { type: 'integer' },

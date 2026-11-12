@@ -10,6 +10,7 @@ const fields = {
   username: Joi.string().max(50),
   email: Joi.string().email().max(120),
   status: Joi.string().valid('active', 'inactive', 'locked'),
+  review_actions: Joi.array().items(Joi.string().valid('approve', 'reject', 'cancel')).unique(),
 };
 
 const password = Joi.string().min(8).max(100);
@@ -20,6 +21,7 @@ const create = Joi.object({
   username: fields.username.required(),
   email: fields.email.required(),
   status: fields.status.default('active'),
+  review_actions: fields.review_actions,
   password: password.required(),
 }).unknown(false);
 

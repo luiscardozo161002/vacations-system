@@ -68,6 +68,12 @@ users N─N branches (user_branches)
   - Los repositorios filtran con `inBranches`, `inCompanies`, `inDepartments` o `forEmployees`, y los servicios validan referencias con `allowsBranch`, `allowsDepartment` y `allowsEmployee`.
   - Turnos, motivos y reglas son catálogos globales y no se filtran.
 
+## Flujo de solicitudes y avisos
+
+- **Tipo de registro.** `notices.kind` dice si es una solicitud (`request`, la crea el empleado y nace `pending`) o un aviso (`notice`, lo registra RH y nace `approved`). Lo decide el servidor según si el token tiene `notices:create`. `created_by`, `approved_by` y `approved_at` salen del token y del reloj del servidor, nunca del cliente.
+- **Cambios de estado.** Solo con `POST /notices/{id}/approve | reject | cancel`, y `PATCH` ya no toca el estado. Cada acción es un `UPDATE … WHERE status IN (…)`, así que dos peticiones simultáneas no pueden aplicar dos transiciones; si no cambia ninguna fila, responde 409 `INVALID_TRANSITION`.
+- **Quién puede.** `users.review_actions` guarda qué acciones puede hacer cada Usuario de RH (por defecto las tres); sin la acción, responde 403 `REVIEW_ACTION_FORBIDDEN`. El Empleado solo cancela sus solicitudes pendientes.
+
 ## Autenticación y autorización
 
 JWT (`@hapi/jwt`) con access token de vida corta (15 min) + refresh token (7 días), contraseñas con `bcryptjs`, bloqueo de cuenta tras 5 intentos fallidos (15 min), tokens de reseteo de contraseña con expiración de 1 hora, y bitácora de auditoría (`auth_audit_log`) para eventos de seguridad.

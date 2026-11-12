@@ -19,6 +19,8 @@ class Notice extends Model {
       properties: {
         notice_id: { type: 'integer' },
         employee_id: { type: 'integer' },
+        kind: { type: 'string', enum: ['request', 'notice'] },
+        created_by: { type: ['integer', 'null'] },
         reason_id: { type: 'integer' },
         approved_by: { type: ['integer', 'null'] },
         status: { type: 'string', enum: ['pending', 'approved', 'rejected', 'cancelled'] },

@@ -18,6 +18,8 @@ export interface LoginResult extends SessionTokens {
   };
 }
 
+export type ReviewAction = 'approve' | 'reject' | 'cancel';
+
 export interface UserBranch {
   branch_id: number;
   company_id: number;
@@ -32,6 +34,7 @@ export interface CurrentUser {
   email: string;
   status: 'active' | 'inactive' | 'locked';
   last_login_at: string | null;
+  review_actions: ReviewAction[];
   role: {
     role_id: number;
     role_code: string;
