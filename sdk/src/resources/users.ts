@@ -20,6 +20,9 @@ export interface User {
   last_login_ip: string | null;
   created_at: string;
   updated_at: string;
+  role_code: string | null;
+  employee_name: string | null;
+  branch_codes: string[];
 }
 
 export interface ListUsersParams extends ListParams {
