@@ -16,9 +16,10 @@ params:query {
   pageSize: 10
   ~department_id: 1
   ~search: perez
+  ~company_id: 2
 }
 
 docs {
-  Lista empleados paginada. Filtros opcionales: `search` (parte del nombre o del numero, sin importar mayusculas), `department_id`, `status` (`active`/`inactive`).
+  Lista empleados paginada. Filtros opcionales: `company_id`, `search` (parte del nombre o del numero, sin importar mayusculas), `department_id`, `status` (`active`/`inactive`).
   Respuesta: `{ data, pagination: { page, pageSize, total } }`.
 }

@@ -9,6 +9,7 @@ const fields = {
   code: Joi.string().max(20),
   department_name: Joi.string().max(150),
   manager_employee_id: id.allow(null),
+  calendar_shared: Joi.boolean(),
   status: Joi.string().valid('active', 'inactive'),
 };
 
@@ -17,6 +18,7 @@ const create = Joi.object({
   code: fields.code.required(),
   department_name: fields.department_name.required(),
   manager_employee_id: fields.manager_employee_id,
+  calendar_shared: fields.calendar_shared.default(true),
   status: fields.status.default('active'),
 }).unknown(false);
 

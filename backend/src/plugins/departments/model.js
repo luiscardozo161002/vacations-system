@@ -22,6 +22,7 @@ class Department extends Model {
         code: { type: 'string', maxLength: 20 },
         department_name: { type: 'string', maxLength: 150 },
         manager_employee_id: { type: ['integer', 'null'] },
+        calendar_shared: { type: 'boolean' },
         status: { type: 'string', enum: ['active', 'inactive'] },
         created_at: { type: 'string' },
         updated_at: { type: 'string' },

@@ -9,9 +9,14 @@ export interface Department {
   code: string;
   department_name: string;
   manager_employee_id: number | null;
+  calendar_shared: boolean;
   status: DepartmentStatus;
   created_at: string;
   updated_at: string;
+  manager_name: string | null;
+  active_employees: number;
+  branch_code: string | null;
+  branch_name: string | null;
 }
 
 export interface ListDepartmentsParams {
@@ -27,16 +32,11 @@ export interface CreateDepartmentInput {
   code: string;
   department_name: string;
   manager_employee_id?: number | null;
+  calendar_shared?: boolean;
   status?: DepartmentStatus;
 }
 
-export interface UpdateDepartmentInput {
-  branch_id?: number;
-  code?: string;
-  department_name?: string;
-  manager_employee_id?: number | null;
-  status?: DepartmentStatus;
-}
+export type UpdateDepartmentInput = Partial<CreateDepartmentInput>;
 
 
 export class DepartmentsResource extends CrudResource<Department, ListDepartmentsParams, CreateDepartmentInput, UpdateDepartmentInput> {

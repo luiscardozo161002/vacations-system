@@ -7,6 +7,8 @@ const db = require('../src/db');
 
 const PASSWORD = 'Vacaciones2026!';
 const THH_HGO_EMPLOYEES = [1, 2, 3, 4, 5, 10, 11, 12];
+const EXPLOTACION = 1;
+const EXPLOTACION_EMPLOYEES = [1, 2, 10, 11];
 
 let server;
 const tokens = {};
@@ -55,13 +57,25 @@ describe('GET /calendar', () => {
     assert.ok(res.result.absences[0].employee_name);
   });
 
-  it('RH solo ve ausencias de su sede y el Empleado solo las suyas', async () => {
+  it('RH solo ve ausencias de su sede', async () => {
     const hr = await calendar('USER', iso(-45), iso(10));
-    const employee = await calendar('EMPLOYEE', iso(-45), iso(10));
 
     assert.ok(hr.result.absences.every((absence) => THH_HGO_EMPLOYEES.includes(absence.employee_id)));
-    assert.ok(employee.result.absences.length > 0);
-    assert.ok(employee.result.absences.every((absence) => absence.employee_id === 1));
+  });
+
+  it('el Empleado ve lo suyo y lo de su departamento solo si el departamento lo comparte', async () => {
+    const shared = await calendar('EMPLOYEE', iso(-45), iso(10));
+    const ids = new Set(shared.result.absences.map((absence) => absence.employee_id));
+
+    assert.ok(ids.has(1));
+    assert.ok([...ids].some((id) => id !== 1));
+    assert.ok([...ids].every((id) => EXPLOTACION_EMPLOYEES.includes(id)));
+
+    await db('departments').where({ department_id: EXPLOTACION }).update({ calendar_shared: false });
+    const hidden = await calendar('EMPLOYEE', iso(-45), iso(10));
+    await db('departments').where({ department_id: EXPLOTACION }).update({ calendar_shared: true });
+
+    assert.ok(hidden.result.absences.every((absence) => absence.employee_id === 1));
   });
 
   it('rechaza rangos invertidos o de más de 62 días', async () => {

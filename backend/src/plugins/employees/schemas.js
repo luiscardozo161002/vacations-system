@@ -33,6 +33,7 @@ const params = Joi.object({
 
 const list = Joi.object({
   search: Joi.string().trim().max(100),
+  company_id: id,
   department_id: id,
   status: Joi.string().valid('active', 'inactive'),
   sort: Joi.string(),

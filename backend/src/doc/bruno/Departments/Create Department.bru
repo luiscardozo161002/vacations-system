@@ -20,12 +20,13 @@ body:json {
     "code": "DEP-01",
     "department_name": "Recursos Humanos",
     "manager_employee_id": null,
+    "calendar_shared": true,
     "status": "active"
   }
 }
 
 docs {
-  Requeridos: `branch_id`, `code`, `department_name`. `manager_employee_id` es opcional (acepta `null`). `status` es opcional (default `active`).
+  Requeridos: `branch_id`, `code`, `department_name`. `manager_employee_id` es opcional (acepta `null`). `calendar_shared` es opcional (default `true`): si esta activo, los empleados del departamento ven en el calendario las ausencias de sus companeros. `status` es opcional (default `active`).
 
   Errores: `422 INVALID_BRANCH` / `INVALID_MANAGER` si los ids no existen o estan fuera de las sedes del usuario; `409 DEPARTMENT_CODE_EXISTS` si `code` ya esta en uso dentro de la sede.
 }

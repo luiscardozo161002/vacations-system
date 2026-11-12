@@ -10,6 +10,20 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 
 const rangeDays = (from, to) => (Date.parse(`${to}T00:00:00Z`) - Date.parse(`${from}T00:00:00Z`)) / DAY_MS + 1;
 
+const sharedDepartmentMates = (employeeId) =>
+  db('employees as mate')
+    .join('departments as dept', 'dept.department_id', 'mate.department_id')
+    .where('dept.calendar_shared', true)
+    .where('mate.department_id', db('employees').where('employee_id', employeeId).select('department_id'))
+    .select('mate.employee_id');
+
+const visibleTo = (query, scope) => {
+  if (scope.role !== 'EMPLOYEE') return forEmployees(query, scope, 'n.employee_id');
+  return query.where((own) =>
+    own.where('n.employee_id', scope.employeeId).orWhereIn('n.employee_id', sharedDepartmentMates(scope.employeeId))
+  );
+};
+
 const findAbsences = (from, to, scope) => {
   const query = db('notices as n')
     .join('employees as e', 'e.employee_id', 'n.employee_id')
@@ -32,7 +46,7 @@ const findAbsences = (from, to, scope) => {
       'n.absence_start_time',
       'n.absence_end_time'
     );
-  return forEmployees(query, scope, 'n.employee_id');
+  return visibleTo(query, scope);
 };
 
 const getCalendar = async ({ from, to }, scope) => {

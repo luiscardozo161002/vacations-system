@@ -10,6 +10,7 @@ export interface Branch {
   status: RecordStatus;
   created_at: string;
   updated_at: string;
+  active_employees: number;
 }
 
 export interface ListBranchesParams extends ListParams {
