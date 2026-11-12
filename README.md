@@ -142,9 +142,9 @@ Queda disponible en `http://localhost:3000` (o el `HOST`/`PORT` configurado).
 
 Las pruebas usan el runner que trae Node (`node:test`) y llaman a la API con `server.inject`, sin levantar el servidor. Corren contra su propia base, `vacations_test` (o la que diga `TEST_DB_NAME`), con las mismas credenciales de `backend/.env`. En cada corrida se crea si no existe, se migra y se vuelve a sembrar, así que nunca tocan tu base de desarrollo. Por seguridad se niegan a correr si el nombre de la base no termina en `_test`.
 
-Las pruebas viven en `backend/test/*.test.js`.
+Las pruebas viven en `backend/test/*.test.js`. Los archivos corren uno por uno (`--test-concurrency=1`) porque comparten la misma base.
 
-El SDK tiene sus propias pruebas en `sdk/test/*.test.ts`, también con `node:test`. Simulan `fetch`, así que no necesitan la API ni la base. Cubren el query string, los errores de la API traducidos a `SdkHttpError`, la renovación del token en un 401 (una sola vez y compartida entre peticiones simultáneas) y el recurso `sdk.auth`. `tsc` las compila a CommonJS en `sdk/build/` antes de correrlas:
+El SDK tiene sus propias pruebas en `sdk/test/*.test.ts`, también con `node:test`. Simulan `fetch`, así que no necesitan la API ni la base. Cubren el query string, los errores de la API traducidos a `SdkHttpError`, la renovación del token en un 401 (una sola vez y compartida entre peticiones simultáneas) el recurso `sdk.auth` y la ruta y método que arma cada recurso. `tsc` las compila a CommonJS en `sdk/build/` antes de correrlas:
 
 ```bash
 npm test --workspace=sdk
@@ -233,6 +233,23 @@ Durante el desarrollo conviene dejarlo en modo watch:
 ```bash
 npm run dev --workspace=sdk
 ```
+
+**Recursos:**
+- **Auth y salud:** `auth`, `health`.
+- **Organización:** `companies`, `branches`, `departments`, `employees`, `shifts` (con `replaceSchedule`).
+- **Ausencias:**
+  - `notices`, con `preview`, `approve`, `reject` y `cancel`;
+  - `reasons`;
+  - `vacationEntitlements`;
+  - `accrualRules`.
+- **Administración:**
+  - `users`, con `branches` y `replaceBranches`;
+  - `roles`, `permissions`, `rolePermissions`;
+  - `auditLog`.
+- **Cómo funcionan:** los catálogos heredan de `CrudResource` (`list`, `get`, `create`, `update`, `remove`); `list` acepta los filtros de la API más `sort`, `page` y `pageSize`.
+- **Datos para pantallas:**
+  - Las solicitudes traen el nombre, número y departamento del empleado y la descripción del motivo.
+  - Los saldos traen lo disponible real en días y horas (`available`) según la jornada del turno.
 
 **Sesión:** `sdk.auth.login({ email, password })` (o `{ username, password }`) guarda los tokens y desde ahí cada petición lleva el `accessToken`. Si una petición responde `401`, el SDK renueva la sesión con el `refreshToken` y la reintenta una vez; si varias fallan a la vez, comparten una sola renovación. Si el refresh también falla, borra los tokens y llama a `onSessionExpired`. `sdk.auth.logout()` revoca el refresh token.
 

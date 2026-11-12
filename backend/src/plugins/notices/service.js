@@ -6,6 +6,7 @@ const db = require('../../db');
 const { AppError } = require('../../lib/app-error');
 const { EDITABLE_FIELDS, CREATE_FIELDS } = require('./fields');
 const { scopeFrom, allowsEmployee } = require('../../lib/data-scope');
+const { findEmployeeDetails } = require('../../lib/employee-details');
 
 const REVIEW_PERMISSION = 'approvals:review';
 const REGISTER_PERMISSION = 'notices:create';
@@ -46,13 +47,40 @@ const ensureEmployeeInScope = async (credentials, employeeId) => {
   }
 };
 
-const list = (filters, scope) => repository.list(filters, scope);
+const describeAll = async (notices) => {
+  const employees = await findEmployeeDetails(notices.map((notice) => notice.employee_id));
+  const reasons = new Map(
+    (await db('reasons').whereIn('reason_id', [...new Set(notices.map((notice) => notice.reason_id))]).select('reason_id', 'description')).map(
+      (reason) => [reason.reason_id, reason.description]
+    )
+  );
 
-const findById = async (noticeId, scope) => {
+  return notices.map((notice) => {
+    const employee = employees.get(notice.employee_id);
+    return {
+      ...notice,
+      employee_name: employee?.employee_name ?? null,
+      employee_number: employee?.employee_number ?? null,
+      department_name: employee?.department_name ?? null,
+      reason_description: reasons.get(notice.reason_id) ?? null,
+    };
+  });
+};
+
+const describe = async (notice) => (await describeAll([notice]))[0];
+
+const list = async (filters, scope) => {
+  const page = await repository.list(filters, scope);
+  return { ...page, data: await describeAll(page.data) };
+};
+
+const findInScope = async (noticeId, scope) => {
   const notice = await repository.findById(noticeId, scope);
   if (!notice) throw new AppError('NOTICE_NOT_FOUND', 'El aviso no existe');
   return notice;
 };
+
+const findById = async (noticeId, scope) => describe(await findInScope(noticeId, scope));
 
 const preview = async (data, credentials) => {
   await ensureEmployeeInScope(credentials, data.employee_id);
@@ -63,7 +91,7 @@ const create = async (data, credentials) => {
   await ensureEmployeeInScope(credentials, data.employee_id);
   const registersNotice = credentials.scope.includes(REGISTER_PERMISSION);
 
-  return db.transaction(async (trx) => {
+  const notice = await db.transaction(async (trx) => {
     const evaluation = await balance.evaluate(trx, data, { lock: registersNotice });
     balance.assertValid(evaluation);
 
@@ -85,14 +113,15 @@ const create = async (data, credentials) => {
       trx
     );
   });
+  return describe(notice);
 };
 
 const update = async (noticeId, data, scope) => {
-  const current = await findById(noticeId, scope);
+  const current = await findInScope(noticeId, scope);
   const changes = pick(data, EDITABLE_FIELDS);
 
   if (!SCHEDULE_FIELDS.some((field) => changes[field] !== undefined)) {
-    return repository.update(noticeId, changes, scope);
+    return describe(await repository.update(noticeId, changes, scope));
   }
 
   if (current.status !== 'pending') {
@@ -101,7 +130,7 @@ const update = async (noticeId, data, scope) => {
 
   const evaluation = await balance.evaluate(db, { ...current, ...changes });
   balance.assertValid(evaluation);
-  return repository.update(noticeId, { ...changes, ...takenFrom(evaluation) }, scope);
+  return describe(await repository.update(noticeId, { ...changes, ...takenFrom(evaluation) }, scope));
 };
 
 const rejectionMessage = (rule, notice) => {
@@ -130,7 +159,7 @@ const applyBalance = async (trx, notice) => {
 
 const resolve = async (noticeId, action, credentials) => {
   const scope = scopeFrom(credentials);
-  await findById(noticeId, scope);
+  await findInScope(noticeId, scope);
   const isReviewer = credentials.scope.includes(REVIEW_PERMISSION);
 
   if (isReviewer) {
@@ -143,13 +172,14 @@ const resolve = async (noticeId, action, credentials) => {
   const rule = isReviewer ? ACTIONS[action] : OWNER_CANCEL;
   const patch = action === 'approve' ? { approved_by: credentials.user_id, approved_at: db.fn.now() } : {};
 
-  return db.transaction(async (trx) => {
+  const notice = await db.transaction(async (trx) => {
     const updated = await repository.transition(noticeId, rule, patch, trx);
     if (!updated) {
       throw new AppError('INVALID_TRANSITION', rejectionMessage(rule, await repository.findById(noticeId, scope)));
     }
     return applyBalance(trx, updated);
   });
+  return describe(notice);
 };
 
 module.exports = { list, findById, preview, create, update, resolve };

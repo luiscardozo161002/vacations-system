@@ -14,6 +14,6 @@ const EDITABLE_FIELDS = [
   'period_end',
   'status',
 ];
-const COLUMNS = [ID_COLUMN, ...EDITABLE_FIELDS, 'remaining_days', 'generated_at'];
+const COLUMNS = [ID_COLUMN, ...EDITABLE_FIELDS, 'generated_at'];
 
 module.exports = { ID_COLUMN, EDITABLE_FIELDS, COLUMNS };

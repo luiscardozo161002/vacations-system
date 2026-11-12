@@ -188,6 +188,24 @@ describe('Descuento y devolución', () => {
     assert.deepEqual(await usedBalance(), { used_days: 5, used_hours: 3 });
   });
 
+  it('el saldo y la solicitud traen nombres y lo disponible real con horas', async () => {
+    const created = await call('USER', 'POST', '/notices', vacation(MONDAY, MONDAY, {
+      absence_start_time: '13:00',
+      absence_end_time: '15:00',
+    }));
+    assert.equal(created.result.employee_name, 'Juan Perez Lopez');
+    assert.equal(created.result.reason_description, 'Vacaciones');
+    assert.equal(created.result.department_name, 'Explotacion');
+
+    const balances = await call('EMPLOYEE', 'GET', '/vacation-entitlements');
+    const balance = balances.result.data[0];
+
+    assert.equal(balance.employee_name, 'Juan Perez Lopez');
+    assert.equal(balance.daily_hours, 8);
+    assert.deepEqual(balance.available, { days: 6, hours: 6 });
+    assert.equal(balance.remaining_days, undefined);
+  });
+
   it('un permiso que no es vacaciones no toca el saldo', async () => {
     const request = (await call('EMPLOYEE', 'POST', '/notices', { ...vacation(MONDAY), reason_id: PERSONAL_LEAVE })).result;
     await call('USER', 'POST', `/notices/${request.notice_id}/approve`);

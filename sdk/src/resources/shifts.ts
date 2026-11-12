@@ -1,5 +1,5 @@
 import { HttpClient } from '../core/http-client';
-import type { Paginated } from '../types/common';
+import { CrudResource } from '../core/crud-resource';
 
 export type ShiftStatus = 'active' | 'inactive';
 
@@ -44,34 +44,12 @@ export interface UpdateShiftInput {
   status?: ShiftStatus;
 }
 
-export class ShiftsResource {
-  constructor(private readonly http: HttpClient) {}
-
-  list(params: ListShiftsParams = {}, options: { signal?: AbortSignal } = {}): Promise<Paginated<Shift>> {
-    return this.http.request<Paginated<Shift>>('/api/v1/shifts', {
-      method: 'GET',
-      query: { ...params },
-      signal: options.signal,
-    });
-  }
-
-  get(shiftId: number, options: { signal?: AbortSignal } = {}): Promise<Shift> {
-    return this.http.request<Shift>(`/api/v1/shifts/${shiftId}`, { method: 'GET', signal: options.signal });
-  }
-
-  create(input: CreateShiftInput): Promise<Shift> {
-    return this.http.request<Shift>('/api/v1/shifts', { method: 'POST', body: input });
+export class ShiftsResource extends CrudResource<Shift, ListShiftsParams, CreateShiftInput, UpdateShiftInput> {
+  constructor(http: HttpClient) {
+    super(http, '/api/v1/shifts');
   }
 
   replaceSchedule(shiftId: number, days: ShiftScheduleDay[]): Promise<Shift> {
-    return this.http.request<Shift>(`/api/v1/shifts/${shiftId}/schedule`, { method: 'PUT', body: days });
-  }
-
-  update(shiftId: number, input: UpdateShiftInput): Promise<Shift> {
-    return this.http.request<Shift>(`/api/v1/shifts/${shiftId}`, { method: 'PATCH', body: input });
-  }
-
-  remove(shiftId: number): Promise<void> {
-    return this.http.request<void>(`/api/v1/shifts/${shiftId}`, { method: 'DELETE' });
+    return this.http.request<Shift>(`${this.path}/${shiftId}/schedule`, { method: 'PUT', body: days });
   }
 }

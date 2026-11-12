@@ -1,5 +1,5 @@
 import { HttpClient } from '../core/http-client';
-import type { Paginated } from '../types/common';
+import { CrudResource } from '../core/crud-resource';
 
 export type DepartmentStatus = 'active' | 'inactive';
 
@@ -39,33 +39,8 @@ export interface UpdateDepartmentInput {
 }
 
 
-export class DepartmentsResource {
-  constructor(private readonly http: HttpClient) {}
-
-  list(params: ListDepartmentsParams = {}, options: { signal?: AbortSignal } = {}): Promise<Paginated<Department>> {
-    return this.http.request<Paginated<Department>>('/api/v1/departments', {
-      method: 'GET',
-      query: { ...params },
-      signal: options.signal,
-    });
-  }
-
-  get(departmentId: number, options: { signal?: AbortSignal } = {}): Promise<Department> {
-    return this.http.request<Department>(`/api/v1/departments/${departmentId}`, {
-      method: 'GET',
-      signal: options.signal,
-    });
-  }
-
-  create(input: CreateDepartmentInput): Promise<Department> {
-    return this.http.request<Department>('/api/v1/departments', { method: 'POST', body: input });
-  }
-
-  update(departmentId: number, input: UpdateDepartmentInput): Promise<Department> {
-    return this.http.request<Department>(`/api/v1/departments/${departmentId}`, { method: 'PATCH', body: input });
-  }
-
-  remove(departmentId: number): Promise<void> {
-    return this.http.request<void>(`/api/v1/departments/${departmentId}`, { method: 'DELETE' });
+export class DepartmentsResource extends CrudResource<Department, ListDepartmentsParams, CreateDepartmentInput, UpdateDepartmentInput> {
+  constructor(http: HttpClient) {
+    super(http, '/api/v1/departments');
   }
 }

@@ -27,7 +27,6 @@ class VacationEntitlement extends Model {
         used_hours: { type: 'number' },
         period_start: { type: 'string', format: 'date' },
         period_end: { type: 'string', format: 'date' },
-        remaining_days: { type: 'integer' },
         generated_at: { type: 'string' },
         status: { type: 'string', enum: ['active', 'inactive'] },
       },

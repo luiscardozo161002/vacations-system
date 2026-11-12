@@ -4,17 +4,39 @@ import { HealthResource } from './resources/health';
 import { EmployeesResource } from './resources/employees';
 import { DepartmentsResource } from './resources/departments';
 import { ShiftsResource } from './resources/shifts';
+import { CompaniesResource } from './resources/companies';
+import { BranchesResource } from './resources/branches';
+import { ReasonsResource } from './resources/reasons';
+import { NoticesResource } from './resources/notices';
+import { VacationEntitlementsResource } from './resources/vacation-entitlements';
+import { AccrualRulesResource } from './resources/accrual-rules';
+import { UsersResource } from './resources/users';
+import { RolesResource } from './resources/roles';
+import { PermissionsResource } from './resources/permissions';
+import { RolePermissionsResource } from './resources/role-permissions';
+import { AuditLogResource } from './resources/audit-log';
 
 export * from './core/http-client';
 export * from './core/api-error';
 export * from './core/token-storage';
-export * from './resources/auth';
+export * from './core/crud-resource';
 export * from './types/common';
+export * from './resources/auth';
 export * from './resources/health';
 export * from './resources/employees';
 export * from './resources/departments';
 export * from './resources/shifts';
-
+export * from './resources/companies';
+export * from './resources/branches';
+export * from './resources/reasons';
+export * from './resources/notices';
+export * from './resources/vacation-entitlements';
+export * from './resources/accrual-rules';
+export * from './resources/users';
+export * from './resources/roles';
+export * from './resources/permissions';
+export * from './resources/role-permissions';
+export * from './resources/audit-log';
 
 export class VacationsSdk {
   readonly auth: AuthResource;
@@ -22,6 +44,17 @@ export class VacationsSdk {
   readonly employees: EmployeesResource;
   readonly departments: DepartmentsResource;
   readonly shifts: ShiftsResource;
+  readonly companies: CompaniesResource;
+  readonly branches: BranchesResource;
+  readonly reasons: ReasonsResource;
+  readonly notices: NoticesResource;
+  readonly vacationEntitlements: VacationEntitlementsResource;
+  readonly accrualRules: AccrualRulesResource;
+  readonly users: UsersResource;
+  readonly roles: RolesResource;
+  readonly permissions: PermissionsResource;
+  readonly rolePermissions: RolePermissionsResource;
+  readonly auditLog: AuditLogResource;
 
   constructor(options: SdkClientOptions) {
     const http = new HttpClient(options);
@@ -30,5 +63,16 @@ export class VacationsSdk {
     this.employees = new EmployeesResource(http);
     this.departments = new DepartmentsResource(http);
     this.shifts = new ShiftsResource(http);
+    this.companies = new CompaniesResource(http);
+    this.branches = new BranchesResource(http);
+    this.reasons = new ReasonsResource(http);
+    this.notices = new NoticesResource(http);
+    this.vacationEntitlements = new VacationEntitlementsResource(http);
+    this.accrualRules = new AccrualRulesResource(http);
+    this.users = new UsersResource(http);
+    this.roles = new RolesResource(http);
+    this.permissions = new PermissionsResource(http);
+    this.rolePermissions = new RolePermissionsResource(http);
+    this.auditLog = new AuditLogResource(http);
   }
 }
