@@ -15,8 +15,10 @@ params:query {
   pageSize: 20
   ~user_id: 1
   ~event_type: LOGIN_SUCCESS
+  ~result: failed
+  ~search: sysadmin
 }
 
 docs {
-  Solo lectura: no hay POST/PATCH/DELETE. Lo escriben unicamente los endpoints de /api/v1/auth/*. Ordena por `created_at` descendente.
+  Solo lectura: no hay POST/PATCH/DELETE. Lo escriben unicamente los endpoints de /api/v1/auth/*. Lo mas reciente primero. Cada evento trae `username` y `result` (`success` o `failed`). Filtros: `user_id`, `event_type`, `result` y `search` (usuario o evento). Las renovaciones de sesion (`TOKEN_REFRESH`) no aparecen salvo que se pidan con `event_type`.
 }

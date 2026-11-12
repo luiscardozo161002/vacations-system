@@ -10,11 +10,15 @@ export interface AuditLogEntry {
   user_agent: string | null;
   metadata: unknown;
   created_at: string;
+  username: string | null;
+  result: 'success' | 'failed';
 }
 
 export interface ListAuditLogParams extends ListParams {
   user_id?: number;
   event_type?: string;
+  result?: 'success' | 'failed';
+  search?: string;
 }
 
 const PATH = '/api/v1/auth-audit-log';
