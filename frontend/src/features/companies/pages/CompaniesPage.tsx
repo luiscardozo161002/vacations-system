@@ -1,13 +1,20 @@
-import { useEffect, useMemo, useState } from 'react';
-import type { Branch, CallOptions, Company, Department, Employee, ListEmployeesParams } from '@vacations/sdk';
+import { useMemo, useState } from 'react';
+import type { CallOptions, Company, Department, Employee, ListEmployeesParams } from '@vacations/sdk';
 import { sdk } from '../../../lib/sdk';
-import { getErrorMessage } from '../../../lib/get-error-message';
 import { usePagedList } from '../../../lib/use-paged-list';
+import { useApiQuery } from '../../../lib/use-api-query';
+import { useUrlFilters } from '../../../lib/use-url-filters';
+import { useDepartments } from '../../departments/hooks/useDepartments';
 import { DataTable, type Column } from '../../../components/DataTable';
 import { EmptyState } from '../../../components/EmptyState';
 
-const TABS = ['Datos de empresa', 'Sucursales', 'Empleados'] as const;
-type Tab = (typeof TABS)[number];
+const TABS = [
+  { id: 'datos', label: 'Datos de empresa' },
+  { id: 'sucursales', label: 'Sucursales' },
+  { id: 'empleados', label: 'Empleados' },
+];
+
+const FILTERS = { empresa: '', pestana: 'datos' };
 
 const PAGE_SIZE = 10;
 
@@ -39,16 +46,9 @@ function CompanyData({ company }: { company: Company }) {
 }
 
 function CompanyBranches({ companyId }: { companyId: number }) {
-  const [branches, setBranches] = useState<Branch[] | null>(null);
-
-  useEffect(() => {
-    const controller = new AbortController();
-    sdk.branches
-      .list({ company_id: companyId, status: 'active', pageSize: 100 }, { signal: controller.signal })
-      .then((result) => setBranches(result.data))
-      .catch(() => undefined);
-    return () => controller.abort();
-  }, [companyId]);
+  const branches = useApiQuery(['branches', 'company', companyId], (signal) =>
+    sdk.branches.list({ company_id: companyId, status: 'active', pageSize: 100 }, { signal }),
+  ).data?.data;
 
   if (!branches) return <EmptyState message="Cargando..." />;
 
@@ -78,7 +78,7 @@ function CompanyEmployees({ companyId, departments }: { companyId: number; depar
     () => ({ company_id: companyId, status: 'active' as const, page, pageSize: PAGE_SIZE, sort: 'employee_name' }),
     [companyId, page],
   );
-  const { data, loading, error } = usePagedList(listEmployees, params);
+  const { data, loading, error } = usePagedList('employees', listEmployees, params);
 
   const columns: Column<Employee>[] = [
     { header: 'Nombre', render: (employee) => employee.employee_name, className: 'cell-main' },
@@ -104,30 +104,18 @@ function CompanyEmployees({ companyId, departments }: { companyId: number; depar
 }
 
 export function CompaniesPage() {
-  const [companies, setCompanies] = useState<Company[] | null>(null);
-  const [departments, setDepartments] = useState<Map<number, Department>>(new Map());
-  const [companyId, setCompanyId] = useState<number | null>(null);
-  const [tab, setTab] = useState<Tab>('Datos de empresa');
-  const [error, setError] = useState<string | null>(null);
+  const [filters, setFilters] = useUrlFilters(FILTERS);
+  const { data, error } = useApiQuery(['companies', 'active'], (signal) =>
+    sdk.companies.list({ status: 'active', pageSize: 100 }, { signal }),
+  );
+  const { departments: departmentList } = useDepartments();
+  const departments = useMemo(
+    () => new Map<number, Department>(departmentList.map((department) => [department.department_id, department])),
+    [departmentList],
+  );
 
-  useEffect(() => {
-    const controller = new AbortController();
-    const options = { signal: controller.signal };
-    Promise.all([
-      sdk.companies.list({ status: 'active', pageSize: 100 }, options),
-      sdk.departments.list({ pageSize: 100 }, options),
-    ])
-      .then(([companyPage, departmentPage]) => {
-        setCompanies(companyPage.data);
-        setCompanyId(companyPage.data[0]?.company_id ?? null);
-        setDepartments(new Map(departmentPage.data.map((department) => [department.department_id, department])));
-      })
-      .catch((err: unknown) => {
-        if (!controller.signal.aborted) setError(getErrorMessage(err));
-      });
-    return () => controller.abort();
-  }, []);
-
+  const companies: Company[] | undefined = data?.data;
+  const companyId = filters.empresa ? Number(filters.empresa) : companies?.[0]?.company_id;
   const company = companies?.find((item) => item.company_id === companyId);
 
   return (
@@ -141,7 +129,7 @@ export function CompaniesPage() {
 
       {companies && companies.length > 1 && (
         <div className="toolbar">
-          <select value={companyId ?? ''} onChange={(e) => setCompanyId(Number(e.target.value))}>
+          <select value={companyId ?? ''} onChange={(e) => setFilters({ empresa: e.target.value })}>
             {companies.map((item) => (
               <option key={item.company_id} value={item.company_id}>
                 {item.folio} · {item.company_name}
@@ -152,18 +140,23 @@ export function CompaniesPage() {
       )}
 
       <div className="tabs">
-        {TABS.map((name) => (
-          <button key={name} type="button" className={`tab ${tab === name ? 'active' : ''}`} onClick={() => setTab(name)}>
-            {name}
+        {TABS.map((tab) => (
+          <button
+            key={tab.id}
+            type="button"
+            className={`tab ${filters.pestana === tab.id ? 'active' : ''}`}
+            onClick={() => setFilters({ pestana: tab.id })}
+          >
+            {tab.label}
           </button>
         ))}
       </div>
 
       {!company ? (
         <EmptyState message={error ?? (companies ? 'No hay empresas.' : 'Cargando...')} />
-      ) : tab === 'Datos de empresa' ? (
+      ) : filters.pestana === 'datos' ? (
         <CompanyData company={company} />
-      ) : tab === 'Sucursales' ? (
+      ) : filters.pestana === 'sucursales' ? (
         <CompanyBranches companyId={company.company_id} />
       ) : (
         <CompanyEmployees key={company.company_id} companyId={company.company_id} departments={departments} />

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
 import type { Employee } from '@vacations/sdk';
 import { sdk } from '../lib/sdk';
+import { useApiQuery } from '../lib/use-api-query';
 import { Icon } from '../components/Icon';
 import { useDepartments } from '../features/departments/hooks/useDepartments';
 
@@ -12,7 +13,7 @@ export function GlobalSearch() {
   const navigate = useNavigate();
   const wrapRef = useRef<HTMLDivElement>(null);
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState<Employee[] | null>(null);
+  const [term, setTerm] = useState('');
   const [open, setOpen] = useState(false);
   const { departments } = useDepartments();
 
@@ -24,19 +25,16 @@ export function GlobalSearch() {
   const text = query.trim();
 
   useEffect(() => {
-    if (!text) return;
-    const controller = new AbortController();
-    const timer = setTimeout(() => {
-      sdk.employees
-        .list({ search: text, sort: 'employee_name', pageSize: RESULT_LIMIT }, { signal: controller.signal })
-        .then((page) => setResults(page.data))
-        .catch(() => undefined);
-    }, DEBOUNCE_MS);
-    return () => {
-      clearTimeout(timer);
-      controller.abort();
-    };
+    const timer = setTimeout(() => setTerm(text), DEBOUNCE_MS);
+    return () => clearTimeout(timer);
   }, [text]);
+
+  const search = useApiQuery(
+    ['employees', 'search', term],
+    (signal) => sdk.employees.list({ search: term, sort: 'employee_name', pageSize: RESULT_LIMIT }, { signal }),
+    Boolean(term),
+  );
+  const results: Employee[] | null = term === text && search.data ? search.data.data : null;
 
   useEffect(() => {
     if (!open) return;
@@ -49,14 +47,12 @@ export function GlobalSearch() {
 
   const change = (value: string) => {
     setQuery(value);
-    setResults(null);
     setOpen(Boolean(value.trim()));
   };
 
   const pick = (employee: Employee) => {
     setOpen(false);
     setQuery('');
-    setResults(null);
     navigate(`/empleados?perfil=${employee.employee_id}`);
   };
 

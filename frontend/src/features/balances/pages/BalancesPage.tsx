@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react';
 import { sdk } from '../../../lib/sdk';
 import { getErrorMessage } from '../../../lib/get-error-message';
+import { refreshData } from '../../../lib/query-client';
+import { useUrlFilters } from '../../../lib/use-url-filters';
 import { Icon } from '../../../components/Icon';
 import { useToast } from '../../../components/toast-context';
 import type { VacationEntitlement } from '@vacations/sdk';
@@ -11,6 +13,7 @@ import { useAuth } from '../../auth/auth-context';
 import { EmployeeDashboard } from '../../dashboard/components/EmployeeDashboard';
 
 const PAGE_SIZE = 10;
+const FILTERS = { pagina: '1' };
 
 const plural = (count: number, word: string) => `${count} ${word}${count === 1 ? '' : 's'}`;
 
@@ -38,10 +41,11 @@ const columns: Column<VacationEntitlement>[] = [
 
 function BalancesTable({ canGenerate }: { canGenerate: boolean }) {
   const showToast = useToast();
-  const [page, setPage] = useState(1);
+  const [filters, setFilters] = useUrlFilters(FILTERS);
+  const page = Number(filters.pagina);
   const [generating, setGenerating] = useState(false);
   const params = useMemo(() => ({ status: 'active' as const, page, pageSize: PAGE_SIZE }), [page]);
-  const { data, loading, error, reload } = useBalances(params);
+  const { data, loading, error } = useBalances(params);
 
   const generate = async () => {
     setGenerating(true);
@@ -50,7 +54,7 @@ function BalancesTable({ canGenerate }: { canGenerate: boolean }) {
       showToast(
         `Periodos al día: ${summary.created} abiertos, ${summary.expired} vencidos y ${summary.reminders} avisos enviados.`
       );
-      reload();
+      refreshData();
     } catch (err) {
       showToast(getErrorMessage(err));
     } finally {
@@ -84,7 +88,7 @@ function BalancesTable({ canGenerate }: { canGenerate: boolean }) {
           page,
           totalPages: data?.pagination.totalPages ?? 1,
           total: data?.pagination.total ?? 0,
-          onPageChange: setPage,
+          onPageChange: (next) => setFilters({ pagina: String(next) }),
         }}
       />
     </>

@@ -1,5 +1,7 @@
 import { useMemo, useState } from 'react';
 import type { Notice, NoticeStatus } from '@vacations/sdk';
+import { refreshData } from '../../../lib/query-client';
+import { useUrlFilters } from '../../../lib/use-url-filters';
 import { formatAbsenceRange } from '../../../lib/format';
 import { Icon } from '../../../components/Icon';
 import { DataTable, type Column } from '../../../components/DataTable';
@@ -13,14 +15,15 @@ import { AbsenceForm } from '../components/AbsenceForm';
 import { AbsenceDetail } from '../components/AbsenceDetail';
 
 const PAGE_SIZE = 10;
+const FILTERS = { estado: '', pagina: '1' };
 
 export function NoticesPage() {
   const showToast = useToast();
   const { user, can } = useAuth();
   const canRegister = can('notices:create');
 
-  const [page, setPage] = useState(1);
-  const [statusFilter, setStatusFilter] = useState('');
+  const [filters, setFilters] = useUrlFilters(FILTERS);
+  const page = Number(filters.pagina);
   const [formOpen, setFormOpen] = useState(false);
   const [selected, setSelected] = useState<Notice | null>(null);
 
@@ -32,13 +35,13 @@ export function NoticesPage() {
       kind: 'notice' as const,
       page,
       pageSize: PAGE_SIZE,
-      status: statusFilter ? (statusFilter as NoticeStatus) : undefined,
+      status: filters.estado ? (filters.estado as NoticeStatus) : undefined,
       sort: '-request_date',
     }),
-    [page, statusFilter],
+    [page, filters.estado],
   );
 
-  const { data, loading, error, reload } = useNotices(params);
+  const { data, loading, error } = useNotices(params);
 
   const columns: Column<Notice>[] = [
     { header: 'Empleado', render: (notice) => notice.employee_name, className: 'cell-main' },
@@ -60,12 +63,12 @@ export function NoticesPage() {
   const handleSaved = () => {
     setFormOpen(false);
     showToast('Aviso registrado.');
-    reload();
+    refreshData();
   };
 
   const handleChanged = () => {
     setSelected(null);
-    reload();
+    refreshData();
   };
 
   return (
@@ -95,11 +98,8 @@ export function NoticesPage() {
 
       <div className="toolbar">
         <select
-          value={statusFilter}
-          onChange={(e) => {
-            setPage(1);
-            setStatusFilter(e.target.value);
-          }}
+          value={filters.estado}
+          onChange={(e) => setFilters({ estado: e.target.value, pagina: '1' })}
         >
           <option value="">Todos los estados</option>
           <option value="approved">Aprobado</option>
@@ -118,7 +118,7 @@ export function NoticesPage() {
           page,
           totalPages: data?.pagination.totalPages ?? 1,
           total: data?.pagination.total ?? 0,
-          onPageChange: setPage,
+          onPageChange: (next) => setFilters({ pagina: String(next) }),
         }}
       />
 

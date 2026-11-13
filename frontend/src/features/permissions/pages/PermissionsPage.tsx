@@ -1,8 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import type { Permission, Role, RolePermission } from '@vacations/sdk';
 import { sdk } from '../../../lib/sdk';
 import { getErrorMessage } from '../../../lib/get-error-message';
 import { listAll } from '../../../lib/list-all';
+import { useApiQuery } from '../../../lib/use-api-query';
+import { queryClient } from '../../../lib/query-client';
 import { ROLE_LABELS } from '../../../app/navigation';
 import { EmptyState } from '../../../components/EmptyState';
 import { Icon } from '../../../components/Icon';
@@ -36,34 +38,27 @@ interface Matrix {
 
 const grantKey = (roleId: number, permissionId: number) => `${roleId}:${permissionId}`;
 
+const MATRIX_KEY = ['permissions', 'matrix'];
+
+const loadMatrix = async (signal: AbortSignal): Promise<Matrix> => {
+  const [roles, permissions, grants]: [Role[], Permission[], RolePermission[]] = await Promise.all([
+    listAll((params, options) => sdk.roles.list(params, options), { status: 'active' as const }, signal),
+    listAll((params, options) => sdk.permissions.list(params, options), { status: 'active' as const }, signal),
+    listAll((params, options) => sdk.rolePermissions.list(params, options), { status: 'active' as const }, signal),
+  ]);
+  return {
+    roles,
+    permissionIds: new Map(permissions.map((permission) => [permission.permission_code, permission.permission_id])),
+    granted: new Set(grants.map((grant) => grantKey(grant.role_id, grant.permission_id))),
+  };
+};
+
 export function PermissionsPage() {
   const showToast = useToast();
   const { user, can } = useAuth();
   const canEdit = can('permissions:update');
-  const [matrix, setMatrix] = useState<Matrix | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const { data: matrix, error } = useApiQuery(MATRIX_KEY, loadMatrix);
   const [saving, setSaving] = useState<string | null>(null);
-
-  useEffect(() => {
-    const controller = new AbortController();
-    const { signal } = controller;
-    Promise.all([
-      listAll((params, options) => sdk.roles.list(params, options), { status: 'active' as const }, signal),
-      listAll((params, options) => sdk.permissions.list(params, options), { status: 'active' as const }, signal),
-      listAll((params, options) => sdk.rolePermissions.list(params, options), { status: 'active' as const }, signal),
-    ])
-      .then(([roles, permissions, grants]: [Role[], Permission[], RolePermission[]]) =>
-        setMatrix({
-          roles,
-          permissionIds: new Map(permissions.map((permission) => [permission.permission_code, permission.permission_id])),
-          granted: new Set(grants.map((grant) => grantKey(grant.role_id, grant.permission_id))),
-        }),
-      )
-      .catch((err: unknown) => {
-        if (!signal.aborted) setError(getErrorMessage(err));
-      });
-    return () => controller.abort();
-  }, []);
 
   const toggle = async (role: Role, module: (typeof MODULES)[number]) => {
     if (!matrix) return;
@@ -79,7 +74,7 @@ export function PermissionsPage() {
       const granted = new Set(matrix.granted);
       if (isOn) granted.delete(key);
       else granted.add(key);
-      setMatrix({ ...matrix, granted });
+      queryClient.setQueryData(MATRIX_KEY, { ...matrix, granted });
       showToast(`Permiso de "${module.label}" actualizado para ${ROLE_LABELS[role.role_code] ?? role.role_code}.`);
     } catch (err) {
       showToast(getErrorMessage(err));

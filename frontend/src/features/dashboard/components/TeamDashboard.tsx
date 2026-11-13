@@ -1,8 +1,6 @@
-import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
-import type { TeamSummary } from '@vacations/sdk';
 import { sdk } from '../../../lib/sdk';
-import { getErrorMessage } from '../../../lib/get-error-message';
+import { useApiQuery } from '../../../lib/use-api-query';
 import { formatDate, formatDateTime, initials } from '../../../lib/format';
 import { EmptyState } from '../../../components/EmptyState';
 import { Icon } from '../../../components/Icon';
@@ -20,19 +18,7 @@ interface TeamDashboardProps {
 
 export function TeamDashboard({ firstName, allBranches }: TeamDashboardProps) {
   const navigate = useNavigate();
-  const [summary, setSummary] = useState<TeamSummary | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const controller = new AbortController();
-    sdk.dashboard
-      .summary({ signal: controller.signal })
-      .then(setSummary)
-      .catch((err: unknown) => {
-        if (!controller.signal.aborted) setError(getErrorMessage(err));
-      });
-    return () => controller.abort();
-  }, []);
+  const { data: summary, error } = useApiQuery(['dashboard', 'team'], (signal) => sdk.dashboard.summary({ signal }));
 
   const departments = summary?.by_department ?? [];
   const maxCount = Math.max(...departments.map((department) => department.active_employees), 1);

@@ -126,11 +126,13 @@ Cuentas de empleado con contraseña temporal (`backend/src/lib/temporary-passwor
 3. `HttpClient.request()` arma la query string, agrega `Authorization: Bearer <token>` si hay sesión, y hace `fetch` con el `AbortSignal` del hook — si el filtro cambia antes de que responda, la petición anterior se cancela.
 4. La ruta Hapi valida los query params con Joi, el `service.js` arma la consulta Objection, Postgres responde.
 5. El error handler global normaliza cualquier falla (validación, constraint de BD, 404) a `{ error: { code, message } }`.
-6. El SDK lo traduce a `SdkHttpError` si la respuesta no fue 2xx; el hook lo expone como `error` al componente.
+6. El SDK lo traduce a `SdkHttpError` si la respuesta no fue 2xx. TanStack Query guarda la respuesta en caché con su clave (`['employees', params]`) y el hook expone `data`, `loading` y `error` al componente.
 
 ## Decisiones explícitas
 
 - **Soft delete** en todas las tablas que lo necesitan: nunca se borra una fila, se marca `status = 'inactive'`.
 - **Validación en dos capas, a propósito**: Joi valida en el borde HTTP, Objection valida al escribir en BD — no es redundancia accidental, son capas distintas (forma de la petición vs. integridad de datos).
 - **El SDK es la única puerta al backend**: el frontend nunca hace `fetch` directo; todo pasa por `@vacations/sdk` para mantener un solo lugar de manejo de errores y auth.
+- **Caché y estado en el frontend**: los datos de la API viven en TanStack Query; los filtros y la página, en la URL; lo demás, en `useState` o en el contexto de sesión. No hay un store global. Tras cualquier cambio se refresca lo que está en pantalla (`refreshData`) en lugar de invalidar recurso por recurso, porque una aprobación toca solicitudes, saldos, calendario, dashboard y campana a la vez.
+- **Estilos**: se sigue el `styles.css` del prototipo tal cual; no se usan Tailwind ni librerías de componentes.
 - **Despliegue**: aún no definido (no hay Dockerfile ni CI en el repo); se documenta aquí cuando se decida.

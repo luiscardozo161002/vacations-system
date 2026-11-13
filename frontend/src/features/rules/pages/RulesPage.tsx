@@ -2,6 +2,8 @@ import { useMemo, useState } from 'react';
 import type { AccrualRule, CallOptions, ListAccrualRulesParams } from '@vacations/sdk';
 import { sdk } from '../../../lib/sdk';
 import { usePagedList } from '../../../lib/use-paged-list';
+import { refreshData } from '../../../lib/query-client';
+import { useUrlFilters } from '../../../lib/use-url-filters';
 import { DataTable, type Column } from '../../../components/DataTable';
 import { Icon } from '../../../components/Icon';
 import { StatusBadge } from '../../../components/StatusBadge';
@@ -11,6 +13,7 @@ import { RuleForm } from '../components/RuleForm';
 
 const PAGE_SIZE = 10;
 const LFT_REFORM_YEAR = 2023;
+const FILTERS = { pagina: '1' };
 
 const listRules = (params: ListAccrualRulesParams, options: CallOptions) => sdk.accrualRules.list(params, options);
 
@@ -22,9 +25,10 @@ const seniority = (rule: AccrualRule): string => {
 export function RulesPage() {
   const showToast = useToast();
   const { can } = useAuth();
-  const [page, setPage] = useState(1);
+  const [filters, setFilters] = useUrlFilters(FILTERS);
+  const page = Number(filters.pagina);
   const params = useMemo(() => ({ page, pageSize: PAGE_SIZE, sort: 'years_from' }), [page]);
-  const { data, loading, error, reload } = usePagedList(listRules, params);
+  const { data, loading, error } = usePagedList('accrual-rules', listRules, params);
   const [editing, setEditing] = useState<AccrualRule | null>(null);
   const [formOpen, setFormOpen] = useState(false);
 
@@ -38,7 +42,7 @@ export function RulesPage() {
   const handleSaved = (message: string) => {
     setFormOpen(false);
     showToast(message);
-    reload();
+    refreshData();
   };
 
   const columns: Column<AccrualRule>[] = [
@@ -83,7 +87,7 @@ export function RulesPage() {
           page,
           totalPages: data?.pagination.totalPages ?? 1,
           total: data?.pagination.total ?? 0,
-          onPageChange: setPage,
+          onPageChange: (next) => setFilters({ pagina: String(next) }),
         }}
       />
 

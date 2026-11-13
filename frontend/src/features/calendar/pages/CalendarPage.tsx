@@ -1,7 +1,8 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import type { Calendar, CalendarAbsence, Holiday } from '@vacations/sdk';
 import { sdk } from '../../../lib/sdk';
-import { getErrorMessage } from '../../../lib/get-error-message';
+import { useApiQuery } from '../../../lib/use-api-query';
+import { useUrlFilters } from '../../../lib/use-url-filters';
 import { todayIso } from '../../../lib/format';
 import { Icon } from '../../../components/Icon';
 
@@ -40,7 +41,11 @@ const monthCells = (year: number, month: number): Cell[] => {
   });
 };
 
-const groupByDate = (calendar: Calendar | null) => {
+const FILTERS = { mes: '' };
+
+const currentMonth = () => toIso(new Date()).slice(0, 7);
+
+const groupByDate = (calendar: Calendar | undefined) => {
   const absences = new Map<string, CalendarAbsence[]>();
   const holidays = new Map<string, Holiday>();
   if (!calendar) return { absences, holidays };
@@ -58,40 +63,25 @@ const groupByDate = (calendar: Calendar | null) => {
 };
 
 export function CalendarPage() {
-  const [view, setView] = useState(() => ({ year: new Date().getFullYear(), month: new Date().getMonth() }));
-  const [calendar, setCalendar] = useState<Calendar | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [filters, setFilters] = useUrlFilters(FILTERS);
+  const [year, monthNumber] = (filters.mes || currentMonth()).split('-').map(Number);
+  const view = useMemo(() => ({ year, month: monthNumber - 1 }), [year, monthNumber]);
 
   const cells = useMemo(() => monthCells(view.year, view.month), [view]);
   const today = todayIso();
 
-  useEffect(() => {
-    const controller = new AbortController();
-    const from = toIso(new Date(view.year, view.month, 1));
-    const to = toIso(new Date(view.year, view.month + 1, 0));
-
-    sdk.calendar
-      .get({ from, to }, { signal: controller.signal })
-      .then((result) => {
-        setCalendar(result);
-        setError(null);
-      })
-      .catch((err: unknown) => {
-        if (!controller.signal.aborted) setError(getErrorMessage(err));
-      });
-
-    return () => controller.abort();
-  }, [view]);
+  const from = toIso(new Date(view.year, view.month, 1));
+  const to = toIso(new Date(view.year, view.month + 1, 0));
+  const { data: calendar, error } = useApiQuery(['calendar', from, to], (signal) => sdk.calendar.get({ from, to }, { signal }));
 
   const { absences, holidays } = useMemo(() => groupByDate(calendar), [calendar]);
 
-  const moveMonth = (delta: number) =>
-    setView(({ year, month }) => {
-      const date = new Date(year, month + delta, 1);
-      return { year: date.getFullYear(), month: date.getMonth() };
-    });
+  const moveMonth = (delta: number) => {
+    const month = toIso(new Date(view.year, view.month + delta, 1)).slice(0, 7);
+    setFilters({ mes: month === currentMonth() ? '' : month });
+  };
 
-  const goToday = () => setView({ year: new Date().getFullYear(), month: new Date().getMonth() });
+  const goToday = () => setFilters({ mes: '' });
 
   return (
     <>

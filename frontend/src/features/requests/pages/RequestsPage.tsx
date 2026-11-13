@@ -1,5 +1,7 @@
 import { useMemo, useState } from 'react';
 import type { Notice, NoticeStatus } from '@vacations/sdk';
+import { refreshData } from '../../../lib/query-client';
+import { useUrlFilters } from '../../../lib/use-url-filters';
 import { formatAbsenceRange, formatDaysHours } from '../../../lib/format';
 import { Icon } from '../../../components/Icon';
 import { DataTable, type Column } from '../../../components/DataTable';
@@ -14,6 +16,7 @@ import { AbsenceForm } from '../components/AbsenceForm';
 import { AbsenceDetail } from '../components/AbsenceDetail';
 
 const PAGE_SIZE = 10;
+const FILTERS = { estado: '', departamento: '', pagina: '1' };
 
 export function RequestsPage() {
   const showToast = useToast();
@@ -21,9 +24,8 @@ export function RequestsPage() {
   const isEmployee = !can('departments:view');
   const canCreate = can('requests:create') && Boolean(user?.employee);
 
-  const [page, setPage] = useState(1);
-  const [statusFilter, setStatusFilter] = useState('');
-  const [departmentFilter, setDepartmentFilter] = useState('');
+  const [filters, setFilters] = useUrlFilters(FILTERS);
+  const page = Number(filters.pagina);
   const [formOpen, setFormOpen] = useState(false);
   const [selected, setSelected] = useState<Notice | null>(null);
 
@@ -35,14 +37,14 @@ export function RequestsPage() {
       kind: 'request' as const,
       page,
       pageSize: PAGE_SIZE,
-      status: statusFilter ? (statusFilter as NoticeStatus) : undefined,
-      department_id: departmentFilter ? Number(departmentFilter) : undefined,
+      status: filters.estado ? (filters.estado as NoticeStatus) : undefined,
+      department_id: filters.departamento ? Number(filters.departamento) : undefined,
       sort: '-request_date',
     }),
-    [page, statusFilter, departmentFilter],
+    [page, filters.estado, filters.departamento],
   );
 
-  const { data, loading, error, reload } = useNotices(params);
+  const { data, loading, error } = useNotices(params);
 
   const departmentOptions = useMemo(
     () => departments.map((department) => ({ value: String(department.department_id), label: department.department_name })),
@@ -71,12 +73,12 @@ export function RequestsPage() {
   const handleSaved = () => {
     setFormOpen(false);
     showToast('Solicitud enviada, queda pendiente de aprobación.');
-    reload();
+    refreshData();
   };
 
   const handleChanged = () => {
     setSelected(null);
-    reload();
+    refreshData();
   };
 
   return (
@@ -101,11 +103,8 @@ export function RequestsPage() {
 
       <div className="toolbar">
         <select
-          value={statusFilter}
-          onChange={(e) => {
-            setPage(1);
-            setStatusFilter(e.target.value);
-          }}
+          value={filters.estado}
+          onChange={(e) => setFilters({ estado: e.target.value, pagina: '1' })}
         >
           <option value="">Todos los estados</option>
           <option value="pending">Pendiente</option>
@@ -117,11 +116,8 @@ export function RequestsPage() {
           <SearchSelect
             id="req-dept-filter"
             options={departmentOptions}
-            value={departmentFilter}
-            onChange={(value) => {
-              setPage(1);
-              setDepartmentFilter(value);
-            }}
+            value={filters.departamento}
+            onChange={(value) => setFilters({ departamento: value, pagina: '1' })}
             placeholder="Todos los departamentos"
           />
         )}
@@ -138,7 +134,7 @@ export function RequestsPage() {
           page,
           totalPages: data?.pagination.totalPages ?? 1,
           total: data?.pagination.total ?? 0,
-          onPageChange: setPage,
+          onPageChange: (next) => setFilters({ pagina: String(next) }),
         }}
       />
 

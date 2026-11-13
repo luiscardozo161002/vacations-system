@@ -1,13 +1,15 @@
-import { useEffect, useMemo, useState } from 'react';
-import type { Branch, CallOptions, Department, ListDepartmentsParams } from '@vacations/sdk';
+import { useMemo, useState } from 'react';
+import type { CallOptions, Department, ListDepartmentsParams } from '@vacations/sdk';
 import { sdk } from '../../../lib/sdk';
 import { usePagedList } from '../../../lib/use-paged-list';
+import { refreshData } from '../../../lib/query-client';
 import { EmptyState } from '../../../components/EmptyState';
 import { Icon } from '../../../components/Icon';
 import { useToast } from '../../../components/toast-context';
 import { useAuth } from '../../auth/auth-context';
 import { useActiveEmployees } from '../../employees/hooks/useActiveEmployees';
 import { DepartmentForm } from '../components/DepartmentForm';
+import { useBranches } from '../../branches/hooks/useBranches';
 
 const listDepartments = (params: ListDepartmentsParams, options: CallOptions) => sdk.departments.list(params, options);
 
@@ -17,21 +19,11 @@ export function DepartmentsPage() {
   const canEdit = can('departments:update');
 
   const params = useMemo(() => ({ status: 'active' as const, pageSize: 100, sort: 'department_name' }), []);
-  const { data, loading, error, reload } = usePagedList(listDepartments, params);
+  const { data, loading, error } = usePagedList('departments', listDepartments, params);
   const { employees } = useActiveEmployees(canEdit);
-  const [branches, setBranches] = useState<Branch[]>([]);
+  const { branches } = useBranches(canEdit);
   const [editing, setEditing] = useState<Department | null>(null);
   const [formOpen, setFormOpen] = useState(false);
-
-  useEffect(() => {
-    if (!canEdit) return;
-    const controller = new AbortController();
-    sdk.branches
-      .list({ status: 'active', pageSize: 100 }, { signal: controller.signal })
-      .then((result) => setBranches(result.data))
-      .catch(() => undefined);
-    return () => controller.abort();
-  }, [canEdit]);
 
   const departments = data?.data ?? [];
   const repeatedNames = new Set(departments.map((department) => department.department_name)).size < departments.length;
@@ -44,7 +36,7 @@ export function DepartmentsPage() {
   const handleSaved = (message: string) => {
     setFormOpen(false);
     showToast(message);
-    reload();
+    refreshData();
   };
 
   return (

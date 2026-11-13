@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import type { CallOptions, ListShiftsParams, Shift } from '@vacations/sdk';
 import { sdk } from '../../../lib/sdk';
 import { usePagedList } from '../../../lib/use-paged-list';
+import { refreshData } from '../../../lib/query-client';
 import { EmptyState } from '../../../components/EmptyState';
 import { Icon } from '../../../components/Icon';
 import { useToast } from '../../../components/toast-context';
@@ -15,7 +16,7 @@ export function ShiftsPage() {
   const showToast = useToast();
   const { can } = useAuth();
   const params = useMemo(() => ({ status: 'active' as const, pageSize: 100 }), []);
-  const { data, loading, error, reload } = usePagedList(listShifts, params);
+  const { data, loading, error } = usePagedList('shifts', listShifts, params);
   const [editing, setEditing] = useState<Shift | null>(null);
   const [formOpen, setFormOpen] = useState(false);
 
@@ -29,7 +30,7 @@ export function ShiftsPage() {
   const handleSaved = (message: string) => {
     setFormOpen(false);
     showToast(message);
-    reload();
+    refreshData();
   };
 
   return (

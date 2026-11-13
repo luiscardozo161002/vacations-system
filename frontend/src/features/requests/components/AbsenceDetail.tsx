@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react';
-import type { CurrentUser, Notice, NoticePreview } from '@vacations/sdk';
+import { useState } from 'react';
+import type { CurrentUser, Notice } from '@vacations/sdk';
 import { sdk } from '../../../lib/sdk';
 import { getErrorMessage } from '../../../lib/get-error-message';
+import { useApiQuery } from '../../../lib/use-api-query';
 import { formatAbsenceRange, formatDaysHours, initials, todayIso } from '../../../lib/format';
 import { Drawer } from '../../../components/Drawer';
 import { ConfirmDialog } from '../../../components/Dialog';
@@ -40,7 +41,6 @@ const LABELS = {
 export function AbsenceDetail({ notice, user, can, onClose, onChanged }: AbsenceDetailProps) {
   const labels = LABELS[notice.kind];
   const showToast = useToast();
-  const [preview, setPreview] = useState<NoticePreview | null>(null);
   const [confirming, setConfirming] = useState<Action | null>(null);
   const [working, setWorking] = useState(false);
 
@@ -55,11 +55,10 @@ export function AbsenceDetail({ notice, user, can, onClose, onChanged }: Absence
     ? allows('cancel') && (isPending || (notice.status === 'approved' && notice.absence_start_date > todayIso()))
     : isPending && notice.employee_id === user.employee?.employee_id;
 
-  useEffect(() => {
-    if (!canPreview) return;
-    const controller = new AbortController();
-    sdk.notices
-      .preview(
+  const { data: preview } = useApiQuery(
+    ['notices', 'preview', notice.notice_id],
+    (signal) =>
+      sdk.notices.preview(
         {
           employee_id: notice.employee_id,
           reason_id: notice.reason_id,
@@ -68,12 +67,10 @@ export function AbsenceDetail({ notice, user, can, onClose, onChanged }: Absence
           absence_start_time: notice.absence_start_time,
           absence_end_time: notice.absence_end_time,
         },
-        { signal: controller.signal },
-      )
-      .then(setPreview)
-      .catch(() => undefined);
-    return () => controller.abort();
-  }, [canPreview, notice]);
+        { signal },
+      ),
+    canPreview,
+  );
 
   const run = async (action: Action) => {
     setConfirming(null);

@@ -4,4 +4,4 @@ import { usePagedList } from '../../../lib/use-paged-list';
 
 const listEmployees = (params: ListEmployeesParams, options: CallOptions) => sdk.employees.list(params, options);
 
-export const useEmployees = (params: ListEmployeesParams) => usePagedList(listEmployees, params);
+export const useEmployees = (params: ListEmployeesParams) => usePagedList('employees', listEmployees, params);

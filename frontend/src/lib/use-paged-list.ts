@@ -1,32 +1,21 @@
-import { useCallback, useEffect, useState } from 'react';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import type { CallOptions, Paginated } from '@vacations/sdk';
 import { getErrorMessage } from './get-error-message';
 
-export function usePagedList<T, P>(load: (params: P, options: CallOptions) => Promise<Paginated<T>>, params: P) {
-  const [data, setData] = useState<Paginated<T> | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [reloadToken, setReloadToken] = useState(0);
+export function usePagedList<T, P>(
+  key: string,
+  load: (params: P, options: CallOptions) => Promise<Paginated<T>>,
+  params: P,
+) {
+  const query = useQuery({
+    queryKey: [key, params],
+    queryFn: ({ signal }) => load(params, { signal }),
+    placeholderData: keepPreviousData,
+  });
 
-  useEffect(() => {
-    const controller = new AbortController();
-    setLoading(true);
-    setError(null);
-
-    load(params, { signal: controller.signal })
-      .then(setData)
-      .catch((err: unknown) => {
-        if (controller.signal.aborted) return;
-        setError(getErrorMessage(err));
-      })
-      .finally(() => {
-        if (!controller.signal.aborted) setLoading(false);
-      });
-
-    return () => controller.abort();
-  }, [load, params, reloadToken]);
-
-  const reload = useCallback(() => setReloadToken((n) => n + 1), []);
-
-  return { data, loading, error, reload };
+  return {
+    data: query.data ?? null,
+    loading: query.isPending,
+    error: query.error ? getErrorMessage(query.error) : null,
+  };
 }

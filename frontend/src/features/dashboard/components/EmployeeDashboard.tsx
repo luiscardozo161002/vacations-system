@@ -1,8 +1,6 @@
-import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
-import type { MySummary } from '@vacations/sdk';
 import { sdk } from '../../../lib/sdk';
-import { getErrorMessage } from '../../../lib/get-error-message';
+import { useApiQuery } from '../../../lib/use-api-query';
 import { formatAbsenceRange, formatDate, formatDaysHours } from '../../../lib/format';
 import { EmptyState } from '../../../components/EmptyState';
 import { Icon } from '../../../components/Icon';
@@ -10,19 +8,7 @@ import { StatusBadge } from '../../../components/StatusBadge';
 
 export function EmployeeDashboard() {
   const navigate = useNavigate();
-  const [summary, setSummary] = useState<MySummary | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const controller = new AbortController();
-    sdk.dashboard
-      .me({ signal: controller.signal })
-      .then(setSummary)
-      .catch((err: unknown) => {
-        if (!controller.signal.aborted) setError(getErrorMessage(err));
-      });
-    return () => controller.abort();
-  }, []);
+  const { data: summary, error } = useApiQuery(['dashboard', 'me'], (signal) => sdk.dashboard.me({ signal }));
 
   if (error) return <EmptyState message={error} />;
   if (!summary) return <EmptyState message="Cargando..." />;

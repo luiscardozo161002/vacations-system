@@ -1,11 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
+import { useQuery } from '@tanstack/react-query';
 import type { MyNotifications, Notice } from '@vacations/sdk';
 import { sdk } from '../lib/sdk';
 import { Icon } from '../components/Icon';
 import { formatDaysHours } from '../lib/format';
+import { queryClient } from '../lib/query-client';
 
 const REFRESH_MS = 5 * 60 * 1000;
+const QUERY_KEY = ['notifications'];
 
 const EMPTY: MyNotifications = { data: [], unread: 0, pending: { total: 0, data: [] } };
 
@@ -25,23 +28,12 @@ const pendingText = (notice: Notice) =>
 export function NotificationBell() {
   const navigate = useNavigate();
   const wrapRef = useRef<HTMLDivElement>(null);
-  const [notifications, setNotifications] = useState<MyNotifications>(EMPTY);
   const [open, setOpen] = useState(false);
-
-  const load = () =>
-    sdk.notifications
-      .list()
-      .then((result) => {
-        setNotifications(result);
-        return result;
-      })
-      .catch(() => EMPTY);
-
-  useEffect(() => {
-    load();
-    const timer = setInterval(load, REFRESH_MS);
-    return () => clearInterval(timer);
-  }, []);
+  const { data: notifications = EMPTY, refetch } = useQuery({
+    queryKey: QUERY_KEY,
+    queryFn: ({ signal }) => sdk.notifications.list({ signal }),
+    refetchInterval: REFRESH_MS,
+  });
 
   useEffect(() => {
     if (!open) return;
@@ -56,11 +48,13 @@ export function NotificationBell() {
     const opening = !open;
     setOpen(opening);
     if (!opening) return;
-    load().then((result) => {
-      if (!result.unread) return;
+    refetch().then(({ data }) => {
+      if (!data?.unread) return;
       sdk.notifications
         .markAllRead()
-        .then((read) => setNotifications((prev) => ({ ...prev, unread: read.unread })))
+        .then((read) =>
+          queryClient.setQueryData<MyNotifications>(QUERY_KEY, (prev) => prev && { ...prev, unread: read.unread }),
+        )
         .catch(() => undefined);
     });
   };

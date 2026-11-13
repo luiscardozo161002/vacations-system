@@ -3,12 +3,14 @@ import type { AuditLogEntry, CallOptions, ListAuditLogParams } from '@vacations/
 import { sdk } from '../../../lib/sdk';
 import { formatDateTime } from '../../../lib/format';
 import { usePagedList } from '../../../lib/use-paged-list';
+import { useUrlFilters } from '../../../lib/use-url-filters';
 import { DataTable, type Column } from '../../../components/DataTable';
 import { Icon } from '../../../components/Icon';
 import { StatusBadge } from '../../../components/StatusBadge';
 
 const PAGE_SIZE = 10;
 const SEARCH_DELAY_MS = 300;
+const FILTERS = { resultado: '', q: '', pagina: '1' };
 
 const EVENT_LABELS: Record<string, string> = {
   LOGIN_SUCCESS: 'Inicio de sesión',
@@ -30,29 +32,27 @@ const columns: Column<AuditLogEntry>[] = [
 ];
 
 export function AuditPage() {
-  const [page, setPage] = useState(1);
-  const [result, setResult] = useState('');
-  const [searchText, setSearchText] = useState('');
-  const [search, setSearch] = useState('');
+  const [filters, setFilters] = useUrlFilters(FILTERS);
+  const [searchText, setSearchText] = useState(filters.q);
+  const page = Number(filters.pagina);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setSearch(searchText.trim());
-      setPage(1);
-    }, SEARCH_DELAY_MS);
+    const search = searchText.trim();
+    if (search === filters.q) return;
+    const timer = setTimeout(() => setFilters({ q: search, pagina: '1' }), SEARCH_DELAY_MS);
     return () => clearTimeout(timer);
-  }, [searchText]);
+  }, [searchText, filters.q, setFilters]);
 
   const params = useMemo(
     () => ({
       page,
       pageSize: PAGE_SIZE,
-      result: result ? (result as 'success' | 'failed') : undefined,
-      search: search || undefined,
+      result: filters.resultado ? (filters.resultado as 'success' | 'failed') : undefined,
+      search: filters.q || undefined,
     }),
-    [page, result, search],
+    [page, filters.resultado, filters.q],
   );
-  const { data, loading, error } = usePagedList(listAudit, params);
+  const { data, loading, error } = usePagedList('audit-log', listAudit, params);
 
   return (
     <>
@@ -64,11 +64,8 @@ export function AuditPage() {
       </div>
       <div className="toolbar">
         <select
-          value={result}
-          onChange={(e) => {
-            setPage(1);
-            setResult(e.target.value);
-          }}
+          value={filters.resultado}
+          onChange={(e) => setFilters({ resultado: e.target.value, pagina: '1' })}
         >
           <option value="">Todos los resultados</option>
           <option value="success">Exitoso</option>
@@ -89,7 +86,7 @@ export function AuditPage() {
           page,
           totalPages: data?.pagination.totalPages ?? 1,
           total: data?.pagination.total ?? 0,
-          onPageChange: setPage,
+          onPageChange: (next) => setFilters({ pagina: String(next) }),
         }}
       />
     </>

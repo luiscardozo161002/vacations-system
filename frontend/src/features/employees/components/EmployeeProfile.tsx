@@ -1,7 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import type { Employee, EmployeeAccount, Notice, VacationEntitlement } from '@vacations/sdk';
 import { sdk } from '../../../lib/sdk';
 import { getErrorMessage } from '../../../lib/get-error-message';
+import { useApiQuery } from '../../../lib/use-api-query';
+import { refreshData } from '../../../lib/query-client';
 import { formatAbsenceRange, formatDate, initials } from '../../../lib/format';
 import { Drawer } from '../../../components/Drawer';
 import { ConfirmDialog } from '../../../components/Dialog';
@@ -33,6 +35,18 @@ const passwordState = (account: EmployeeAccount): string => {
 
 const HISTORY_SIZE = 20;
 
+const EMPTY_PROFILE: ProfileData = { account: null, balance: null, history: [] };
+
+const loadProfile = async (employeeId: number, signal: AbortSignal): Promise<ProfileData> => {
+  const options = { signal };
+  const [detail, balances, notices] = await Promise.all([
+    sdk.employees.get(employeeId, options),
+    sdk.vacationEntitlements.list({ employee_id: employeeId, status: 'active', sort: '-period_start', pageSize: 1 }, options),
+    sdk.notices.list({ employee_id: employeeId, sort: '-request_date', pageSize: HISTORY_SIZE }, options),
+  ]);
+  return { account: detail.account ?? null, balance: balances.data[0] ?? null, history: notices.data };
+};
+
 const yearsSince = (isoDate: string): number => {
   const start = new Date(`${isoDate.slice(0, 10)}T00:00:00`);
   const today = new Date();
@@ -44,31 +58,14 @@ const yearsSince = (isoDate: string): number => {
 export function EmployeeProfile({ employee, departmentName, shiftName, onClose }: EmployeeProfileProps) {
   const { can } = useAuth();
   const showToast = useToast();
-  const [data, setData] = useState<ProfileData | null>(null);
+  const profile = useApiQuery(['employees', 'profile', employee.employee_id], (signal) =>
+    loadProfile(employee.employee_id, signal),
+  );
+  const data = profile.data ?? (profile.error ? EMPTY_PROFILE : null);
   const [email, setEmail] = useState('');
   const [confirming, setConfirming] = useState(false);
   const [working, setWorking] = useState(false);
   const [granted, setGranted] = useState<GrantedAccess | null>(null);
-
-  useEffect(() => {
-    const controller = new AbortController();
-    const options = { signal: controller.signal };
-    Promise.all([
-      sdk.employees.get(employee.employee_id, options),
-      sdk.vacationEntitlements.list(
-        { employee_id: employee.employee_id, status: 'active', sort: '-period_start', pageSize: 1 },
-        options,
-      ),
-      sdk.notices.list({ employee_id: employee.employee_id, sort: '-request_date', pageSize: HISTORY_SIZE }, options),
-    ])
-      .then(([detail, balances, notices]) =>
-        setData({ account: detail.account ?? null, balance: balances.data[0] ?? null, history: notices.data }),
-      )
-      .catch(() => {
-        if (!controller.signal.aborted) setData({ account: null, balance: null, history: [] });
-      });
-    return () => controller.abort();
-  }, [employee.employee_id]);
 
   const years = yearsSince(employee.start_date);
   const balance = data?.balance;
@@ -81,7 +78,7 @@ export function EmployeeProfile({ employee, departmentName, shiftName, onClose }
     setWorking(true);
     try {
       const result = await sdk.employees.grantAccess(employee.employee_id, account ? undefined : email.trim());
-      setData((prev) => (prev ? { ...prev, account: result.account } : prev));
+      refreshData();
       setGranted({ ...result, employee_name: employee.employee_name });
       setEmail('');
     } catch (err) {

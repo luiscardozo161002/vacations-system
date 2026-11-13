@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useSearchParams } from 'react-router';
 import type { Employee, EmployeeStatus } from '@vacations/sdk';
 import { sdk } from '../../../lib/sdk';
 import { getErrorMessage } from '../../../lib/get-error-message';
+import { refreshData } from '../../../lib/query-client';
+import { useUrlFilters } from '../../../lib/use-url-filters';
 import { formatDate, initials } from '../../../lib/format';
 import { Icon } from '../../../components/Icon';
 import { DataTable, type Column } from '../../../components/DataTable';
@@ -20,15 +21,14 @@ import { useAuth } from '../../auth/auth-context';
 
 const PAGE_SIZE = 10;
 const SEARCH_DELAY_MS = 300;
+const FILTERS = { q: '', departamento: '', estado: '', pagina: '1', perfil: '' };
 
 export function EmployeesPage() {
   const showToast = useToast();
   const { can } = useAuth();
-  const [page, setPage] = useState(1);
-  const [searchText, setSearchText] = useState('');
-  const [search, setSearch] = useState('');
-  const [departmentFilter, setDepartmentFilter] = useState('');
-  const [statusFilter, setStatusFilter] = useState('');
+  const [filters, setFilters] = useUrlFilters(FILTERS);
+  const [searchText, setSearchText] = useState(filters.q);
+  const page = Number(filters.pagina);
 
   const { departments, error: departmentsError } = useDepartments();
   const { shifts, error: shiftsError } = useShifts();
@@ -37,39 +37,36 @@ export function EmployeesPage() {
     () => ({
       page,
       pageSize: PAGE_SIZE,
-      search: search || undefined,
-      department_id: departmentFilter ? Number(departmentFilter) : undefined,
-      status: statusFilter ? (statusFilter as EmployeeStatus) : undefined,
+      search: filters.q || undefined,
+      department_id: filters.departamento ? Number(filters.departamento) : undefined,
+      status: filters.estado ? (filters.estado as EmployeeStatus) : undefined,
     }),
-    [page, search, departmentFilter, statusFilter],
+    [page, filters.q, filters.departamento, filters.estado],
   );
 
-  const { data, loading, error: listError, reload } = useEmployees(employeesParams);
+  const { data, loading, error: listError } = useEmployees(employeesParams);
 
   const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
   const [formOpen, setFormOpen] = useState(false);
   const [statusTarget, setStatusTarget] = useState<Employee | null>(null);
   const [createdAccess, setCreatedAccess] = useState<GrantedAccess | null>(null);
   const [profileEmployee, setProfileEmployee] = useState<Employee | null>(null);
-  const [searchParams, setSearchParams] = useSearchParams();
-  const profileParam = searchParams.get('perfil');
 
   useEffect(() => {
-    if (!profileParam) return;
-    setSearchParams({}, { replace: true });
+    if (!filters.perfil) return;
+    setFilters({ perfil: '' });
     sdk.employees
-      .get(Number(profileParam))
+      .get(Number(filters.perfil))
       .then(setProfileEmployee)
       .catch((err: unknown) => showToast(getErrorMessage(err)));
-  }, [profileParam, setSearchParams, showToast]);
+  }, [filters.perfil, setFilters, showToast]);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setSearch(searchText.trim());
-      setPage(1);
-    }, SEARCH_DELAY_MS);
+    const search = searchText.trim();
+    if (search === filters.q) return;
+    const timer = setTimeout(() => setFilters({ q: search, pagina: '1' }), SEARCH_DELAY_MS);
     return () => clearTimeout(timer);
-  }, [searchText]);
+  }, [searchText, filters.q, setFilters]);
 
   const loadError = listError ?? departmentsError ?? shiftsError;
 
@@ -94,7 +91,7 @@ export function EmployeesPage() {
     setFormOpen(false);
     showToast(message);
     if (access) setCreatedAccess(access);
-    reload();
+    refreshData();
   };
 
   const confirmStatusChange = async () => {
@@ -108,7 +105,7 @@ export function EmployeesPage() {
         await sdk.employees.update(statusTarget.employee_id, { status: 'active' });
       }
       showToast(`${statusTarget.employee_name} ${willDeactivate ? 'dada de baja' : 'reactivada'}.`);
-      reload();
+      refreshData();
     } catch (err) {
       showToast(getErrorMessage(err));
     }
@@ -187,19 +184,13 @@ export function EmployeesPage() {
         <SearchSelect
           id="emp-dept-filter"
           options={departmentOptions}
-          value={departmentFilter}
-          onChange={(value) => {
-            setPage(1);
-            setDepartmentFilter(value);
-          }}
+          value={filters.departamento}
+          onChange={(value) => setFilters({ departamento: value, pagina: '1' })}
           placeholder="Todos los departamentos"
         />
         <select
-          value={statusFilter}
-          onChange={(e) => {
-            setPage(1);
-            setStatusFilter(e.target.value);
-          }}
+          value={filters.estado}
+          onChange={(e) => setFilters({ estado: e.target.value, pagina: '1' })}
         >
           <option value="">Todos los estados</option>
           <option value="active">Activo</option>
@@ -217,7 +208,7 @@ export function EmployeesPage() {
           page,
           totalPages: data?.pagination.totalPages ?? 1,
           total: data?.pagination.total ?? 0,
-          onPageChange: setPage,
+          onPageChange: (next) => setFilters({ pagina: String(next) }),
         }}
       />
 

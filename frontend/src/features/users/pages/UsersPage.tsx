@@ -1,8 +1,11 @@
-import { useEffect, useMemo, useState } from 'react';
-import type { Branch, CallOptions, Company, ListUsersParams, Role, User } from '@vacations/sdk';
+import { useMemo, useState } from 'react';
+import type { CallOptions, ListUsersParams, User } from '@vacations/sdk';
 import { sdk } from '../../../lib/sdk';
 import { getErrorMessage } from '../../../lib/get-error-message';
 import { usePagedList } from '../../../lib/use-paged-list';
+import { useApiQuery } from '../../../lib/use-api-query';
+import { refreshData } from '../../../lib/query-client';
+import { useUrlFilters } from '../../../lib/use-url-filters';
 import { ROLE_LABELS } from '../../../app/navigation';
 import { DataTable, type Column } from '../../../components/DataTable';
 import { ConfirmDialog } from '../../../components/Dialog';
@@ -15,14 +18,20 @@ import { UserForm } from '../components/UserForm';
 import { UserAssignment } from '../components/UserAssignment';
 
 const PAGE_SIZE = 10;
+const FILTERS = { pagina: '1' };
 
 const listUsers = (params: ListUsersParams, options: CallOptions) => sdk.users.list(params, options);
 
-interface Catalogs {
-  roles: Role[];
-  branches: Branch[];
-  companies: Company[];
-}
+const loadCatalogs = async (signal: AbortSignal) => {
+  const [roles, branches, companies] = await Promise.all([
+    sdk.roles.list({ status: 'active' }, { signal }),
+    sdk.branches.list({ status: 'active', pageSize: 100 }, { signal }),
+    sdk.companies.list({ status: 'active', pageSize: 100 }, { signal }),
+  ]);
+  return { roles: roles.data, branches: branches.data, companies: companies.data };
+};
+
+const NO_CATALOGS = { roles: [], branches: [], companies: [] };
 
 const branchesLabel = (user: User): string => {
   if (user.role_code === 'SUPERUSER') return 'Todas';
@@ -32,35 +41,21 @@ const branchesLabel = (user: User): string => {
 export function UsersPage() {
   const showToast = useToast();
   const { can } = useAuth();
-  const [page, setPage] = useState(1);
+  const [filters, setFilters] = useUrlFilters(FILTERS);
+  const page = Number(filters.pagina);
   const params = useMemo(() => ({ page, pageSize: PAGE_SIZE, sort: 'username' }), [page]);
-  const { data, loading, error, reload } = usePagedList(listUsers, params);
+  const { data, loading, error } = usePagedList('users', listUsers, params);
   const { employees } = useActiveEmployees(can('users:create'));
-  const [catalogs, setCatalogs] = useState<Catalogs>({ roles: [], branches: [], companies: [] });
+  const catalogs = useApiQuery(['users', 'catalogs'], loadCatalogs).data ?? NO_CATALOGS;
   const [formOpen, setFormOpen] = useState(false);
   const [assigning, setAssigning] = useState<User | null>(null);
   const [statusTarget, setStatusTarget] = useState<User | null>(null);
-
-  useEffect(() => {
-    const controller = new AbortController();
-    const options = { signal: controller.signal };
-    Promise.all([
-      sdk.roles.list({ status: 'active' }, options),
-      sdk.branches.list({ status: 'active', pageSize: 100 }, options),
-      sdk.companies.list({ status: 'active', pageSize: 100 }, options),
-    ])
-      .then(([roles, branches, companies]) =>
-        setCatalogs({ roles: roles.data, branches: branches.data, companies: companies.data }),
-      )
-      .catch(() => undefined);
-    return () => controller.abort();
-  }, []);
 
   const handleSaved = (message: string) => {
     setFormOpen(false);
     setAssigning(null);
     showToast(message);
-    reload();
+    refreshData();
   };
 
   const confirmStatusChange = async () => {
@@ -72,7 +67,7 @@ export function UsersPage() {
       if (deactivate) await sdk.users.remove(statusTarget.user_id);
       else await sdk.users.update(statusTarget.user_id, { status: 'active' });
       showToast(`${name} ${deactivate ? 'desactivado' : 'reactivado'}.`);
-      reload();
+      refreshData();
     } catch (err) {
       showToast(getErrorMessage(err));
     }
@@ -134,7 +129,7 @@ export function UsersPage() {
           page,
           totalPages: data?.pagination.totalPages ?? 1,
           total: data?.pagination.total ?? 0,
-          onPageChange: setPage,
+          onPageChange: (next) => setFilters({ pagina: String(next) }),
         }}
       />
 
