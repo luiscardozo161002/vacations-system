@@ -122,6 +122,16 @@ npm run dev --workspace=backend
 
 Queda disponible en `http://localhost:3000` (o el `HOST`/`PORT` configurado).
 
+**Logs:** la API registra cada petición y cada error con `hapi-pino`.
+- **Desarrollo:** se ven legibles en la terminal (`pino-pretty`), una línea por petición con método, ruta, estado y tiempo. Un error 500 imprime el mensaje real y el stack.
+- **Producción:** salen en JSON.
+- **Pruebas:** se apagan.
+- **Encabezados:** se ocultan `Authorization` y las cookies.
+
+Si la API responde 500 justo después de bajar cambios, lo más común es una migración pendiente: corre `npm run migrate --workspace=backend`.
+
+**Encabezados de seguridad:** se activan con `security: true` de hapi (`X-Frame-Options`, `X-Content-Type-Options`, HSTS, etc.). Hace lo mismo que `helmet` en Express, así que no hace falta esa dependencia.
+
 ### Comandos del backend
 
 | Comando                                                 | Qué hace                                  |

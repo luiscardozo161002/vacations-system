@@ -4,6 +4,7 @@ const Jwt = require('@hapi/jwt');
 const Inert = require('@hapi/inert');
 const Vision = require('@hapi/vision');
 const HapiSwagger = require('hapi-swagger');
+const HapiPino = require('hapi-pino');
 const config = require('./config');
 const pkg = require('../package.json');
 
@@ -42,11 +43,26 @@ const swaggerOptions = {
   security: [{ jwt: [] }],
 };
 
+const LOG_LEVELS = { production: 'info', test: 'silent' };
+
+const loggerOptions = {
+  level: LOG_LEVELS[config.env] ?? 'debug',
+  redact: ['req.headers.authorization', 'req.headers.cookie'],
+  ignorePaths: ['/api/v1/health'],
+  ...(config.env === 'development' && {
+    transport: {
+      target: 'pino-pretty',
+      options: { singleLine: true, translateTime: 'SYS:HH:MM:ss', ignore: 'pid,hostname,req,res,responseTime' },
+    },
+  }),
+};
+
 const createServer = async () => {
   const server = Hapi.server({
     host: config.server.host,
     port: config.server.port,
     routes: {
+      security: true,
       cors: {
         origin: config.cors.origins,
       },
@@ -62,6 +78,7 @@ const createServer = async () => {
     },
   });
 
+  await server.register({ plugin: HapiPino, options: loggerOptions });
   await server.register(Jwt);
 
   server.auth.strategy('jwt', 'jwt', {

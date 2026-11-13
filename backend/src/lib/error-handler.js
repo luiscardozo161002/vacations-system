@@ -291,12 +291,7 @@ module.exports = {
       const fallback = SQLSTATE_FALLBACK[pg.code];
       if (fallback) return send(h, fallback.status, fallback.code, fallback.message);
 
-      request.log(['error', 'unhandled'], {
-        name: error.name,
-        code: pg.code,
-        constraint: pg.constraint,
-        path: request.path,
-      });
+      request.logger.error({ err: error, method: request.method, path: request.path }, 'Error no controlado');
 
       return send(h, 500, 'INTERNAL_ERROR', 'Ocurrió un error interno');
     });
