@@ -345,7 +345,8 @@ La configuración vive en [frontend/src/app/navigation.ts](frontend/src/app/navi
 - **Proceso diario:** cada día el servidor abre los periodos nuevos y vence los terminados, sin arrastrar días.
 - **Avisos:** avisa al empleado cuando se abre su periodo y una semana antes de que venza, con los días que le quedan.
 - **Superusuario:** puede correr el proceso con "Generar periodos" en la pantalla de Días.
-- **Campana:** en la topbar se ven los avisos; al abrirla se marcan como leídos.
+- **Campana:** en la topbar se ven los avisos; al abrirla se marcan como leídos. RH y Superusuario ven primero las solicitudes y avisos pendientes de sus sedes; el empleado recibe la resolución de sus solicitudes y los avisos que RH le registra. Cada elemento lleva a su pantalla.
+- **Buscador:** con permiso de ver empleados, la topbar busca por nombre o número mientras se escribe (dentro de las sedes del usuario) y al elegir abre el perfil del empleado.
 
 **Dashboard:**
 - **Superusuario y RH:** ven los indicadores de su alcance, las próximas ausencias, los empleados por departamento (con la sede cuando el nombre se repite) y la actividad reciente.

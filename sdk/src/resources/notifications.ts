@@ -1,5 +1,6 @@
 import { HttpClient } from '../core/http-client';
 import type { CallOptions } from '../core/crud-resource';
+import type { Notice } from './notices';
 
 export interface AppNotification {
   notification_id: number;
@@ -14,6 +15,10 @@ export interface AppNotification {
 export interface MyNotifications {
   data: AppNotification[];
   unread: number;
+  pending: {
+    total: number;
+    data: Notice[];
+  };
 }
 
 const PATH = '/api/v1/me/notifications';

@@ -5,6 +5,7 @@ import { ToastProvider } from '../components/ToastProvider';
 import { useAuth } from '../features/auth/auth-context';
 import { ProfileDrawer } from '../features/auth/components/ProfileDrawer';
 import { NotificationBell } from './NotificationBell';
+import { GlobalSearch } from './GlobalSearch';
 import { initials } from '../lib/format';
 import { getTheme, subscribeTheme, toggleTheme } from '../lib/appearance';
 import { ROLE_LABELS, findNavItem, visibleGroups } from './navigation';
@@ -109,6 +110,7 @@ export function Shell() {
                 <strong id="breadcrumb-current">{findNavItem(pathname)?.title ?? 'Resumen'}</strong>
               </div>
               <div className="topbar-right">
+                {can('employees:view') && <GlobalSearch />}
                 {companyLabel && (
                   <div className="company-select" id="company-select">
                     <span data-icon="building-2" style={{ width: 15, height: 15 }}>

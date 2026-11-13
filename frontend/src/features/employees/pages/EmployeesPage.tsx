@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router';
 import type { Employee, EmployeeStatus } from '@vacations/sdk';
 import { sdk } from '../../../lib/sdk';
 import { getErrorMessage } from '../../../lib/get-error-message';
@@ -50,6 +51,17 @@ export function EmployeesPage() {
   const [statusTarget, setStatusTarget] = useState<Employee | null>(null);
   const [createdAccess, setCreatedAccess] = useState<GrantedAccess | null>(null);
   const [profileEmployee, setProfileEmployee] = useState<Employee | null>(null);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const profileParam = searchParams.get('perfil');
+
+  useEffect(() => {
+    if (!profileParam) return;
+    setSearchParams({}, { replace: true });
+    sdk.employees
+      .get(Number(profileParam))
+      .then(setProfileEmployee)
+      .catch((err: unknown) => showToast(getErrorMessage(err)));
+  }, [profileParam, setSearchParams, showToast]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
