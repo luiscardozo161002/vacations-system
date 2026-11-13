@@ -19,6 +19,7 @@ export interface CalendarAbsence {
   absence_end_date: string;
   absence_start_time: string | null;
   absence_end_time: string | null;
+  dates: string[];
 }
 
 export interface CalendarRange {

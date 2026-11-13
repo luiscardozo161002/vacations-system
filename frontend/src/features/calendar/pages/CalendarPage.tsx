@@ -51,14 +51,9 @@ const groupByDate = (calendar: Calendar | undefined) => {
   if (!calendar) return { absences, holidays };
 
   calendar.holidays.forEach((holiday) => holidays.set(holiday.date, holiday));
-  calendar.absences.forEach((absence) => {
-    const day = new Date(`${absence.absence_start_date < calendar.from ? calendar.from : absence.absence_start_date}T00:00:00`);
-    const last = absence.absence_end_date > calendar.to ? calendar.to : absence.absence_end_date;
-    for (; toIso(day) <= last; day.setDate(day.getDate() + 1)) {
-      const date = toIso(day);
-      absences.set(date, [...(absences.get(date) ?? []), absence]);
-    }
-  });
+  calendar.absences.forEach((absence) =>
+    absence.dates.forEach((date) => absences.set(date, [...(absences.get(date) ?? []), absence])),
+  );
   return { absences, holidays };
 };
 

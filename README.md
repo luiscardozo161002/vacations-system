@@ -439,6 +439,7 @@ La configuración vive en [frontend/src/app/navigation.ts](frontend/src/app/navi
 **Calendario:**
 - **Qué muestra:** vista mensual con las ausencias aprobadas y pendientes de la sede (o las propias para el Empleado), con los festivos de la LFT.
 - **Datos:** pide a `GET /calendar` solo el mes visible.
+- **Días marcados:** se ve la semana completa, sábado y domingo incluidos, pero cada ausencia aparece solo en los días que el empleado trabaja según su turno y nunca en los festivos. La API manda esos días en `dates`, calculados con la misma regla que descuenta el saldo.
 
 **Diálogos de confirmación:** tienen un solo botón con la acción (por ejemplo "Cancelar" o "Rechazar"). Para cerrarlos sin hacer nada se usa la X o la tecla Escape.
 

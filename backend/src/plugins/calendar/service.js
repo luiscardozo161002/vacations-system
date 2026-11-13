@@ -4,6 +4,7 @@ const db = require('../../db');
 const { AppError } = require('../../lib/app-error');
 const { forEmployees } = require('../../lib/data-scope');
 const { holidaysBetween } = require('../../lib/holidays');
+const { workingDates } = require('../../lib/request-breakdown');
 
 const MAX_RANGE_DAYS = 62;
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -36,6 +37,7 @@ const findAbsences = (from, to, scope) => {
     .select(
       'n.notice_id',
       'n.employee_id',
+      'e.shift_id',
       'e.employee_name',
       'd.department_name',
       'r.description as reason_description',
@@ -55,11 +57,27 @@ const getCalendar = async ({ from, to }, scope) => {
     throw new AppError('RANGE_TOO_LONG', `El rango admite máximo ${MAX_RANGE_DAYS} días`);
   }
 
+  const holidays = holidaysBetween(from, to);
+  const absences = await findAbsences(from, to, scope);
+  const schedules = await db('shift_schedules')
+    .whereIn('shift_id', [...new Set(absences.map((absence) => absence.shift_id))])
+    .select('shift_id', 'day_of_week', 'is_working_day', 'check_in_time', 'check_out_time');
+
   return {
     from,
     to,
-    holidays: holidaysBetween(from, to),
-    absences: await findAbsences(from, to, scope),
+    holidays,
+    absences: absences
+      .map(({ shift_id, ...absence }) => ({
+        ...absence,
+        dates: workingDates({
+          schedule: schedules.filter((day) => day.shift_id === shift_id),
+          startDate: absence.absence_start_date < from ? from : absence.absence_start_date,
+          endDate: absence.absence_end_date > to ? to : absence.absence_end_date,
+          holidays: holidays.map((holiday) => holiday.date),
+        }),
+      }))
+      .filter((absence) => absence.dates.length > 0),
   };
 };
 

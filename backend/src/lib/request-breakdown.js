@@ -27,6 +27,15 @@ const workingBlock = (schedule, date) => {
   return { start: toHours(day.check_in_time), end: toHours(day.check_out_time) };
 };
 
+const toIsoDate = (date) => date.toISOString().slice(0, 10);
+
+const workingDates = ({ schedule, startDate, endDate, holidays = [] }) => {
+  const holidaySet = new Set(holidays);
+  return datesBetween(startDate, endDate)
+    .filter((date) => workingBlock(schedule, date) && !holidaySet.has(toIsoDate(date)))
+    .map(toIsoDate);
+};
+
 const shiftDailyHours = (schedule) => {
   const firstWorkingDay = [...schedule]
     .sort((a, b) => a.day_of_week - b.day_of_week)
@@ -53,7 +62,7 @@ const computeRequestBreakdown = ({ schedule, startDate, endDate, startTime = nul
       restDays += 1;
       return;
     }
-    if (holidaySet.has(date.toISOString().slice(0, 10))) {
+    if (holidaySet.has(toIsoDate(date))) {
       holidayDays += 1;
       return;
     }
@@ -80,4 +89,4 @@ const computeRequestBreakdown = ({ schedule, startDate, endDate, startTime = nul
   };
 };
 
-module.exports = { computeRequestBreakdown, shiftDailyHours };
+module.exports = { computeRequestBreakdown, shiftDailyHours, workingDates };

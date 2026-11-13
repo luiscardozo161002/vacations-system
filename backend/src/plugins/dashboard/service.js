@@ -5,6 +5,7 @@ const { AppError } = require('../../lib/app-error');
 const { forEmployees, inDepartments } = require('../../lib/data-scope');
 const notices = require('../notices/service');
 const entitlements = require('../vacation-entitlements/service');
+const { holidaysBetween } = require('../../lib/holidays');
 
 const UPCOMING_DAYS = 30;
 const LIST_LIMIT = 4;
@@ -60,17 +61,29 @@ const recentActivity = (scope) =>
       db.raw('COALESCE(n.approved_at, n.request_date) AS happened_at')
     );
 
+const countAbsentToday = async (scope) => {
+  const { today } = await db.first(db.raw("to_char(CURRENT_DATE, 'YYYY-MM-DD') AS today"));
+  if (holidaysBetween(today, today).length) return 0;
+
+  const row = await scopedNotices(scope)
+    .join('employees as e', 'e.employee_id', 'n.employee_id')
+    .join('shift_schedules as ss', (join) =>
+      join.on('ss.shift_id', 'e.shift_id').andOn('ss.day_of_week', db.raw('EXTRACT(ISODOW FROM CURRENT_DATE)'))
+    )
+    .where('ss.is_working_day', true)
+    .where('n.status', 'approved')
+    .where('n.absence_start_date', '<=', TODAY)
+    .where('n.absence_end_date', '>=', TODAY)
+    .countDistinct('n.employee_id as total')
+    .first();
+  return Number(row.total);
+};
+
 const teamSummary = async (scope) => {
   const [activeEmployees, absentToday, pendingRequests, upcomingVacations, absences, departments, activity] =
     await Promise.all([
       count(forEmployees(db('employees'), scope, 'employee_id').where('status', 'active')),
-      scopedNotices(scope)
-        .where('n.status', 'approved')
-        .where('n.absence_start_date', '<=', TODAY)
-        .where('n.absence_end_date', '>=', TODAY)
-        .countDistinct('n.employee_id as total')
-        .first()
-        .then((row) => Number(row.total)),
+      countAbsentToday(scope),
       count(scopedNotices(scope).where({ 'n.kind': 'request', 'n.status': 'pending' })),
       count(
         scopedNotices(scope)

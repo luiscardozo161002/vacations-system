@@ -41,6 +41,38 @@ const iso = (offset) => {
 };
 
 describe('GET /calendar', () => {
+  it('marca solo los días que el empleado trabaja según su turno', async () => {
+    const res = await calendar('SUPERUSER', '2026-10-01', '2026-10-31');
+    const byStart = (date) => res.result.absences.find((absence) => absence.absence_start_date === date);
+
+    assert.deepEqual(byStart('2026-10-04').dates, [
+      '2026-10-05',
+      '2026-10-06',
+      '2026-10-07',
+      '2026-10-08',
+      '2026-10-09',
+      '2026-10-12',
+      '2026-10-13',
+    ]);
+    assert.deepEqual(byStart('2026-10-24').dates, ['2026-10-24', '2026-10-26', '2026-10-27', '2026-10-28']);
+  });
+
+  it('no marca los festivos ni ausencias que caen solo en descanso', async () => {
+    const [holiday, weekend] = await db('notices')
+      .insert([
+        { employee_id: 2, reason_id: 1, kind: 'request', status: 'pending', absence_start_date: '2026-09-15', absence_end_date: '2026-09-17' },
+        { employee_id: 5, reason_id: 1, kind: 'request', status: 'pending', absence_start_date: '2026-09-19', absence_end_date: '2026-09-20' },
+      ])
+      .returning('notice_id');
+
+    const res = await calendar('SUPERUSER', '2026-09-01', '2026-09-30');
+    await db('notices').whereIn('notice_id', [holiday.notice_id, weekend.notice_id]).del();
+    const find = (id) => res.result.absences.find((absence) => absence.notice_id === id);
+
+    assert.deepEqual(find(holiday.notice_id).dates, ['2026-09-15', '2026-09-17']);
+    assert.equal(find(weekend.notice_id), undefined);
+  });
+
   it('trae los festivos del rango', async () => {
     const res = await calendar('EMPLOYEE', '2026-09-01', '2026-09-30');
 
@@ -52,7 +84,7 @@ describe('GET /calendar', () => {
     const res = await calendar('SUPERUSER', iso(-45), iso(10));
     const statuses = new Set(res.result.absences.map((absence) => absence.status));
 
-    assert.ok(res.result.absences.length >= 8);
+    assert.ok(res.result.absences.length >= 7);
     assert.ok([...statuses].every((status) => ['approved', 'pending'].includes(status)));
     assert.ok(res.result.absences[0].employee_name);
   });
