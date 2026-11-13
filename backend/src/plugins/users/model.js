@@ -31,6 +31,8 @@ class User extends Model {
         review_actions: { type: 'array', items: { type: 'string', enum: ['approve', 'reject', 'cancel'] } },
         mfa_enabled: { type: 'boolean' },
         mfa_secret: { type: ['string', 'null'], maxLength: 255 },
+        must_change_password: { type: 'boolean' },
+        temporary_password_expires_at: { type: ['string', 'null'] },
         failed_login_attempts: { type: 'integer' },
         locked_until: { type: ['string', 'null'] },
         last_login_at: { type: ['string', 'null'] },

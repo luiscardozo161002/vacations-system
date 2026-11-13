@@ -7,6 +7,7 @@ const { AppError } = require('../../lib/app-error');
 const password = require('../../lib/password');
 const { generateOpaqueToken, hashToken } = require('../../lib/tokens');
 const config = require('../../config');
+const { isExpired } = require('../../lib/temporary-password');
 
 const addSeconds = (seconds) => new Date(Date.now() + seconds * 1000).toISOString();
 const addMinutes = (minutes) => addSeconds(minutes * 60);
@@ -86,6 +87,14 @@ const login = async ({ email, username, password: plainPassword }, context) => {
     throw new AppError('INVALID_CREDENTIALS', 'Usuario o contraseña incorrectos');
   }
 
+  if (isExpired(user)) {
+    await repository.logAuditEvent(user.user_id, 'LOGIN_FAILED', { ...context, metadata: { reason: 'temporary_password_expired' } });
+    throw new AppError(
+      'TEMPORARY_PASSWORD_EXPIRED',
+      'Tu contraseña temporal venció. Pide a Recursos Humanos que te reenvíe el acceso.'
+    );
+  }
+
   await repository.updateUser(user.user_id, {
     failed_login_attempts: 0,
     last_login_at: new Date().toISOString(),
@@ -102,6 +111,7 @@ const login = async ({ email, username, password: plainPassword }, context) => {
     refreshToken,
     expiresIn: config.auth.accessTokenTtlSeconds,
     user: { user_id: user.user_id, username: user.username, email: user.email, role_id: user.role_id },
+    must_change_password: user.must_change_password,
   };
 };
 
@@ -164,6 +174,8 @@ const confirmPasswordReset = async ({ token, newPassword }, context) => {
   const newHash = await password.hash(newPassword);
   await repository.updateUser(resetRow.user_id, {
     password_hash: newHash,
+    must_change_password: false,
+    temporary_password_expires_at: null,
     failed_login_attempts: 0,
     status: 'active',
     locked_until: null,
@@ -193,6 +205,8 @@ const getMe = async (userId) => {
     status: row.status,
     last_login_at: row.last_login_at,
     review_actions: row.review_actions,
+    must_change_password: row.must_change_password,
+    temporary_password_expires_at: row.temporary_password_expires_at,
     role: { role_id: row.role_id, role_code: row.role_code, description: row.role_description },
     employee: row.employee_id
       ? {
@@ -222,7 +236,11 @@ const changePassword = async (userId, { currentPassword, newPassword }, context)
     throw new AppError('INVALID_CURRENT_PASSWORD', 'La contraseña actual no es correcta');
   }
 
-  await repository.updateUser(userId, { password_hash: await password.hash(newPassword) });
+  await repository.updateUser(userId, {
+    password_hash: await password.hash(newPassword),
+    must_change_password: false,
+    temporary_password_expires_at: null,
+  });
   await repository.revokeAllSessionsForUser(userId);
   await repository.logAuditEvent(userId, 'PASSWORD_CHANGED', context);
 

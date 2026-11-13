@@ -34,7 +34,7 @@ const list = async ({ search, company_id, department_id, status, sort, page = 1,
 const findById = (employeeId, scope) =>
   forEmployees(Employee.query().select(COLUMNS).where('employee_id', employeeId), scope, 'employee_id').first();
 
-const create = (data) => Employee.query().insert(data).returning(COLUMNS);
+const create = (data, trx) => Employee.query(trx).insert(data).returning(COLUMNS);
 
 const update = async (employeeId, data, scope) => {
   const [employee] = await forEmployees(Employee.query().where('employee_id', employeeId), scope, 'employee_id')

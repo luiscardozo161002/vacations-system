@@ -58,6 +58,18 @@ const employeesPlugin = {
         handler: (request) => service.update(request.params.employeeId, request.payload, scopeFrom(request.auth.credentials)),
       },
       {
+        method: 'POST',
+        path: '/api/v1/employees/{employeeId}/access',
+        options: {
+          description: 'Create or renew the employee account with a temporary password',
+          tags: ['api', 'employees'],
+          auth: requires('employees:update'),
+          validate: { params: schemas.params, payload: schemas.access },
+        },
+        handler: (request) =>
+          service.resendAccess(request.params.employeeId, request.payload?.email, scopeFrom(request.auth.credentials)),
+      },
+      {
         method: 'DELETE',
         path: '/api/v1/employees/{employeeId}',
         options: {

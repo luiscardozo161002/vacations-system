@@ -8,6 +8,8 @@ const SAFE_COLUMNS = [
   ID_COLUMN,
   ...EDITABLE_FIELDS,
   'mfa_enabled',
+  'must_change_password',
+  'temporary_password_expires_at',
   'failed_login_attempts',
   'locked_until',
   'last_login_at',

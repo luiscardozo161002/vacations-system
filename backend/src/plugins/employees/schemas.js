@@ -23,7 +23,10 @@ const create = Joi.object({
   employee_name: fields.employee_name.required(),
   start_date: fields.start_date.required(),
   status: fields.status.default('active'),
+  email: Joi.string().email().max(120),
 }).unknown(false);
+
+const access = Joi.object({ email: Joi.string().email().max(120) }).allow(null).unknown(false);
 
 const update = Joi.object({ ...fields }).min(1).unknown(false);
 
@@ -41,4 +44,4 @@ const list = Joi.object({
   pageSize: Joi.number().integer().min(1).max(100).default(10),
 }).unknown(false);
 
-module.exports = { create, update, params, list };
+module.exports = { create, update, params, list, access };

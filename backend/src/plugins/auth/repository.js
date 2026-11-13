@@ -16,6 +16,8 @@ const AUTH_COLUMNS = [
   'status',
   'failed_login_attempts',
   'locked_until',
+  'must_change_password',
+  'temporary_password_expires_at',
 ];
 
 const findUserByUsername = (username) => User.query().select(AUTH_COLUMNS).where('username', username).first();
@@ -39,6 +41,8 @@ const findProfile = (userId) =>
       'u.status',
       'u.last_login_at',
       'u.review_actions',
+      'u.must_change_password',
+      'u.temporary_password_expires_at',
       'r.role_id',
       'r.role_code',
       'r.description as role_description',

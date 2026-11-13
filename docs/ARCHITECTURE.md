@@ -109,6 +109,14 @@ RBAC vía `roles` / `permissions` / `role_permissions`.
 - **Sin permiso:** la ruta responde 403 `FORBIDDEN`.
 - **Cambios:** si se cambian los permisos de un rol, se aplican en el siguiente token, en un máximo de 15 minutos.
 
+Cuentas de empleado con contraseña temporal (`backend/src/lib/temporary-password.js`, `plugins/employees/access.js`):
+
+- **Alta:** `POST /employees` con `email` crea, en la misma transacción, el usuario con rol `EMPLOYEE`. El usuario sale de la parte local del correo (`j.perez`, `j.perez2` si ya existe).
+- **Temporal:** 10 caracteres sin ambiguos, `must_change_password = true` y vence en un mes (`temporary_password_expires_at`). La respuesta trae `temporary_password` para que RH la entregue mientras no haya correo.
+- **Login:** con la temporal vencida responde 403 `TEMPORARY_PASSWORD_EXPIRED`. Si sigue vigente, el login y `/auth/me` traen `must_change_password` y el frontend obliga a cambiarla antes de entrar.
+- **Cambio:** cambiar o restablecer la contraseña limpia ambos campos.
+- **Reenvío:** `POST /employees/{id}/access` (permiso `employees:update`, dentro de las sedes de RH) crea la cuenta si falta (pide `email`) o emite una temporal nueva, desbloquea la cuenta y cierra sus sesiones. No toca cuentas administrativas (409 `ACCOUNT_NOT_EMPLOYEE`) ni empleados de baja (409 `EMPLOYEE_INACTIVE`).
+
 ## Flujo de datos (ejemplo: listar empleados con un filtro)
 
 1. El usuario cambia un filtro en `EmployeesPage`.

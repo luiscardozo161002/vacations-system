@@ -179,6 +179,7 @@ Las dos cosas viven en la tabla `notices`; lo que las distingue es quién las cr
   - Le manda por correo una contraseña temporal válida 1 mes.
   - El empleado debe cambiarla en ese mes. Si no lo hace, la temporal se elimina y no puede entrar.
 - **Reactivación.** El empleado acude a RH, que le reenvía un correo para confirmar su dirección y definir su contraseña.
+- **Mientras no haya correo (Resend):** la API le devuelve a RH la contraseña temporal para que la entregue en mano. Al conectar Resend se enviará por correo y dejará de mostrarse.
 
 ### Convenciones de la API
 

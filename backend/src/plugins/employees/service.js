@@ -1,6 +1,8 @@
 'use strict';
 
+const db = require('../../db');
 const repository = require('./repository');
+const { findAccount, grantAccess } = require('./access');
 const { AppError } = require('../../lib/app-error');
 const { EDITABLE_FIELDS } = require('./fields');
 const { allowsDepartment } = require('../../lib/data-scope');
@@ -24,12 +26,24 @@ const list = (filters, scope) => repository.list(filters, scope);
 const findById = async (employeeId, scope) => {
   const employee = await repository.findById(employeeId, scope);
   if (!employee) throw new AppError('EMPLOYEE_NOT_FOUND', 'El empleado no existe');
-  return employee;
+  return { ...employee, account: (await findAccount(employeeId)) ?? null };
 };
 
 const create = async (data, scope) => {
   await checkReferences(data, scope);
-  return repository.create(pick(data));
+  return db.transaction(async (trx) => {
+    const employee = await repository.create(pick(data), trx);
+    if (!data.email) return { ...employee, account: null };
+    return { ...employee, ...(await grantAccess(employee.employee_id, data.email, trx)) };
+  });
+};
+
+const resendAccess = async (employeeId, email, scope) => {
+  const employee = await findById(employeeId, scope);
+  if (employee.status !== 'active') {
+    throw new AppError('EMPLOYEE_INACTIVE', 'El empleado está dado de baja; reactívalo antes de enviarle acceso');
+  }
+  return db.transaction((trx) => grantAccess(employeeId, email, trx));
 };
 
 const update = async (employeeId, data, scope) => {
@@ -45,4 +59,4 @@ const remove = async (employeeId, scope) => {
   return employee;
 };
 
-module.exports = { list, findById, create, update, remove };
+module.exports = { list, findById, create, update, remove, resendAccess };
