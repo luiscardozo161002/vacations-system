@@ -1,5 +1,3 @@
-/* Data dummy para desarrollo local, basada en vacations_db_postgresql.sql (raiz del repo). */
-
 const password = require('../../lib/password');
 const { computeRequestBreakdown } = require('../../lib/request-breakdown');
 

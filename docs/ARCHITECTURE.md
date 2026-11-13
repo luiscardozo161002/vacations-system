@@ -130,6 +130,7 @@ Cuentas de empleado con contraseña temporal (`backend/src/lib/temporary-passwor
 
 ## Decisiones explícitas
 
+- **Esquema**: las migraciones de Knex (`backend/src/db/migrations`) son la única fuente del esquema y los datos de prueba viven en `backend/src/db/seeds`. El script SQL original, convertido de SQL Server, ya no se usa y se retiró del repo.
 - **Soft delete** en todas las tablas que lo necesitan: nunca se borra una fila, se marca `status = 'inactive'`.
 - **Validación en dos capas, a propósito**: Joi valida en el borde HTTP, Objection valida al escribir en BD — no es redundancia accidental, son capas distintas (forma de la petición vs. integridad de datos).
 - **El SDK es la única puerta al backend**: el frontend nunca hace `fetch` directo; todo pasa por `@vacations/sdk` para mantener un solo lugar de manejo de errores y auth.
