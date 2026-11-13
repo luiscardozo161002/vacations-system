@@ -152,7 +152,7 @@ npm test --workspace=sdk
 
 ### Integración continua
 
-[`.github/workflows/ci.yml`](.github/workflows/ci.yml) corre en cada pull request y en cada push a `develop` y `main`. Levanta Postgres 17 como servicio, instala con `npm ci --legacy-peer-deps` (por el peer `joi 17.x` de hapi-swagger, ver arriba) y hace, en orden: lint del backend, lint del frontend, build y pruebas del SDK, typecheck y build del frontend, y las pruebas del backend.
+[`.github/workflows/ci.yml`](.github/workflows/ci.yml) corre en cada pull request y en cada push a `develop` y `main`. Levanta Postgres 17 como servicio, instala con `npm ci --legacy-peer-deps` (por el peer `joi 17.x` de hapi-swagger, ver arriba) y hace, en orden: lint del backend, lint del frontend, build y pruebas del SDK, typecheck y build del frontend, pruebas del frontend y las pruebas del backend.
 
 Para que un PR no se pueda mergear con el CI en rojo hay que activar la protección de ramas en GitHub: **Settings → Branches → Add rule** para `develop` y para `main`, con *Require a pull request before merging* y *Require status checks to pass* marcando `build-and-test`.
 
@@ -270,6 +270,21 @@ npm run dev --workspace=frontend
 ```
 
 El frontend usa `@vacations/sdk` como paquete local del workspace, sin publicarlo a ningún registro. Apunta a `VITE_API_BASE_URL`, que por defecto es `http://localhost:3000`.
+
+**Datos:** cada lectura pasa por TanStack Query.
+- **Hooks:** `usePagedList` para tablas paginadas y `useApiQuery` para lo demás, los dos en `frontend/src/lib`.
+- **Después de guardar:** se llama `refreshData()`, que vuelve a pedir lo que hay en pantalla. Así una aprobación actualiza a la vez la lista, el saldo y la campana.
+- **Sesión:** al entrar o salir se vacía la caché para no mostrar datos de otro usuario.
+
+**Filtros en la URL:** los filtros, la búsqueda y la página de cada lista viven en la URL (`/empleados?estado=active&q=ra&pagina=2`), igual que el mes del calendario y la empresa y pestaña de Empresas. Recargar o compartir el enlace conserva la vista.
+
+**Pruebas:**
+
+```bash
+npm test --workspace=frontend
+```
+
+Vitest con jsdom y Testing Library. Prueban los formatos, los bloques de horario, los filtros en la URL, el buscador y la campana, con el SDK simulado.
 
 **Login:** se entra con correo y contraseña. En desarrollo, la pantalla muestra las cuentas de prueba para autocompletarlas; en el build de producción no aparecen. La sesión se guarda en `localStorage` con **Recordarme**, o en `sessionStorage` sin esa opción, y se renueva sola. Si el refresh token ya no sirve, regresa al login con el aviso de sesión expirada.
 
