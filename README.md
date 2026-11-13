@@ -302,7 +302,9 @@ Las reglas de cada módulo se quedan en su carpeta de `features`.
 npm test --workspace=frontend
 ```
 
-Vitest con jsdom y Testing Library. Prueban los formatos, los bloques de horario, los filtros en la URL, el buscador y la campana, con el SDK simulado.
+Usan Vitest con jsdom y Testing Library, con el SDK simulado. Cubren dos grupos:
+- **Flujos críticos:** inicio de sesión y sus errores, sesión expirada (regresa al login y vacía la caché), menú según el rol y redirección de URLs sin permiso, solicitud que excede el saldo, y aprobar o rechazar.
+- **Piezas compartidas:** formatos, bloques de horario, filtros en la URL, campos de formulario, buscador y campana.
 
 **Login:** se entra con correo y contraseña. En desarrollo, la pantalla muestra las cuentas de prueba para autocompletarlas; en el build de producción no aparecen. La sesión se guarda en `localStorage` con **Recordarme**, o en `sessionStorage` sin esa opción, y se renueva sola. Si el refresh token ya no sirve, regresa al login con el aviso de sesión expirada.
 
