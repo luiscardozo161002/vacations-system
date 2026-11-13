@@ -146,8 +146,45 @@ Si la API responde 500 justo después de bajar cambios, lo más común es una mi
 | `npm run seed --workspace=backend`                       | Borra e inserta los datos de prueba         |
 | `npm run lint --workspace=backend`                       | Corre ESLint sobre el backend               |
 | `npm test --workspace=backend`                           | Prepara `vacations_test` y corre las pruebas |
+| `npm run import:employees --workspace=backend -- <archivo.csv>` | Carga o actualiza empleados desde la plantilla de RH |
 
 (Estos comandos también se pueden correr parado dentro de `backend/`, sin el flag `--workspace=backend`.)
+
+### Carga inicial de empleados
+
+RH llena [docs/plantilla-carga-empleados.csv](docs/plantilla-carga-empleados.csv) en Excel, una fila por empleado:
+
+| Columna | Qué lleva |
+|---|---|
+| `numero_empleado` | Número de empleado. Es la llave: si ya existe, se actualiza |
+| `folio` | Folio del empleado (máximo 10 caracteres) |
+| `nombre` | Nombre completo |
+| `fecha_ingreso` | `DD/MM/AAAA` o `AAAA-MM-DD` |
+| `sede` | Código de la sede (`THH_HGO`, `JOR_PUEB`…) |
+| `departamento` | Código o nombre del departamento dentro de esa sede |
+| `turno` | Código o nombre del turno |
+| `correo` | Opcional; se usa para crear su cuenta |
+| `dias_usados`, `horas_usadas` | Lo que ya tomó en su periodo vigente; vacío cuenta como 0 |
+
+El archivo puede ir separado por comas o por punto y coma, como lo guarde Excel. Las sedes, departamentos y turnos deben existir antes de importar; si falta alguno, la fila se rechaza con el motivo.
+
+```bash
+npm run import:employees --workspace=backend -- ruta/empleados.csv --simular
+```
+
+```bash
+npm run import:employees --workspace=backend -- ruta/empleados.csv --accesos
+```
+
+- **`--simular`:** solo valida y reporta, sin guardar nada.
+- **Al importar:**
+  - da de alta o actualiza a cada empleado;
+  - abre su periodo vigente;
+  - carga los días y horas usados.
+- **Se puede correr varias veces:** el mismo archivo deja el mismo resultado.
+- **`--accesos`:** crea la cuenta de Empleado con contraseña temporal a quien trae correo y aún no tiene cuenta.
+- **Reporte:** se escribe junto al archivo (`empleados.reporte.csv`) con el resultado de cada fila: creada, actualizada o rechazada, con su motivo.
+  - Con `--accesos`, el reporte incluye las contraseñas temporales. Hay que entregarlas y borrar el archivo.
 
 ### Pruebas
 
