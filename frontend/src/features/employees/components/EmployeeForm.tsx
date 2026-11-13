@@ -1,9 +1,10 @@
-import { useState, type ChangeEvent, type FormEvent } from 'react';
+import { useState, type FormEvent } from 'react';
 import type { CreateEmployeeInput, Department, Employee, Shift } from '@vacations/sdk';
 import { sdk } from '../../../lib/sdk';
 import { getErrorMessage } from '../../../lib/get-error-message';
 import { Drawer } from '../../../components/Drawer';
 import { SearchSelect } from '../../../components/SearchSelect';
+import { FormField, TextField } from '../../../components/FormField';
 import type { GrantedAccess } from './AccessDialog';
 
 interface EmployeeFormProps {
@@ -40,8 +41,6 @@ export function EmployeeForm({ employee, departments, shifts, onClose, onSaved }
   const [formError, setFormError] = useState<string | null>(null);
 
   const setField = (field: keyof FormState, value: string) => setForm((prev) => ({ ...prev, [field]: value }));
-
-  const handleChange = (field: keyof FormState) => (e: ChangeEvent<HTMLInputElement>) => setField(field, e.target.value);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -100,34 +99,33 @@ export function EmployeeForm({ employee, departments, shifts, onClose, onSaved }
     >
       {formError && <p className="field-error">{formError}</p>}
 
-      <div className="field">
-        <label htmlFor="f-name">Nombre completo</label>
-        <input
-          id="f-name"
-          value={form.employee_name}
-          onChange={handleChange('employee_name')}
-          placeholder="Ej. Laura Hernández"
-          maxLength={150}
-          required
-        />
-      </div>
-      <div className="field">
-        <label htmlFor="f-number">Número de empleado</label>
-        <input
-          id="f-number"
-          value={form.employee_number}
-          onChange={handleChange('employee_number')}
-          placeholder="EMP-0000"
-          maxLength={20}
-          required
-        />
-      </div>
-      <div className="field">
-        <label htmlFor="f-folio">Folio</label>
-        <input id="f-folio" value={form.folio} onChange={handleChange('folio')} maxLength={10} required />
-      </div>
-      <div className="field">
-        <label htmlFor="f-department">Departamento</label>
+      <TextField
+        id="f-name"
+        label="Nombre completo"
+        value={form.employee_name}
+        onChange={(value) => setField('employee_name', value)}
+        placeholder="Ej. Laura Hernández"
+        maxLength={150}
+        required
+      />
+      <TextField
+        id="f-number"
+        label="Número de empleado"
+        value={form.employee_number}
+        onChange={(value) => setField('employee_number', value)}
+        placeholder="EMP-0000"
+        maxLength={20}
+        required
+      />
+      <TextField
+        id="f-folio"
+        label="Folio"
+        value={form.folio}
+        onChange={(value) => setField('folio', value)}
+        maxLength={10}
+        required
+      />
+      <FormField label="Departamento" htmlFor="f-department">
         <SearchSelect
           id="f-department"
           options={departments.map((department) => ({ value: String(department.department_id), label: department.department_name }))}
@@ -136,9 +134,8 @@ export function EmployeeForm({ employee, departments, shifts, onClose, onSaved }
           placeholder="Busca un departamento..."
           fullWidth
         />
-      </div>
-      <div className="field">
-        <label htmlFor="f-shift">Turno</label>
+      </FormField>
+      <FormField label="Turno" htmlFor="f-shift">
         <SearchSelect
           id="f-shift"
           options={shifts.map((shift) => ({ value: String(shift.shift_id), label: shift.shift_name }))}
@@ -147,24 +144,26 @@ export function EmployeeForm({ employee, departments, shifts, onClose, onSaved }
           placeholder="Busca un turno..."
           fullWidth
         />
-      </div>
-      <div className="field">
-        <label htmlFor="f-start">Fecha de ingreso</label>
-        <input id="f-start" type="date" value={form.start_date} onChange={handleChange('start_date')} required />
-      </div>
+      </FormField>
+      <TextField
+        id="f-start"
+        label="Fecha de ingreso"
+        type="date"
+        value={form.start_date}
+        onChange={(value) => setField('start_date', value)}
+        required
+      />
       {!employee && (
-        <div className="field">
-          <label htmlFor="f-email">Correo electrónico</label>
-          <input
-            id="f-email"
-            type="email"
-            value={form.email}
-            onChange={handleChange('email')}
-            placeholder="nombre@empresa.com"
-            maxLength={120}
-          />
-          <p className="field-hint">Se creará su cuenta con una contraseña temporal válida por un mes.</p>
-        </div>
+        <TextField
+          id="f-email"
+          label="Correo electrónico"
+          type="email"
+          value={form.email}
+          onChange={(value) => setField('email', value)}
+          placeholder="nombre@empresa.com"
+          maxLength={120}
+          hint="Se creará su cuenta con una contraseña temporal válida por un mes."
+        />
       )}
     </Drawer>
   );

@@ -3,6 +3,7 @@ import type { DayOfWeek, Shift } from '@vacations/sdk';
 import { sdk } from '../../../lib/sdk';
 import { getErrorMessage } from '../../../lib/get-error-message';
 import { Drawer } from '../../../components/Drawer';
+import { FormField, TextField } from '../../../components/FormField';
 import { Icon } from '../../../components/Icon';
 import { DAY_LETTERS, WEEK, toBlocks, toSchedule, type ScheduleBlock } from '../schedule-blocks';
 
@@ -89,14 +90,8 @@ export function ShiftForm({ shift, onClose, onSaved }: ShiftFormProps) {
     >
       {formError && <p className="field-error">{formError}</p>}
 
-      <div className="field">
-        <label htmlFor="s-name">Nombre del turno</label>
-        <input id="s-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Ej. Turno Vespertino" />
-      </div>
-      <div className="field">
-        <label htmlFor="s-code">Código</label>
-        <input id="s-code" value={code} onChange={(e) => setCode(e.target.value)} placeholder="Ej. VESPERTINO" maxLength={20} />
-      </div>
+      <TextField id="s-name" label="Nombre del turno" value={name} onChange={setName} placeholder="Ej. Turno Vespertino" />
+      <TextField id="s-code" label="Código" value={code} onChange={setCode} placeholder="Ej. VESPERTINO" maxLength={20} />
       <label style={{ fontSize: 13, fontWeight: 500, display: 'block', marginBottom: 6 }}>Horario semanal</label>
       <div id="s-blocks">
         {blocks.map((block, index) => (
@@ -122,14 +117,12 @@ export function ShiftForm({ shift, onClose, onSaved }: ShiftFormProps) {
               ))}
             </div>
             <div style={{ display: 'flex', gap: 12 }}>
-              <div className="field" style={{ flex: 1, marginBottom: 0 }}>
-                <label>Hora entrada</label>
+              <FormField label="Hora entrada" style={{ flex: 1, marginBottom: 0 }}>
                 <input type="time" value={block.start} onChange={(e) => changeBlock(index, { start: e.target.value })} />
-              </div>
-              <div className="field" style={{ flex: 1, marginBottom: 0 }}>
-                <label>Hora salida</label>
+              </FormField>
+              <FormField label="Hora salida" style={{ flex: 1, marginBottom: 0 }}>
                 <input type="time" value={block.end} onChange={(e) => changeBlock(index, { end: e.target.value })} />
-              </div>
+              </FormField>
             </div>
           </div>
         ))}

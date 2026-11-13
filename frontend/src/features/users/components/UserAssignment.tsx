@@ -5,6 +5,7 @@ import { getErrorMessage } from '../../../lib/get-error-message';
 import { initials } from '../../../lib/format';
 import { ROLE_LABELS } from '../../../app/navigation';
 import { Drawer } from '../../../components/Drawer';
+import { FormField } from '../../../components/FormField';
 
 interface UserAssignmentProps {
   user: User;
@@ -93,12 +94,10 @@ export function UserAssignment({ user, branches, companies, onClose, onSaved }: 
         <p className="cell-sub">{ROLE_NOTES[user.role_code ?? ''] ?? ''}</p>
       ) : (
         <>
-          <div className="field">
-            <label>Empresa</label>
+          <FormField label="Empresa">
             <input value={companyNames.join(', ') || 'Sin sedes asignadas'} disabled />
-          </div>
-          <div className="field">
-            <label>Sedes permitidas</label>
+          </FormField>
+          <FormField label="Sedes permitidas">
             {branches.map((branch) => (
               <label key={branch.branch_id} style={checkboxRow}>
                 <input
@@ -109,9 +108,8 @@ export function UserAssignment({ user, branches, companies, onClose, onSaved }: 
                 {branch.code} · {branch.branch_name}
               </label>
             ))}
-          </div>
-          <div className="field">
-            <label>Estados que puede revisar</label>
+          </FormField>
+          <FormField label="Estados que puede revisar">
             {REVIEW_OPTIONS.map(([action, label]) => (
               <label key={action} style={checkboxRow}>
                 <input
@@ -122,7 +120,7 @@ export function UserAssignment({ user, branches, companies, onClose, onSaved }: 
                 {label}
               </label>
             ))}
-          </div>
+          </FormField>
         </>
       )}
     </Drawer>

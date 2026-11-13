@@ -5,6 +5,7 @@ import { getErrorMessage } from '../../../lib/get-error-message';
 import { ROLE_LABELS } from '../../../app/navigation';
 import { Drawer } from '../../../components/Drawer';
 import { SearchSelect } from '../../../components/SearchSelect';
+import { FormField, SelectField, TextField } from '../../../components/FormField';
 
 interface UserFormProps {
   roles: Role[];
@@ -76,37 +77,26 @@ export function UserForm({ roles, employees, onClose, onSaved }: UserFormProps) 
     >
       {formError && <p className="field-error">{formError}</p>}
 
-      <div className="field">
-        <label htmlFor="u-username">Usuario</label>
-        <input id="u-username" value={username} onChange={(e) => setUsername(e.target.value)} maxLength={50} required />
-      </div>
-      <div className="field">
-        <label htmlFor="u-email">Correo</label>
-        <input id="u-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} maxLength={120} required />
-      </div>
-      <div className="field">
-        <label htmlFor="u-password">Contraseña inicial</label>
-        <input
-          id="u-password"
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          autoComplete="new-password"
-          required
-        />
-      </div>
-      <div className="field">
-        <label htmlFor="u-role">Rol</label>
-        <select id="u-role" value={roleId} onChange={(e) => setRoleId(e.target.value)} required>
-          {roles.map((role) => (
-            <option key={role.role_id} value={role.role_id}>
-              {ROLE_LABELS[role.role_code] ?? role.description}
-            </option>
-          ))}
-        </select>
-      </div>
-      <div className="field">
-        <label htmlFor="u-employee">Empleado vinculado</label>
+      <TextField id="u-username" label="Usuario" value={username} onChange={setUsername} maxLength={50} required />
+      <TextField id="u-email" label="Correo" type="email" value={email} onChange={setEmail} maxLength={120} required />
+      <TextField
+        id="u-password"
+        label="Contraseña inicial"
+        type="password"
+        value={password}
+        onChange={setPassword}
+        autoComplete="new-password"
+        required
+      />
+      <SelectField
+        id="u-role"
+        label="Rol"
+        value={roleId}
+        onChange={setRoleId}
+        options={roles.map((role) => ({ value: role.role_id, label: ROLE_LABELS[role.role_code] ?? role.description }))}
+        required
+      />
+      <FormField label="Empleado vinculado" htmlFor="u-employee">
         <SearchSelect
           id="u-employee"
           options={employeeOptions}
@@ -115,7 +105,7 @@ export function UserForm({ roles, employees, onClose, onSaved }: UserFormProps) 
           placeholder="Opcional: buscar por número o nombre..."
           fullWidth
         />
-      </div>
+      </FormField>
     </Drawer>
   );
 }

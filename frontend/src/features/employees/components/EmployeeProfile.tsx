@@ -9,6 +9,7 @@ import { Drawer } from '../../../components/Drawer';
 import { ConfirmDialog } from '../../../components/Dialog';
 import { EmptyState } from '../../../components/EmptyState';
 import { Icon } from '../../../components/Icon';
+import { TextField } from '../../../components/FormField';
 import { StatusBadge } from '../../../components/StatusBadge';
 import { useToast } from '../../../components/toast-context';
 import { useAuth } from '../../auth/auth-context';
@@ -154,18 +155,16 @@ export function EmployeeProfile({ employee, departmentName, shiftName, onClose }
             </div>
           </div>
         ) : canGrant ? (
-          <div className="field">
-            <label htmlFor="ep-email">Correo electrónico</label>
-            <input
-              id="ep-email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="nombre@empresa.com"
-              maxLength={120}
-            />
-            <p className="field-hint">Aún no tiene cuenta. Se creará con una contraseña temporal válida por un mes.</p>
-          </div>
+          <TextField
+            id="ep-email"
+            label="Correo electrónico"
+            type="email"
+            value={email}
+            onChange={setEmail}
+            placeholder="nombre@empresa.com"
+            maxLength={120}
+            hint="Aún no tiene cuenta. Se creará con una contraseña temporal válida por un mes."
+          />
         ) : (
           <p className="cell-sub">{data ? 'Sin cuenta en el sistema.' : 'Cargando...'}</p>
         )}

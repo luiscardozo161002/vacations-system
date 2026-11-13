@@ -5,6 +5,7 @@ import { getErrorMessage } from '../../../lib/get-error-message';
 import { todayIso } from '../../../lib/format';
 import { Drawer } from '../../../components/Drawer';
 import { SearchSelect } from '../../../components/SearchSelect';
+import { FormField, SelectField, TextField } from '../../../components/FormField';
 import { BreakdownBox } from './BreakdownBox';
 
 interface FixedEmployee {
@@ -140,8 +141,7 @@ export function AbsenceForm({ title, submitLabel, reasons, employee, employees =
     >
       {formError && <p className="field-error">{formError}</p>}
 
-      <div className="field">
-        <label htmlFor="af-employee">Empleado</label>
+      <FormField label="Empleado" htmlFor="af-employee">
         {employee ? (
           <input id="af-employee" value={employee.employee_name} disabled />
         ) : (
@@ -154,34 +154,39 @@ export function AbsenceForm({ title, submitLabel, reasons, employee, employees =
             fullWidth
           />
         )}
-      </div>
-      <div className="field">
-        <label htmlFor="af-reason">Motivo</label>
-        <select id="af-reason" value={form.reason_id} onChange={setField('reason_id')} required>
-          {reasons.map((reason) => (
-            <option key={reason.reason_id} value={reason.reason_id}>
-              {reason.description}
-            </option>
-          ))}
-        </select>
-      </div>
-      <div className="field">
-        <label htmlFor="af-start">Fecha de inicio</label>
-        <input id="af-start" type="date" value={form.start} onChange={setField('start')} required />
-      </div>
-      <div className="field">
-        <label htmlFor="af-end">Fecha de fin</label>
-        <input id="af-end" type="date" value={form.end} onChange={setField('end')} min={form.start} required />
-      </div>
+      </FormField>
+      <SelectField
+        id="af-reason"
+        label="Motivo"
+        value={form.reason_id}
+        onChange={(value) => setValue('reason_id', value)}
+        options={reasons.map((reason) => ({ value: reason.reason_id, label: reason.description }))}
+        required
+      />
+      <TextField
+        id="af-start"
+        label="Fecha de inicio"
+        type="date"
+        value={form.start}
+        onChange={(value) => setValue('start', value)}
+        required
+      />
+      <TextField
+        id="af-end"
+        label="Fecha de fin"
+        type="date"
+        value={form.end}
+        onChange={(value) => setValue('end', value)}
+        min={form.start}
+        required
+      />
       <div style={{ display: 'flex', gap: 12 }}>
-        <div className="field" style={{ flex: 1 }}>
-          <label htmlFor="af-start-hour">Hora de inicio</label>
+        <FormField label="Hora de inicio" htmlFor="af-start-hour" style={{ flex: 1 }}>
           <input id="af-start-hour" type="number" min={0} max={23} value={form.startHour} onChange={setField('startHour')} />
-        </div>
-        <div className="field" style={{ flex: 1 }}>
-          <label htmlFor="af-end-hour">Hora de fin</label>
+        </FormField>
+        <FormField label="Hora de fin" htmlFor="af-end-hour" style={{ flex: 1 }}>
           <input id="af-end-hour" type="number" min={0} max={23} value={form.endHour} onChange={setField('endHour')} />
-        </div>
+        </FormField>
       </div>
       <p className="field-hint">Deja el horario en 0–23 para un día completo.</p>
       <BreakdownBox
@@ -189,10 +194,9 @@ export function AbsenceForm({ title, submitLabel, reasons, employee, employees =
         verb={employee ? 'Vas a tomar' : 'Va a tomar'}
         placeholder="Selecciona empleado, motivo y fechas para ver el cálculo."
       />
-      <div className="field">
-        <label htmlFor="af-remarks">Comentarios</label>
+      <FormField label="Comentarios" htmlFor="af-remarks">
         <textarea id="af-remarks" rows={3} placeholder="Opcional" value={form.remarks} onChange={setField('remarks')} />
-      </div>
+      </FormField>
     </Drawer>
   );
 }

@@ -3,6 +3,7 @@ import type { AccrualRule } from '@vacations/sdk';
 import { sdk } from '../../../lib/sdk';
 import { getErrorMessage } from '../../../lib/get-error-message';
 import { Drawer } from '../../../components/Drawer';
+import { TextField } from '../../../components/FormField';
 
 interface RuleFormProps {
   rule: AccrualRule | null;
@@ -65,18 +66,9 @@ export function RuleForm({ rule, effectiveYear, onClose, onSaved }: RuleFormProp
     >
       {formError && <p className="field-error">{formError}</p>}
 
-      <div className="field">
-        <label htmlFor="r-from">Antigüedad desde (años)</label>
-        <input id="r-from" type="number" min={0} value={yearsFrom} onChange={(e) => setYearsFrom(e.target.value)} />
-      </div>
-      <div className="field">
-        <label htmlFor="r-to">Antigüedad hasta (años)</label>
-        <input id="r-to" type="number" min={0} value={yearsTo} onChange={(e) => setYearsTo(e.target.value)} />
-      </div>
-      <div className="field">
-        <label htmlFor="r-days">Días otorgados</label>
-        <input id="r-days" type="number" min={1} value={days} onChange={(e) => setDays(e.target.value)} />
-      </div>
+      <TextField id="r-from" label="Antigüedad desde (años)" type="number" min={0} value={yearsFrom} onChange={setYearsFrom} />
+      <TextField id="r-to" label="Antigüedad hasta (años)" type="number" min={0} value={yearsTo} onChange={setYearsTo} />
+      <TextField id="r-days" label="Días otorgados" type="number" min={1} value={days} onChange={setDays} />
     </Drawer>
   );
 }

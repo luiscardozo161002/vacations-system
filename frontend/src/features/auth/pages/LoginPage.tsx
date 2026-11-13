@@ -3,6 +3,7 @@ import { SdkHttpError } from '@vacations/sdk';
 import { sdk } from '../../../lib/sdk';
 import { getErrorMessage } from '../../../lib/get-error-message';
 import { Icon } from '../../../components/Icon';
+import { TextField } from '../../../components/FormField';
 import { useAuth } from '../auth-context';
 import { DevAccounts } from '../components/DevAccounts';
 
@@ -94,17 +95,15 @@ export function LoginPage() {
     return (
       <LoginCard title="Restablecer contraseña" subtitle="Escribe tu correo para generar un código de restablecimiento.">
         <form onSubmit={handleRequest}>
-          <div className="field">
-            <label htmlFor="reset-email">Correo electrónico</label>
-            <input
-              id="reset-email"
-              type="email"
-              placeholder="tu.correo@empresa.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-          </div>
+          <TextField
+            id="reset-email"
+            label="Correo electrónico"
+            type="email"
+            placeholder="tu.correo@empresa.com"
+            value={email}
+            onChange={setEmail}
+            required
+          />
           {error && <p className="field-error">{error}</p>}
           <div className="login-foot">
             <button type="button" className="link" onClick={() => goTo('login')}>
@@ -124,35 +123,28 @@ export function LoginPage() {
       <LoginCard title="Nueva contraseña" subtitle="Escribe el código de restablecimiento y tu nueva contraseña.">
         <form onSubmit={handleConfirm}>
           {message && <p className="field-hint" style={{ marginBottom: 16 }}>{message}</p>}
-          <div className="field">
-            <label htmlFor="reset-token">Código</label>
-            <input id="reset-token" value={token} onChange={(e) => setToken(e.target.value)} required />
-          </div>
-          <div className="field">
-            <label htmlFor="reset-password">Nueva contraseña</label>
-            <input
-              id="reset-password"
-              type="password"
-              autoComplete="new-password"
-              minLength={8}
-              maxLength={100}
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              required
-            />
-            <p className="field-hint">Mínimo 8 caracteres.</p>
-          </div>
-          <div className="field">
-            <label htmlFor="reset-password-confirm">Confirmar contraseña</label>
-            <input
-              id="reset-password-confirm"
-              type="password"
-              autoComplete="new-password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              required
-            />
-          </div>
+          <TextField id="reset-token" label="Código" value={token} onChange={setToken} required />
+          <TextField
+            id="reset-password"
+            label="Nueva contraseña"
+            type="password"
+            autoComplete="new-password"
+            minLength={8}
+            maxLength={100}
+            value={newPassword}
+            onChange={setNewPassword}
+            required
+            hint="Mínimo 8 caracteres."
+          />
+          <TextField
+            id="reset-password-confirm"
+            label="Confirmar contraseña"
+            type="password"
+            autoComplete="new-password"
+            value={confirmPassword}
+            onChange={setConfirmPassword}
+            required
+          />
           {error && <p className="field-error">{error}</p>}
           <div className="login-foot">
             <button type="button" className="link" onClick={() => goTo('login')}>
@@ -171,30 +163,26 @@ export function LoginPage() {
     <LoginCard title="Inicia sesión" subtitle="Sistema de vacaciones y avisos de ausencia">
       <form onSubmit={handleLogin}>
         {message && <p className="field-hint" style={{ marginBottom: 16 }}>{message}</p>}
-        <div className="field">
-          <label htmlFor="login-email">Correo electrónico</label>
-          <input
-            id="login-email"
-            type="email"
-            placeholder="tu.correo@empresa.com"
-            autoComplete="username"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-        </div>
-        <div className="field">
-          <label htmlFor="login-password">Contraseña</label>
-          <input
-            id="login-password"
-            type="password"
-            placeholder="••••••••"
-            autoComplete="current-password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-        </div>
+        <TextField
+          id="login-email"
+          label="Correo electrónico"
+          type="email"
+          placeholder="tu.correo@empresa.com"
+          autoComplete="username"
+          value={email}
+          onChange={setEmail}
+          required
+        />
+        <TextField
+          id="login-password"
+          label="Contraseña"
+          type="password"
+          placeholder="••••••••"
+          autoComplete="current-password"
+          value={password}
+          onChange={setPassword}
+          required
+        />
         {error && <p className="field-error">{error}</p>}
         <div className="login-foot">
           <label style={{ display: 'flex', alignItems: 'center', gap: 6, color: 'var(--text-muted)' }}>

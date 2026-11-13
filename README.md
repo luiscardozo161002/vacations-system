@@ -276,6 +276,14 @@ El frontend usa `@vacations/sdk` como paquete local del workspace, sin publicarl
 - **Después de guardar:** se llama `refreshData()`, que vuelve a pedir lo que hay en pantalla. Así una aprobación actualiza a la vez la lista, el saldo y la campana.
 - **Sesión:** al entrar o salir se vacía la caché para no mostrar datos de otro usuario.
 
+**Componentes compartidos:** `frontend/src/components` tiene la tabla (`DataTable`), el drawer, los diálogos, el selector con búsqueda y los campos de formulario. Todos usan las clases del prototipo.
+- **`FormField`:** etiqueta, contenido y ayuda.
+- **`TextField`:** cualquier `input`, sea texto, correo, contraseña, número o fecha.
+- **`SelectField`:** lista de opciones.
+- **`SearchInput`:** caja de búsqueda que espera 300 ms después de la última tecla.
+
+Las reglas de cada módulo se quedan en su carpeta de `features`.
+
 **Filtros en la URL:** los filtros, la búsqueda y la página de cada lista viven en la URL (`/empleados?estado=active&q=ra&pagina=2`), igual que el mes del calendario y la empresa y pestaña de Empresas. Recargar o compartir el enlace conserva la vista.
 
 **Pruebas:**

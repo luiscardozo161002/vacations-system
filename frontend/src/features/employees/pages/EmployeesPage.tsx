@@ -9,6 +9,7 @@ import { Icon } from '../../../components/Icon';
 import { DataTable, type Column } from '../../../components/DataTable';
 import { ConfirmDialog } from '../../../components/Dialog';
 import { SearchSelect } from '../../../components/SearchSelect';
+import { SearchInput } from '../../../components/SearchInput';
 import { StatusBadge } from '../../../components/StatusBadge';
 import { useToast } from '../../../components/toast-context';
 import { useEmployees } from '../hooks/useEmployees';
@@ -20,14 +21,12 @@ import { AccessDialog, type GrantedAccess } from '../components/AccessDialog';
 import { useAuth } from '../../auth/auth-context';
 
 const PAGE_SIZE = 10;
-const SEARCH_DELAY_MS = 300;
 const FILTERS = { q: '', departamento: '', estado: '', pagina: '1', perfil: '' };
 
 export function EmployeesPage() {
   const showToast = useToast();
   const { can } = useAuth();
   const [filters, setFilters] = useUrlFilters(FILTERS);
-  const [searchText, setSearchText] = useState(filters.q);
   const page = Number(filters.pagina);
 
   const { departments, error: departmentsError } = useDepartments();
@@ -60,13 +59,6 @@ export function EmployeesPage() {
       .then(setProfileEmployee)
       .catch((err: unknown) => showToast(getErrorMessage(err)));
   }, [filters.perfil, setFilters, showToast]);
-
-  useEffect(() => {
-    const search = searchText.trim();
-    if (search === filters.q) return;
-    const timer = setTimeout(() => setFilters({ q: search, pagina: '1' }), SEARCH_DELAY_MS);
-    return () => clearTimeout(timer);
-  }, [searchText, filters.q, setFilters]);
 
   const loadError = listError ?? departmentsError ?? shiftsError;
 
@@ -171,16 +163,12 @@ export function EmployeesPage() {
       </div>
 
       <div className="toolbar">
-        <div className="search-box" style={{ display: 'flex' }}>
-          <Icon name="search" />
-          <input
-            type="text"
-            id="emp-search"
-            placeholder="Buscar por nombre o número..."
-            value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
-          />
-        </div>
+        <SearchInput
+          id="emp-search"
+          placeholder="Buscar por nombre o número..."
+          value={filters.q}
+          onSearch={(q) => setFilters({ q, pagina: '1' })}
+        />
         <SearchSelect
           id="emp-dept-filter"
           options={departmentOptions}

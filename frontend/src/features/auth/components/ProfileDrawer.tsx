@@ -4,6 +4,7 @@ import { sdk } from '../../../lib/sdk';
 import { getErrorMessage } from '../../../lib/get-error-message';
 import { initials } from '../../../lib/format';
 import { Drawer } from '../../../components/Drawer';
+import { TextField } from '../../../components/FormField';
 import { useToast } from '../../../components/toast-context';
 import { useAuth } from '../auth-context';
 
@@ -86,51 +87,46 @@ export function ProfileDrawer({ user, roleLabel, onClose }: ProfileDrawerProps) 
           <p className="cell-sub">{roleLabel}</p>
         </div>
       </div>
-      <div className="field">
-        <label htmlFor="pf-name">Nombre de usuario</label>
-        <input id="pf-name" value={username} onChange={(e) => setUsername(e.target.value)} maxLength={50} />
-      </div>
-      <div className="field">
-        <label htmlFor="pf-email">Correo electrónico</label>
-        <input id="pf-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} maxLength={120} />
-      </div>
+      <TextField id="pf-name" label="Nombre de usuario" value={username} onChange={setUsername} maxLength={50} />
+      <TextField
+        id="pf-email"
+        label="Correo electrónico"
+        type="email"
+        value={email}
+        onChange={setEmail}
+        maxLength={120}
+      />
       <div className="divider" />
       <p className="cell-sub" style={{ marginBottom: 10 }}>
         Deja la contraseña en blanco si no quieres cambiarla.
       </p>
-      <div className="field">
-        <label htmlFor="pf-current-password">Contraseña actual</label>
-        <input
-          id="pf-current-password"
-          type="password"
-          placeholder="••••••••"
-          autoComplete="current-password"
-          value={currentPassword}
-          onChange={(e) => setCurrentPassword(e.target.value)}
-        />
-      </div>
-      <div className="field">
-        <label htmlFor="pf-password">Nueva contraseña</label>
-        <input
-          id="pf-password"
-          type="password"
-          placeholder="••••••••"
-          autoComplete="new-password"
-          value={newPassword}
-          onChange={(e) => setNewPassword(e.target.value)}
-        />
-      </div>
-      <div className="field">
-        <label htmlFor="pf-password-confirm">Confirmar contraseña</label>
-        <input
-          id="pf-password-confirm"
-          type="password"
-          placeholder="••••••••"
-          autoComplete="new-password"
-          value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
-        />
-      </div>
+      <TextField
+        id="pf-current-password"
+        label="Contraseña actual"
+        type="password"
+        placeholder="••••••••"
+        autoComplete="current-password"
+        value={currentPassword}
+        onChange={setCurrentPassword}
+      />
+      <TextField
+        id="pf-password"
+        label="Nueva contraseña"
+        type="password"
+        placeholder="••••••••"
+        autoComplete="new-password"
+        value={newPassword}
+        onChange={setNewPassword}
+      />
+      <TextField
+        id="pf-password-confirm"
+        label="Confirmar contraseña"
+        type="password"
+        placeholder="••••••••"
+        autoComplete="new-password"
+        value={confirmPassword}
+        onChange={setConfirmPassword}
+      />
       {error && <p className="field-error">{error}</p>}
     </Drawer>
   );

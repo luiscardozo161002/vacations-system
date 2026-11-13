@@ -4,6 +4,7 @@ import { sdk } from '../../../lib/sdk';
 import { getErrorMessage } from '../../../lib/get-error-message';
 import { Drawer } from '../../../components/Drawer';
 import { SearchSelect } from '../../../components/SearchSelect';
+import { FormField, SelectField, TextField } from '../../../components/FormField';
 
 interface DepartmentFormProps {
   department: Department | null;
@@ -80,33 +81,25 @@ export function DepartmentForm({ department, branches, employees, onClose, onSav
     >
       {formError && <p className="field-error">{formError}</p>}
 
-      <div className="field">
-        <label htmlFor="d-name">Nombre del departamento</label>
-        <input
-          id="d-name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder="Ej. Atención a Clientes"
-          maxLength={150}
-          required
-        />
-      </div>
-      <div className="field">
-        <label htmlFor="d-code">Código</label>
-        <input id="d-code" value={code} onChange={(e) => setCode(e.target.value)} placeholder="Ej. ATC" maxLength={20} required />
-      </div>
-      <div className="field">
-        <label htmlFor="d-branch">Sede</label>
-        <select id="d-branch" value={branchId} onChange={(e) => setBranchId(e.target.value)} required>
-          {branches.map((branch) => (
-            <option key={branch.branch_id} value={branch.branch_id}>
-              {branch.code} · {branch.branch_name}
-            </option>
-          ))}
-        </select>
-      </div>
-      <div className="field">
-        <label htmlFor="d-manager">Responsable</label>
+      <TextField
+        id="d-name"
+        label="Nombre del departamento"
+        value={name}
+        onChange={setName}
+        placeholder="Ej. Atención a Clientes"
+        maxLength={150}
+        required
+      />
+      <TextField id="d-code" label="Código" value={code} onChange={setCode} placeholder="Ej. ATC" maxLength={20} required />
+      <SelectField
+        id="d-branch"
+        label="Sede"
+        value={branchId}
+        onChange={setBranchId}
+        options={branches.map((branch) => ({ value: branch.branch_id, label: `${branch.code} · ${branch.branch_name}` }))}
+        required
+      />
+      <FormField label="Responsable" htmlFor="d-manager">
         <SearchSelect
           id="d-manager"
           options={managerOptions}
@@ -115,14 +108,13 @@ export function DepartmentForm({ department, branches, employees, onClose, onSav
           placeholder="Buscar empleado por nombre..."
           fullWidth
         />
-      </div>
-      <div className="field">
-        <label>Calendario</label>
+      </FormField>
+      <FormField label="Calendario">
         <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, marginBottom: 6 }}>
           <input type="checkbox" checked={calendarShared} onChange={(e) => setCalendarShared(e.target.checked)} /> Sus empleados ven
           las ausencias del departamento
         </label>
-      </div>
+      </FormField>
     </Drawer>
   );
 }

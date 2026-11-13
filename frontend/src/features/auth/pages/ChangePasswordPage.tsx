@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react';
 import { sdk } from '../../../lib/sdk';
 import { getErrorMessage } from '../../../lib/get-error-message';
 import { formatDate } from '../../../lib/format';
+import { TextField } from '../../../components/FormField';
 import { useAuth } from '../auth-context';
 import { LoginCard } from './LoginPage';
 
@@ -42,42 +43,36 @@ export function ChangePasswordPage() {
       subtitle={`Entraste con una contraseña temporal${expires ? ` que vence el ${formatDate(expires)}` : ''}. Cámbiala para continuar.`}
     >
       <form onSubmit={handleSubmit}>
-        <div className="field">
-          <label htmlFor="cp-current">Contraseña temporal</label>
-          <input
-            id="cp-current"
-            type="password"
-            autoComplete="current-password"
-            value={currentPassword}
-            onChange={(e) => setCurrentPassword(e.target.value)}
-            required
-          />
-        </div>
-        <div className="field">
-          <label htmlFor="cp-new">Nueva contraseña</label>
-          <input
-            id="cp-new"
-            type="password"
-            autoComplete="new-password"
-            minLength={8}
-            maxLength={100}
-            value={newPassword}
-            onChange={(e) => setNewPassword(e.target.value)}
-            required
-          />
-          <p className="field-hint">Mínimo 8 caracteres.</p>
-        </div>
-        <div className="field">
-          <label htmlFor="cp-confirm">Confirmar contraseña</label>
-          <input
-            id="cp-confirm"
-            type="password"
-            autoComplete="new-password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            required
-          />
-        </div>
+        <TextField
+          id="cp-current"
+          label="Contraseña temporal"
+          type="password"
+          autoComplete="current-password"
+          value={currentPassword}
+          onChange={setCurrentPassword}
+          required
+        />
+        <TextField
+          id="cp-new"
+          label="Nueva contraseña"
+          type="password"
+          autoComplete="new-password"
+          minLength={8}
+          maxLength={100}
+          value={newPassword}
+          onChange={setNewPassword}
+          required
+          hint="Mínimo 8 caracteres."
+        />
+        <TextField
+          id="cp-confirm"
+          label="Confirmar contraseña"
+          type="password"
+          autoComplete="new-password"
+          value={confirmPassword}
+          onChange={setConfirmPassword}
+          required
+        />
         {error && <p className="field-error">{error}</p>}
         <div className="login-foot">
           <button type="button" className="link" onClick={logout}>

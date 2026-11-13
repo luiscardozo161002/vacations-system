@@ -1,15 +1,14 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import type { AuditLogEntry, CallOptions, ListAuditLogParams } from '@vacations/sdk';
 import { sdk } from '../../../lib/sdk';
 import { formatDateTime } from '../../../lib/format';
 import { usePagedList } from '../../../lib/use-paged-list';
 import { useUrlFilters } from '../../../lib/use-url-filters';
 import { DataTable, type Column } from '../../../components/DataTable';
-import { Icon } from '../../../components/Icon';
+import { SearchInput } from '../../../components/SearchInput';
 import { StatusBadge } from '../../../components/StatusBadge';
 
 const PAGE_SIZE = 10;
-const SEARCH_DELAY_MS = 300;
 const FILTERS = { resultado: '', q: '', pagina: '1' };
 
 const EVENT_LABELS: Record<string, string> = {
@@ -33,15 +32,8 @@ const columns: Column<AuditLogEntry>[] = [
 
 export function AuditPage() {
   const [filters, setFilters] = useUrlFilters(FILTERS);
-  const [searchText, setSearchText] = useState(filters.q);
   const page = Number(filters.pagina);
 
-  useEffect(() => {
-    const search = searchText.trim();
-    if (search === filters.q) return;
-    const timer = setTimeout(() => setFilters({ q: search, pagina: '1' }), SEARCH_DELAY_MS);
-    return () => clearTimeout(timer);
-  }, [searchText, filters.q, setFilters]);
 
   const params = useMemo(
     () => ({
@@ -71,10 +63,11 @@ export function AuditPage() {
           <option value="success">Exitoso</option>
           <option value="failed">Fallido</option>
         </select>
-        <div className="search-box" style={{ display: 'flex' }}>
-          <Icon name="search" />
-          <input placeholder="Buscar usuario o evento..." value={searchText} onChange={(e) => setSearchText(e.target.value)} />
-        </div>
+        <SearchInput
+          placeholder="Buscar usuario o evento..."
+          value={filters.q}
+          onSearch={(q) => setFilters({ q, pagina: '1' })}
+        />
       </div>
       <DataTable
         columns={columns}
