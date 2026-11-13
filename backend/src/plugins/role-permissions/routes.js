@@ -35,6 +35,7 @@ const rolePermissionsPlugin = {
         method: 'POST',
         path: '/api/v1/role-permissions',
         options: {
+          plugins: { audit: { event: 'PERMISSION_GRANTED', entity: 'role', id: 'role_id' } },
           description: 'Assign a permission to a role',
           tags: ['api', 'role-permissions'],
           auth: requires('permissions:update'),
@@ -49,6 +50,7 @@ const rolePermissionsPlugin = {
         method: 'DELETE',
         path: '/api/v1/role-permissions/{roleId}/{permissionId}',
         options: {
+          plugins: { audit: { event: 'PERMISSION_REVOKED', entity: 'role', id: 'roleId' } },
           description: 'Deactivate a role-permission assignment',
           tags: ['api', 'role-permissions'],
           auth: requires('permissions:update'),

@@ -10,6 +10,7 @@ const pkg = require('../package.json');
 
 require('./db');
 const errorHandler = require('./lib/error-handler');
+const { auditPlugin } = require('./lib/audit');
 const { VALIDATION_MESSAGES } = require('./lib/validation-messages');
 const healthPlugin = require('./plugins/health');
 const employeesPlugin = require('./plugins/employees/routes');
@@ -92,6 +93,7 @@ const createServer = async () => {
     Inert,
     Vision,
     { plugin: HapiSwagger, options: swaggerOptions },
+    auditPlugin,
     errorHandler,
     healthPlugin,
     employeesPlugin,

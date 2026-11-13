@@ -3,6 +3,7 @@
 const Boom = require('@hapi/boom');
 const service = require('./service');
 const schemas = require('./schemas');
+const { requestContext } = require('../../lib/audit');
 const config = require('../../config');
 const { createAttemptLimiter } = require('../../lib/attempt-limiter');
 
@@ -12,7 +13,7 @@ const failedLogins = createAttemptLimiter({
 });
 
 const login = async (request) => {
-  const ip = request.info.remoteAddress;
+  const { ip } = requestContext(request);
   if (failedLogins.isBlocked(ip)) {
     throw Boom.tooManyRequests('Demasiados intentos fallidos desde esta red; intenta de nuevo en unos minutos');
   }
@@ -25,10 +26,7 @@ const login = async (request) => {
   }
 };
 
-const context = (request) => ({
-  ip: request.info.remoteAddress,
-  userAgent: request.headers['user-agent'],
-});
+const context = requestContext;
 
 const authPlugin = {
   name: 'auth-plugin',

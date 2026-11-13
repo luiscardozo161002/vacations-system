@@ -101,7 +101,15 @@ users N─N branches (user_branches)
 
 ## Autenticación y autorización
 
-JWT (`@hapi/jwt`) con access token de vida corta (15 min) + refresh token (7 días), contraseñas con `bcryptjs`, bloqueo de cuenta tras 5 intentos fallidos (15 min), tokens de reseteo de contraseña con expiración de 1 hora, y bitácora de auditoría (`auth_audit_log`) para eventos de seguridad.
+JWT (`@hapi/jwt`) con access token de vida corta (15 min) + refresh token (7 días), contraseñas con `bcryptjs`, bloqueo de cuenta tras 5 intentos fallidos (15 min), tokens de reseteo de contraseña con expiración de 1 hora, y bitácora de auditoría (`auth_audit_log`).
+
+Auditoría de negocio (`backend/src/lib/audit.js`):
+
+- **Declarativa:** cada ruta auditada dice en `options.plugins.audit` qué evento registra (`NOTICE_APPROVED`, `EMPLOYEE_DEACTIVATED`…), sobre qué entidad y de dónde sale su id (parámetro de la URL o campo de la respuesta). Un solo `onPreResponse` guarda la fila.
+- **Qué guarda:** quién (`user_id` del token), el evento, la entidad y su id, el resultado (`success` o `failed`) y, si falló, el código del error. También los datos enviados sin contraseñas, la IP, el navegador y el id de la petición, que es el mismo que aparece en los logs de `hapi-pino`.
+- **Fallos:** se registran también los rechazos de negocio (`INVALID_TRANSITION`) y los intentos sin permiso (403). Por eso la fila se escribe al responder y no dentro de la transacción de la acción: si se escribiera dentro, un fallo la desharía junto con la acción. Si la escritura de auditoría falla, se registra en el log y la respuesta no cambia.
+- **IP real:** `lib/client-ip.js` toma `X-Forwarded-For` solo cuando la petición llega de una IP de `TRUSTED_PROXIES`. Recorre la cadena de derecha a izquierda y se queda con la primera IP que no es de un proxy, así no se puede falsificar desde el navegador.
+- **Solo agregar:** la API solo lee la bitácora; no hay rutas para editarla ni borrarla.
 
 RBAC vía `roles` / `permissions` / `role_permissions`.
 

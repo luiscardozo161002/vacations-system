@@ -36,6 +36,7 @@ const employeesPlugin = {
         method: 'POST',
         path: '/api/v1/employees',
         options: {
+          plugins: { audit: { event: 'EMPLOYEE_CREATED', entity: 'employee', id: 'employee_id' } },
           description: 'Create an employee',
           tags: ['api', 'employees'],
           auth: requires('employees:create'),
@@ -50,6 +51,7 @@ const employeesPlugin = {
         method: 'PATCH',
         path: '/api/v1/employees/{employeeId}',
         options: {
+          plugins: { audit: { event: 'EMPLOYEE_UPDATED', entity: 'employee', id: 'employeeId' } },
           description: 'Update an employee',
           tags: ['api', 'employees'],
           auth: requires('employees:update'),
@@ -61,6 +63,7 @@ const employeesPlugin = {
         method: 'POST',
         path: '/api/v1/employees/{employeeId}/access',
         options: {
+          plugins: { audit: { event: 'EMPLOYEE_ACCESS_GRANTED', entity: 'employee', id: 'employeeId' } },
           description: 'Create or renew the employee account with a temporary password',
           tags: ['api', 'employees'],
           auth: requires('employees:update'),
@@ -73,6 +76,7 @@ const employeesPlugin = {
         method: 'DELETE',
         path: '/api/v1/employees/{employeeId}',
         options: {
+          plugins: { audit: { event: 'EMPLOYEE_DEACTIVATED', entity: 'employee', id: 'employeeId' } },
           description: 'Deactivate an employee',
           tags: ['api', 'employees'],
           auth: requires('employees:delete'),

@@ -35,6 +35,7 @@ const vacationAccrualRulesPlugin = {
         method: 'POST',
         path: '/api/v1/vacation-accrual-rules',
         options: {
+          plugins: { audit: { event: 'RULE_CREATED', entity: 'accrual_rule', id: 'rule_id' } },
           description: 'Create a vacation accrual rule',
           tags: ['api', 'vacation-accrual-rules'],
           auth: requires('rules:create'),
@@ -49,6 +50,7 @@ const vacationAccrualRulesPlugin = {
         method: 'PATCH',
         path: '/api/v1/vacation-accrual-rules/{ruleId}',
         options: {
+          plugins: { audit: { event: 'RULE_UPDATED', entity: 'accrual_rule', id: 'ruleId' } },
           description: 'Update a vacation accrual rule',
           tags: ['api', 'vacation-accrual-rules'],
           auth: requires('rules:update'),
@@ -60,6 +62,7 @@ const vacationAccrualRulesPlugin = {
         method: 'DELETE',
         path: '/api/v1/vacation-accrual-rules/{ruleId}',
         options: {
+          plugins: { audit: { event: 'RULE_DEACTIVATED', entity: 'accrual_rule', id: 'ruleId' } },
           description: 'Deactivate a vacation accrual rule',
           tags: ['api', 'vacation-accrual-rules'],
           auth: requires('rules:delete'),

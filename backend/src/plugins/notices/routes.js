@@ -89,6 +89,7 @@ const noticesPlugin = {
         method: 'POST',
         path: '/api/v1/notices/{noticeId}/approve',
         options: {
+          plugins: { audit: { event: 'NOTICE_APPROVED', entity: 'notice', id: 'noticeId' } },
           description: 'Approve a pending request',
           tags: ['api', 'notices'],
           auth: requires('approvals:review'),
@@ -100,6 +101,7 @@ const noticesPlugin = {
         method: 'POST',
         path: '/api/v1/notices/{noticeId}/reject',
         options: {
+          plugins: { audit: { event: 'NOTICE_REJECTED', entity: 'notice', id: 'noticeId' } },
           description: 'Reject a pending request',
           tags: ['api', 'notices'],
           auth: requires('approvals:review'),
@@ -111,6 +113,7 @@ const noticesPlugin = {
         method: 'POST',
         path: '/api/v1/notices/{noticeId}/cancel',
         options: {
+          plugins: { audit: { event: 'NOTICE_CANCELLED', entity: 'notice', id: 'noticeId' } },
           description: 'Cancel a request or notice',
           tags: ['api', 'notices'],
           auth: requires('approvals:review', 'requests:create'),

@@ -35,6 +35,7 @@ const usersPlugin = {
         method: 'POST',
         path: '/api/v1/users',
         options: {
+          plugins: { audit: { event: 'USER_CREATED', entity: 'user', id: 'user_id' } },
           description: 'Create a user (password is hashed before storing)',
           tags: ['api', 'users'],
           auth: requires('users:create'),
@@ -49,6 +50,7 @@ const usersPlugin = {
         method: 'PATCH',
         path: '/api/v1/users/{userId}',
         options: {
+          plugins: { audit: { event: 'USER_UPDATED', entity: 'user', id: 'userId' } },
           description: 'Update a user (password is re-hashed if sent)',
           tags: ['api', 'users'],
           auth: requires('users:update'),
@@ -60,6 +62,7 @@ const usersPlugin = {
         method: 'DELETE',
         path: '/api/v1/users/{userId}',
         options: {
+          plugins: { audit: { event: 'USER_DEACTIVATED', entity: 'user', id: 'userId' } },
           description: 'Deactivate a user',
           tags: ['api', 'users'],
           auth: requires('users:delete'),
@@ -85,6 +88,7 @@ const usersPlugin = {
         method: 'PUT',
         path: '/api/v1/users/{userId}/branches',
         options: {
+          plugins: { audit: { event: 'USER_BRANCHES_CHANGED', entity: 'user', id: 'userId' } },
           description: 'Replace the branches assigned to a user',
           tags: ['api', 'users'],
           auth: requires('users:update'),

@@ -106,12 +106,16 @@ const findActiveResetTokenByHash = (tokenHash) =>
 
 const markResetTokenUsed = (tokenId) => PasswordResetToken.query().findById(tokenId).patch({ used_at: new Date() });
 
-const logAuditEvent = (userId, eventType, { ip, userAgent, metadata } = {}) =>
+const logAuditEvent = (userId, eventType, { ip, userAgent, requestId, metadata } = {}) =>
   AuthAuditLog.query().insert({
     user_id: userId || null,
     event_type: eventType,
+    result: eventType.endsWith('_FAILED') ? 'failed' : 'success',
+    entity: userId ? 'user' : null,
+    entity_id: userId ? String(userId) : null,
     ip_address: ip || null,
     user_agent: userAgent || null,
+    request_id: requestId || null,
     metadata: metadata || null,
   });
 
