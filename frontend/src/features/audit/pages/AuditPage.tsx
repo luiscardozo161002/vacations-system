@@ -26,6 +26,7 @@ const EVENT_LABELS: Record<string, string> = {
   EMPLOYEE_UPDATED: 'Editó un empleado',
   EMPLOYEE_DEACTIVATED: 'Dio de baja un empleado',
   EMPLOYEE_ACCESS_GRANTED: 'Envió acceso a un empleado',
+  EMPLOYEES_EXPORTED: 'Exportó empleados a CSV',
   RULE_CREATED: 'Creó una regla de acumulación',
   RULE_UPDATED: 'Editó una regla de acumulación',
   RULE_DEACTIVATED: 'Desactivó una regla de acumulación',
