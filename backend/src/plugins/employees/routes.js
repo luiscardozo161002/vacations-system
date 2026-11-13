@@ -23,6 +23,25 @@ const employeesPlugin = {
       },
       {
         method: 'GET',
+        path: '/api/v1/employees/export',
+        options: {
+          plugins: { audit: { event: 'EMPLOYEES_EXPORTED', entity: 'employee' } },
+          description: 'Download the filtered employees as CSV',
+          tags: ['api', 'employees'],
+          auth: requires('employees:view'),
+          validate: { query: schemas.exportQuery },
+        },
+        handler: async (request, h) => {
+          const csv = await service.exportCsv(request.query, scopeFrom(request.auth.credentials));
+          const today = new Date().toISOString().slice(0, 10);
+          return h
+            .response(csv)
+            .type('text/csv; charset=utf-8')
+            .header('content-disposition', `attachment; filename="empleados-${today}.csv"`);
+        },
+      },
+      {
+        method: 'GET',
         path: '/api/v1/employees/{employeeId}',
         options: {
           description: 'Get an employee by ID',

@@ -4,6 +4,7 @@ const { parse } = require('csv-parse/sync');
 const db = require('../db');
 const { rollover } = require('../plugins/vacation-entitlements/rollover');
 const { grantAccess } = require('../plugins/employees/access');
+const { toCsv } = require('../lib/csv');
 
 const HEADERS = [
   'numero_empleado',
@@ -205,24 +206,18 @@ const importEmployees = async (content, { simulate = false, createAccess = false
 
 const REPORT_HEADERS = ['fila', 'numero_empleado', 'nombre', 'resultado', 'detalle', 'usuario', 'contrasena_temporal'];
 
-const quote = (value) => `"${String(value ?? '').replace(/"/g, '""')}"`;
-
 const toReportCsv = (report) =>
-  [
-    REPORT_HEADERS.join(','),
-    ...report.map((entry) =>
-      [
-        entry.line,
-        entry.row.numero_empleado,
-        entry.row.nombre,
-        entry.result,
-        entry.detail,
-        entry.username,
-        entry.temporaryPassword,
-      ]
-        .map(quote)
-        .join(','),
-    ),
-  ].join('\r\n');
+  toCsv([
+    REPORT_HEADERS,
+    ...report.map((entry) => [
+      entry.line,
+      entry.row.numero_empleado,
+      entry.row.nombre,
+      entry.result,
+      entry.detail,
+      entry.username,
+      entry.temporaryPassword,
+    ]),
+  ]);
 
 module.exports = { HEADERS, importEmployees, toReportCsv };

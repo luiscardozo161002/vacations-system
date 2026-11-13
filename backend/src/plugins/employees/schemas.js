@@ -44,4 +44,11 @@ const list = Joi.object({
   pageSize: Joi.number().integer().min(1).max(100).default(10),
 }).unknown(false);
 
-module.exports = { create, update, params, list, access };
+const exportQuery = Joi.object({
+  search: Joi.string().trim().max(100),
+  company_id: id,
+  department_id: id,
+  status: Joi.string().valid('active', 'inactive'),
+}).unknown(false);
+
+module.exports = { create, update, params, list, exportQuery, access };

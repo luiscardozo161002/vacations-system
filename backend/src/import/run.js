@@ -5,7 +5,6 @@ const path = require('path');
 const db = require('../db');
 const { importEmployees, toReportCsv } = require('./employees');
 
-const BOM = '\uFEFF';
 const USAGE = 'Uso: npm run import:employees --workspace=backend -- <archivo.csv> [--simular] [--accesos]';
 
 const main = async () => {
@@ -20,7 +19,7 @@ const main = async () => {
   });
 
   const output = path.join(path.dirname(file), `${path.basename(file, path.extname(file))}.reporte.csv`);
-  fs.writeFileSync(output, BOM + toReportCsv(report));
+  fs.writeFileSync(output, toReportCsv(report));
 
   const count = (result) => report.filter((entry) => entry.result === result).length;
   console.log(

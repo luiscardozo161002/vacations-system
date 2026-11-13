@@ -3,6 +3,7 @@ import type { CurrentUser, Notice } from '@vacations/sdk';
 import { sdk } from '../../../lib/sdk';
 import { getErrorMessage } from '../../../lib/get-error-message';
 import { useApiQuery } from '../../../lib/use-api-query';
+import { saveFile } from '../../../lib/save-file';
 import { formatAbsenceRange, formatDaysHours, initials, todayIso } from '../../../lib/format';
 import { Drawer } from '../../../components/Drawer';
 import { ConfirmDialog } from '../../../components/Dialog';
@@ -88,13 +89,7 @@ export function AbsenceDetail({ notice, user, can, onClose, onChanged }: Absence
   const downloadPdf = async () => {
     setWorking(true);
     try {
-      const file = await sdk.notices.pdf(notice.notice_id);
-      const url = URL.createObjectURL(file);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `aviso-${notice.notice_id}.pdf`;
-      link.click();
-      URL.revokeObjectURL(url);
+      saveFile(await sdk.notices.pdf(notice.notice_id), `aviso-${notice.notice_id}.pdf`);
     } catch (err) {
       showToast(getErrorMessage(err));
     } finally {

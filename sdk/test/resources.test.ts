@@ -110,6 +110,7 @@ describe('rutas especiales', () => {
     await sdk.notifications.list();
     await sdk.employees.grantAccess(4);
     await sdk.employees.grantAccess(4, 'a.torres@thh.com.mx');
+    await sdk.employees.exportCsv({ status: 'active', department_id: 2 });
     await sdk.notifications.markAllRead();
     await sdk.vacationEntitlements.generate('2027-08-01');
 
@@ -126,6 +127,7 @@ describe('rutas especiales', () => {
       'GET /api/v1/me/notifications',
       'POST /api/v1/employees/4/access',
       'POST /api/v1/employees/4/access',
+      'GET /api/v1/employees/export?status=active&department_id=2',
       'POST /api/v1/me/notifications/read',
       'POST /api/v1/vacation-entitlements/generate',
     ]);

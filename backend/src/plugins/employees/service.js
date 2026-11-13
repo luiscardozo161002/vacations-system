@@ -3,6 +3,7 @@
 const db = require('../../db');
 const repository = require('./repository');
 const { findAccount, grantAccess } = require('./access');
+const { toCsv } = require('../../lib/csv');
 const { AppError } = require('../../lib/app-error');
 const { EDITABLE_FIELDS } = require('./fields');
 const { allowsDepartment } = require('../../lib/data-scope');
@@ -22,6 +23,29 @@ const checkReferences = async (data, scope) => {
 };
 
 const list = (filters, scope) => repository.list(filters, scope);
+
+const EXPORT_HEADERS = ['Número', 'Folio', 'Nombre', 'Sede', 'Departamento', 'Turno', 'Fecha de ingreso', 'Correo', 'Estado'];
+const STATUS_LABELS = { active: 'Activo', inactive: 'Inactivo' };
+
+const toMexicanDate = (iso) => iso.split('-').reverse().join('/');
+
+const exportCsv = async (filters, scope) => {
+  const rows = await repository.exportRows(filters, scope);
+  return toCsv([
+    EXPORT_HEADERS,
+    ...rows.map((row) => [
+      row.employee_number,
+      row.folio,
+      row.employee_name,
+      row.branch_code,
+      row.department_name,
+      row.shift_name,
+      toMexicanDate(row.start_date),
+      row.email,
+      STATUS_LABELS[row.status],
+    ]),
+  ]);
+};
 
 const findById = async (employeeId, scope) => {
   const employee = await repository.findById(employeeId, scope);
@@ -59,4 +83,4 @@ const remove = async (employeeId, scope) => {
   return employee;
 };
 
-module.exports = { list, findById, create, update, remove, resendAccess };
+module.exports = { list, exportCsv, findById, create, update, remove, resendAccess };

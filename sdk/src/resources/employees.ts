@@ -1,5 +1,5 @@
 import { HttpClient } from '../core/http-client';
-import { CrudResource } from '../core/crud-resource';
+import { CrudResource, toQuery } from '../core/crud-resource';
 
 export type EmployeeStatus = 'active' | 'inactive';
 
@@ -47,6 +47,8 @@ export interface ListEmployeesParams {
   pageSize?: number;
 }
 
+export type ExportEmployeesParams = Omit<ListEmployeesParams, 'sort' | 'page' | 'pageSize'>;
+
 export interface CreateEmployeeInput {
   department_id: number;
   shift_id: number;
@@ -75,6 +77,10 @@ export class EmployeesResource extends CrudResource<Employee, ListEmployeesParam
 
   override create(input: CreateEmployeeInput): Promise<CreatedEmployee> {
     return this.http.request<CreatedEmployee>(this.path, { method: 'POST', body: input });
+  }
+
+  exportCsv(params?: ExportEmployeesParams): Promise<Blob> {
+    return this.http.requestBlob(`${this.path}/export`, { query: toQuery(params) });
   }
 
   grantAccess(id: number, email?: string): Promise<EmployeeAccess> {

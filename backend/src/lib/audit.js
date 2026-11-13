@@ -47,7 +47,7 @@ const record = async (request) => {
       ip_address: ip,
       user_agent: userAgent,
       request_id: requestId,
-      metadata: { changes: changesOf(request.payload), ...(failed && { error: errorCodeOf(response) }) },
+      metadata: { changes: changesOf(request.payload ?? request.query), ...(failed && { error: errorCodeOf(response) }) },
     });
   } catch (err) {
     request.logger.error({ err, event: audit.event }, 'No se pudo registrar la auditoría');

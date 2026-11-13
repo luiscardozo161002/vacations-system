@@ -4,7 +4,8 @@ import { sdk } from '../../../lib/sdk';
 import { getErrorMessage } from '../../../lib/get-error-message';
 import { refreshData } from '../../../lib/query-client';
 import { useUrlFilters } from '../../../lib/use-url-filters';
-import { formatDate, initials } from '../../../lib/format';
+import { formatDate, initials, todayIso } from '../../../lib/format';
+import { saveFile } from '../../../lib/save-file';
 import { Icon } from '../../../components/Icon';
 import { DataTable, type Column } from '../../../components/DataTable';
 import { ConfirmDialog } from '../../../components/Dialog';
@@ -49,6 +50,7 @@ export function EmployeesPage() {
   const [formOpen, setFormOpen] = useState(false);
   const [statusTarget, setStatusTarget] = useState<Employee | null>(null);
   const [createdAccess, setCreatedAccess] = useState<GrantedAccess | null>(null);
+  const [exporting, setExporting] = useState(false);
   const [profileEmployee, setProfileEmployee] = useState<Employee | null>(null);
 
   useEffect(() => {
@@ -100,6 +102,18 @@ export function EmployeesPage() {
       refreshData();
     } catch (err) {
       showToast(getErrorMessage(err));
+    }
+  };
+
+  const exportCsv = async () => {
+    setExporting(true);
+    try {
+      const { search, department_id, status } = employeesParams;
+      saveFile(await sdk.employees.exportCsv({ search, department_id, status }), `empleados-${todayIso()}.csv`);
+    } catch (err) {
+      showToast(getErrorMessage(err));
+    } finally {
+      setExporting(false);
     }
   };
 
@@ -184,6 +198,10 @@ export function EmployeesPage() {
           <option value="active">Activo</option>
           <option value="inactive">Inactivo</option>
         </select>
+        <div className="toolbar-spacer" />
+        <button type="button" className="icon-btn" title="Exportar" onClick={exportCsv} disabled={exporting}>
+          <Icon name="download" />
+        </button>
       </div>
 
       <DataTable
