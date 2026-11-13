@@ -19,14 +19,51 @@ const EVENT_LABELS: Record<string, string> = {
   PASSWORD_RESET_REQUESTED: 'Solicitó restablecer contraseña',
   PASSWORD_RESET_COMPLETED: 'Restableció contraseña',
   PASSWORD_CHANGED: 'Cambió su contraseña',
+  NOTICE_APPROVED: 'Aprobó una ausencia',
+  NOTICE_REJECTED: 'Rechazó una ausencia',
+  NOTICE_CANCELLED: 'Canceló una ausencia',
+  EMPLOYEE_CREATED: 'Dio de alta un empleado',
+  EMPLOYEE_UPDATED: 'Editó un empleado',
+  EMPLOYEE_DEACTIVATED: 'Dio de baja un empleado',
+  EMPLOYEE_ACCESS_GRANTED: 'Envió acceso a un empleado',
+  RULE_CREATED: 'Creó una regla de acumulación',
+  RULE_UPDATED: 'Editó una regla de acumulación',
+  RULE_DEACTIVATED: 'Desactivó una regla de acumulación',
+  USER_CREATED: 'Creó un usuario',
+  USER_UPDATED: 'Editó un usuario',
+  USER_DEACTIVATED: 'Desactivó un usuario',
+  USER_BRANCHES_CHANGED: 'Cambió las sedes de un usuario',
+  PERMISSION_GRANTED: 'Otorgó un permiso',
+  PERMISSION_REVOKED: 'Quitó un permiso',
 };
+
+const ENTITY_LABELS: Record<string, string> = {
+  notice: 'Ausencia',
+  employee: 'Empleado',
+  accrual_rule: 'Regla',
+  user: 'Usuario',
+  role: 'Rol',
+};
+
+const detail = (entry: AuditLogEntry): string =>
+  [entry.entity && `${ENTITY_LABELS[entry.entity] ?? entry.entity} #${entry.entity_id}`, entry.ip_address]
+    .filter(Boolean)
+    .join(' · ');
 
 const listAudit = (params: ListAuditLogParams, options: CallOptions) => sdk.auditLog.list(params, options);
 
 const columns: Column<AuditLogEntry>[] = [
   { header: 'Usuario', render: (entry) => entry.username ?? 'desconocido', className: 'cell-main' },
   { header: 'Fecha y hora', render: (entry) => formatDateTime(entry.created_at), className: 'cell-sub' },
-  { header: 'Evento', render: (entry) => EVENT_LABELS[entry.event_type] ?? entry.event_type },
+  {
+    header: 'Evento',
+    render: (entry) => (
+      <>
+        {EVENT_LABELS[entry.event_type] ?? entry.event_type}
+        <div className="cell-sub">{detail(entry)}</div>
+      </>
+    ),
+  },
   { header: 'Resultado', render: (entry) => <StatusBadge status={entry.result} /> },
 ];
 

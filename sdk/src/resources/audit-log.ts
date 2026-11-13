@@ -6,6 +6,9 @@ export interface AuditLogEntry {
   log_id: number;
   user_id: number | null;
   event_type: string;
+  entity: string | null;
+  entity_id: string | null;
+  request_id: string | null;
   ip_address: string | null;
   user_agent: string | null;
   metadata: unknown;

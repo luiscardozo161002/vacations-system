@@ -82,6 +82,7 @@ Editar `backend/.env` con los datos de conexión a PostgreSQL:
 | `DB_PASSWORD` | Password de ese usuario         | *(sin default)*  |
 | `JWT_SECRET`  | Firma los access token (JWT) de `POST /api/v1/auth/login` | `dev-secret-change-me-in-production`. Con `NODE_ENV=production` la API no arranca si falta o si se deja este valor |
 | `CORS_ORIGINS` | Orígenes del navegador que pueden llamar a la API, separados por coma | `http://localhost:5173` (el frontend de Vite) |
+| `TRUSTED_PROXIES` | IPs de los proxies o balanceadores delante de la API, separadas por coma. Solo de ellos se acepta `X-Forwarded-For` para registrar la IP real del usuario | vacío (sin proxy) |
 
 ### 2. Crear la base de datos (solo sin Docker)
 
@@ -368,7 +369,15 @@ La configuración vive en [frontend/src/app/navigation.ts](frontend/src/app/navi
 - **Cambios:** solo el Superusuario la edita, y su columna queda fija. Al marcar o desmarcar se activa o desactiva el permiso en `role_permissions`, y aplica en el siguiente token del rol.
 
 **Auditoría:**
-- **Tabla:** usuario, fecha, evento y resultado, con filtro por resultado y búsqueda por usuario o evento.
+- **Tabla:** usuario, fecha, evento y resultado, con filtro por resultado y búsqueda por usuario o evento. Debajo del evento se ve el registro afectado (por ejemplo "Ausencia #7") y la IP.
+- **Qué se registra:**
+  - **Sesión:** inicios y cierres de sesión, y cambios de contraseña.
+  - **Ausencias:** aprobar, rechazar y cancelar.
+  - **Empleados:** alta, edición, baja y envío de acceso.
+  - **Reglas de acumulación:** alta, edición y baja.
+  - **Usuarios:** alta, edición, baja y cambio de sedes.
+  - **Permisos:** otorgar y quitar.
+  - **Intentos fallidos:** se guardan con su motivo, incluido intentar algo sin permiso.
 - **Renovaciones de sesión (`TOKEN_REFRESH`):** no se muestran, salvo que se pidan con `event_type`.
 
 **PDF del aviso:**
