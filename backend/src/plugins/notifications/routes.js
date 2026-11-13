@@ -14,7 +14,7 @@ const notificationsPlugin = {
           description: 'Latest notifications of the current user and how many are unread',
           tags: ['api', 'notifications'],
         },
-        handler: (request) => service.listMine(request.auth.credentials.user_id),
+        handler: (request) => service.listMine(request.auth.credentials),
       },
       {
         method: 'POST',
@@ -23,7 +23,7 @@ const notificationsPlugin = {
           description: 'Mark every notification of the current user as read',
           tags: ['api', 'notifications'],
         },
-        handler: (request) => service.markAllRead(request.auth.credentials.user_id),
+        handler: (request) => service.markAllRead(request.auth.credentials),
       },
     ]);
   },

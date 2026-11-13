@@ -94,6 +94,8 @@ users N─N branches (user_branches)
 
   Lo corre el servidor al arrancar y cada 24 horas (no con `NODE_ENV=test`), y el Superusuario con `POST /vacation-entitlements/generate`. Si un empleado falla, queda en `skipped` y el resto sigue.
 - **Notificaciones.** La tabla `notifications` guarda una fila por usuario, tipo y referencia, así que repetir un aviso no lo duplica. `GET /me/notifications` y `POST /me/notifications/read` alimentan la campana de la topbar. El envío por correo (VM-054) leerá esa misma tabla.
+  - **Resoluciones:** al aprobar, rechazar o cancelar una solicitud, o cuando RH registra un aviso, el empleado recibe una notificación (`request_approved`, `notice_approved`…), salvo si fue él mismo quien hizo la acción (`plugins/notices/notifications.js`).
+  - **Pendientes:** quien tiene `approvals:review` recibe además `pending` con el total y las 10 solicitudes o avisos pendientes más antiguos de sus sedes. Se calculan al consultar, no se guardan.
 - **Dashboard.** `GET /dashboard/summary` (requiere `employees:view`) junta en una sola llamada los indicadores, las próximas ausencias, el conteo por departamento y la actividad reciente, siempre dentro del alcance. `GET /dashboard/me` usa solo el `employee_id` del token, aunque el usuario sea de RH.
 - **Fechas.** `pg` devuelve las columnas `DATE` como texto `YYYY-MM-DD` y las `NUMERIC` como número (`src/db/index.js`), para no depender de la zona horaria del servidor.
 

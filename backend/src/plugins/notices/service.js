@@ -9,6 +9,7 @@ const { scopeFrom, allowsEmployee } = require('../../lib/data-scope');
 const { findEmployeeDetails } = require('../../lib/employee-details');
 const { renderNoticePdf } = require('./pdf');
 const entitlements = require('../vacation-entitlements/service');
+const { notifyEmployee } = require('./notifications');
 
 const REVIEW_PERMISSION = 'approvals:review';
 const REGISTER_PERMISSION = 'notices:create';
@@ -115,7 +116,9 @@ const create = async (data, credentials) => {
       trx
     );
   });
-  return describe(notice);
+  const described = await describe(notice);
+  if (described.kind === 'notice') await notifyEmployee(described, credentials.user_id);
+  return described;
 };
 
 const update = async (noticeId, data, scope) => {
@@ -181,7 +184,9 @@ const resolve = async (noticeId, action, credentials) => {
     }
     return applyBalance(trx, updated);
   });
-  return describe(notice);
+  const described = await describe(notice);
+  await notifyEmployee(described, credentials.user_id);
+  return described;
 };
 
 const findCompany = (employeeId) =>

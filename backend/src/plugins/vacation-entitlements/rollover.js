@@ -3,12 +3,11 @@
 const db = require('../../db');
 const { currentPeriod } = require('../../lib/periods');
 const { describe: describeTime } = require('../../lib/balance');
-const { notify } = require('../notifications/service');
+const { notify, shortDate } = require('../../lib/notify');
 const entitlements = require('./service');
 
 const SYSTEM_SCOPE = { role: 'SUPERUSER', branchIds: [], employeeId: 0 };
 
-const shortDate = (iso) => iso.split('-').reverse().join('/');
 
 const today = async () => (await db.first(db.raw("to_char(CURRENT_DATE, 'YYYY-MM-DD') AS today"))).today;
 
