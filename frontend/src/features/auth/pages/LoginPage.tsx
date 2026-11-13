@@ -12,12 +12,13 @@ const LOGIN_ERRORS: Record<string, string> = {
   INVALID_CREDENTIALS: 'Correo o contraseña incorrectos.',
   ACCOUNT_LOCKED: 'Tu cuenta está bloqueada por demasiados intentos fallidos. Intenta de nuevo en 15 minutos.',
   ACCOUNT_INACTIVE: 'Tu usuario está inactivo. Pide a Recursos Humanos que lo reactive.',
+  TEMPORARY_PASSWORD_EXPIRED: 'Tu contraseña temporal venció. Pide a Recursos Humanos que te reenvíe el acceso.',
 };
 
 const loginErrorMessage = (err: unknown): string =>
   (err instanceof SdkHttpError && LOGIN_ERRORS[err.code]) || getErrorMessage(err);
 
-function LoginCard({ title, subtitle, children }: { title: string; subtitle: string; children: ReactNode }) {
+export function LoginCard({ title, subtitle, children }: { title: string; subtitle: string; children: ReactNode }) {
   return (
     <div id="login-screen">
       <div className="login-card">

@@ -16,6 +16,7 @@ export interface LoginResult extends SessionTokens {
     email: string;
     role_id: number;
   };
+  must_change_password: boolean;
 }
 
 export type ReviewAction = 'approve' | 'reject' | 'cancel';
@@ -35,6 +36,8 @@ export interface CurrentUser {
   status: 'active' | 'inactive' | 'locked';
   last_login_at: string | null;
   review_actions: ReviewAction[];
+  must_change_password: boolean;
+  temporary_password_expires_at: string | null;
   role: {
     role_id: number;
     role_code: string;

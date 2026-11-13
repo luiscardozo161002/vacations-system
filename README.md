@@ -166,7 +166,7 @@ Todos los recursos siguen el mismo esquema CRUD con paginación en el listado (`
 | Empresas                            | `/api/v1/companies`                     |                                                                    |
 | Departamentos                       | `/api/v1/departments`                   |                                                                    |
 | Turnos                              | `/api/v1/shifts`                        | cada turno trae `schedule` con sus 7 días; la semana se reemplaza completa con `PUT /api/v1/shifts/{shiftId}/schedule` |
-| Empleados                           | `/api/v1/employees`                     |                                                                    |
+| Empleados                           | `/api/v1/employees`                     | `email` en el alta crea su cuenta con contraseña temporal; `POST /api/v1/employees/{employeeId}/access` la reenvía |
 | Roles                               | `/api/v1/roles`                         |                                                                    |
 | Permisos                            | `/api/v1/permissions`                   |                                                                    |
 | Permisos por rol                    | `/api/v1/role-permissions`              | solo `GET`/`POST`/`DELETE` (clave compuesta `{roleId}/{permissionId}`, sin campos propios que editar); volver a asignar un permiso desactivado lo reactiva, no da 409 |
@@ -303,6 +303,8 @@ La configuración vive en [frontend/src/app/navigation.ts](frontend/src/app/navi
 - **Búsqueda:** por nombre o número (`search` en la API, sin importar mayúsculas), con filtros de departamento y estado.
 - **Perfil:** un drawer con los datos del empleado, su antigüedad, el saldo del periodo vigente y el historial de solicitudes y avisos.
 - **Botones:** dar de alta, editar y dar de baja aparecen solo con el permiso correspondiente.
+- **Acceso:** el alta pide el correo y muestra la contraseña temporal (vence en un mes). El perfil muestra el usuario y el estado de la contraseña, y permite reenviar el acceso o crearlo si falta.
+- **Primer ingreso:** quien entra con una contraseña temporal ve primero la pantalla para crear la suya.
 
 **Departamentos:**
 - **Tarjetas:** cada departamento muestra su responsable, sus empleados activos y si comparte su calendario.

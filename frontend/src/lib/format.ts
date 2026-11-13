@@ -8,7 +8,7 @@ export const initials = (name: string): string =>
     .toUpperCase();
 
 export const formatDate = (iso: string): string =>
-  new Date(`${iso.slice(0, 10)}T00:00:00`).toLocaleDateString('es-MX', {
+  new Date(iso.length > 10 ? iso : `${iso}T00:00:00`).toLocaleDateString('es-MX', {
     day: '2-digit',
     month: 'short',
     year: 'numeric',

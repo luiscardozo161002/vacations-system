@@ -17,6 +17,7 @@ import { PermissionsPage } from './features/permissions/pages/PermissionsPage';
 import { AuditPage } from './features/audit/pages/AuditPage';
 import { SettingsPage } from './features/settings/pages/SettingsPage';
 import { LoginPage } from './features/auth/pages/LoginPage';
+import { ChangePasswordPage } from './features/auth/pages/ChangePasswordPage';
 import { useAuth } from './features/auth/auth-context';
 
 const PAGES: Record<string, ReactNode> = {
@@ -37,10 +38,11 @@ const PAGES: Record<string, ReactNode> = {
 };
 
 function App() {
-  const { status, can } = useAuth();
+  const { status, user, can } = useAuth();
 
   if (status === 'loading') return null;
   if (status === 'anonymous') return <LoginPage />;
+  if (user?.must_change_password) return <ChangePasswordPage />;
 
   const firstAllowed = visibleGroups(can)[0]?.items[0]?.path ?? '/dashboard';
 

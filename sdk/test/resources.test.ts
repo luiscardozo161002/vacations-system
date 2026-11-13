@@ -108,6 +108,8 @@ describe('rutas especiales', () => {
     await sdk.dashboard.summary();
     await sdk.dashboard.me();
     await sdk.notifications.list();
+    await sdk.employees.grantAccess(4);
+    await sdk.employees.grantAccess(4, 'a.torres@thh.com.mx');
     await sdk.notifications.markAllRead();
     await sdk.vacationEntitlements.generate('2027-08-01');
 
@@ -122,9 +124,12 @@ describe('rutas especiales', () => {
       'GET /api/v1/dashboard/summary',
       'GET /api/v1/dashboard/me',
       'GET /api/v1/me/notifications',
+      'POST /api/v1/employees/4/access',
+      'POST /api/v1/employees/4/access',
       'POST /api/v1/me/notifications/read',
       'POST /api/v1/vacation-entitlements/generate',
     ]);
     assert.deepEqual(calls[1].body, { branch_ids: [5, 3] });
+    assert.deepEqual(calls[11].body, { email: 'a.torres@thh.com.mx' });
   });
 });

@@ -14,6 +14,7 @@ import { useDepartments } from '../../departments/hooks/useDepartments';
 import { useShifts } from '../../shifts/hooks/useShifts';
 import { EmployeeForm } from '../components/EmployeeForm';
 import { EmployeeProfile } from '../components/EmployeeProfile';
+import { AccessDialog, type GrantedAccess } from '../components/AccessDialog';
 import { useAuth } from '../../auth/auth-context';
 
 const PAGE_SIZE = 10;
@@ -47,6 +48,7 @@ export function EmployeesPage() {
   const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
   const [formOpen, setFormOpen] = useState(false);
   const [statusTarget, setStatusTarget] = useState<Employee | null>(null);
+  const [createdAccess, setCreatedAccess] = useState<GrantedAccess | null>(null);
   const [profileEmployee, setProfileEmployee] = useState<Employee | null>(null);
 
   useEffect(() => {
@@ -76,9 +78,10 @@ export function EmployeesPage() {
     setFormOpen(true);
   };
 
-  const handleSaved = (message: string) => {
+  const handleSaved = (message: string, access?: GrantedAccess) => {
     setFormOpen(false);
     showToast(message);
+    if (access) setCreatedAccess(access);
     reload();
   };
 
@@ -214,6 +217,13 @@ export function EmployeesPage() {
           shifts={shifts}
           onClose={() => setFormOpen(false)}
           onSaved={handleSaved}
+        />
+      )}
+
+      {createdAccess && (
+        <AccessDialog
+          access={createdAccess}
+          onClose={() => setCreatedAccess(null)}
         />
       )}
 

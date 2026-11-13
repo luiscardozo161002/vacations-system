@@ -4,13 +4,14 @@ import { sdk } from '../../../lib/sdk';
 import { getErrorMessage } from '../../../lib/get-error-message';
 import { Drawer } from '../../../components/Drawer';
 import { SearchSelect } from '../../../components/SearchSelect';
+import type { GrantedAccess } from './AccessDialog';
 
 interface EmployeeFormProps {
   employee: Employee | null;
   departments: Department[];
   shifts: Shift[];
   onClose: () => void;
-  onSaved: (message: string) => void;
+  onSaved: (message: string, access?: GrantedAccess) => void;
 }
 
 interface FormState {
@@ -20,6 +21,7 @@ interface FormState {
   department_id: string;
   shift_id: string;
   start_date: string;
+  email: string;
 }
 
 const toFormState = (employee: Employee | null, departments: Department[], shifts: Shift[]): FormState => ({
@@ -29,6 +31,7 @@ const toFormState = (employee: Employee | null, departments: Department[], shift
   department_id: String(employee?.department_id ?? departments[0]?.department_id ?? ''),
   shift_id: String(employee?.shift_id ?? shifts[0]?.shift_id ?? ''),
   start_date: employee?.start_date.slice(0, 10) ?? new Date().toISOString().slice(0, 10),
+  email: '',
 });
 
 export function EmployeeForm({ employee, departments, shifts, onClose, onSaved }: EmployeeFormProps) {
@@ -64,8 +67,13 @@ export function EmployeeForm({ employee, departments, shifts, onClose, onSaved }
         await sdk.employees.update(employee.employee_id, payload);
         onSaved('Empleado actualizado.');
       } else {
-        await sdk.employees.create(payload);
-        onSaved('Empleado creado.');
+        const email = form.email.trim();
+        const created = await sdk.employees.create(email ? { ...payload, email } : payload);
+        const access =
+          created.account && created.temporary_password
+            ? { employee_name: created.employee_name, account: created.account, temporary_password: created.temporary_password }
+            : undefined;
+        onSaved('Empleado creado.', access);
       }
     } catch (err) {
       setFormError(getErrorMessage(err));
@@ -144,6 +152,20 @@ export function EmployeeForm({ employee, departments, shifts, onClose, onSaved }
         <label htmlFor="f-start">Fecha de ingreso</label>
         <input id="f-start" type="date" value={form.start_date} onChange={handleChange('start_date')} required />
       </div>
+      {!employee && (
+        <div className="field">
+          <label htmlFor="f-email">Correo electrónico</label>
+          <input
+            id="f-email"
+            type="email"
+            value={form.email}
+            onChange={handleChange('email')}
+            placeholder="nombre@empresa.com"
+            maxLength={120}
+          />
+          <p className="field-hint">Se creará su cuenta con una contraseña temporal válida por un mes.</p>
+        </div>
+      )}
     </Drawer>
   );
 }
