@@ -1,37 +1,16 @@
-'use strict';
-
+const CrudRepository = require('../../lib/crud/crud-repository');
 const VacationAccrualRule = require('./model');
 const { COLUMNS } = require('./fields');
-const { buildOrderBy, paginationMeta } = require('../../lib/list-query');
 
-const DEFAULT_SORT = [{ column: 'rule_id', order: 'asc' }];
+class VacationAccrualRuleRepository extends CrudRepository {
+  constructor() {
+    super({ model: VacationAccrualRule, columns: COLUMNS, primaryKey: 'rule_id' });
+  }
 
-const list = async ({ status, effective_year, sort, page = 1, pageSize = 20 }) => {
-  const query = VacationAccrualRule.query().select(COLUMNS).orderBy(buildOrderBy(sort, COLUMNS, DEFAULT_SORT));
+  applyFilters(query, filters) {
+    if (filters.effective_year !== undefined) query.where('effective_year', filters.effective_year);
+    return super.applyFilters(query, filters);
+  }
+}
 
-  if (status !== undefined) query.where('status', status);
-  if (effective_year !== undefined) query.where('effective_year', effective_year);
-
-  const { results, total } = await query.page(page - 1, pageSize);
-
-  return { data: results, pagination: paginationMeta(page, pageSize, total) };
-};
-
-const findById = (ruleId) => VacationAccrualRule.query().select(COLUMNS).findById(ruleId);
-
-const create = (data) => VacationAccrualRule.query().insert(data).returning(COLUMNS);
-
-const update = async (ruleId, data) => {
-  const [rule] = await VacationAccrualRule.query().where('rule_id', ruleId).patch(data).returning(COLUMNS);
-  return rule || null;
-};
-
-const remove = async (ruleId) => {
-  const [rule] = await VacationAccrualRule.query()
-    .where('rule_id', ruleId)
-    .patch({ status: 'inactive' })
-    .returning(COLUMNS);
-  return rule || null;
-};
-
-module.exports = { list, findById, create, update, remove };
+module.exports = new VacationAccrualRuleRepository();

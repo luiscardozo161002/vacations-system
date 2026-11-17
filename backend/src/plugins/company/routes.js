@@ -1,78 +1,15 @@
-'use strict';
-
-const { requires } = require('../../lib/permissions');
-const { scopeFrom } = require('../../lib/data-scope');
+const CrudRoutes = require('../../lib/crud/crud-routes');
 const service = require('./service');
 const schemas = require('./schemas');
 
-const companyPlugin = {
-  name: 'company-plugin',
-  version: '1.0.0',
-  register: (server) => {
-    server.route([
-      {
-        method: 'GET',
-        path: '/api/v1/companies',
-        options: {
-          description: 'List companies',
-          tags: ['api', 'companies'],
-          auth: requires('companies:view'),
-          validate: { query: schemas.list },
-        },
-        handler: (request) => service.list(request.query, scopeFrom(request.auth.credentials)),
-      },
-      {
-        method: 'GET',
-        path: '/api/v1/companies/{companyId}',
-        options: {
-          description: 'Get a company by ID',
-          tags: ['api', 'companies'],
-          auth: requires('companies:view'),
-          validate: { params: schemas.params },
-        },
-        handler: (request) => service.findById(request.params.companyId, scopeFrom(request.auth.credentials)),
-      },
-      {
-        method: 'POST',
-        path: '/api/v1/companies',
-        options: {
-          description: 'Create a company',
-          tags: ['api', 'companies'],
-          auth: requires('companies:create'),
-          validate: { payload: schemas.create },
-        },
-        handler: async (request, h) => {
-          const company = await service.create(request.payload, scopeFrom(request.auth.credentials));
-          return h.response(company).code(201);
-        },
-      },
-      {
-        method: 'PATCH',
-        path: '/api/v1/companies/{companyId}',
-        options: {
-          description: 'Update a company',
-          tags: ['api', 'companies'],
-          auth: requires('companies:update'),
-          validate: { params: schemas.params, payload: schemas.update },
-        },
-        handler: (request) => service.update(request.params.companyId, request.payload, scopeFrom(request.auth.credentials)),
-      },
-      {
-        method: 'DELETE',
-        path: '/api/v1/companies/{companyId}',
-        options: {
-          description: 'Deactivate a company',
-          tags: ['api', 'companies'],
-          auth: requires('companies:delete'),
-          validate: { params: schemas.params },
-        },
-        handler: async (request, h) => {
-          await service.remove(request.params.companyId, scopeFrom(request.auth.credentials));
-          return h.response().code(204);
-        },
-      },
-    ]);
-  },
-};
-
-module.exports = companyPlugin;
+module.exports = new CrudRoutes({
+  name: 'company',
+  tag: 'companies',
+  path: '/api/v1/companies',
+  idParam: 'companyId',
+  primaryKey: 'company_id',
+  label: { singular: 'company', plural: 'companies' },
+  permissions: { view: 'companies:view', create: 'companies:create', update: 'companies:update', delete: 'companies:delete' },
+  schemas,
+  service,
+}).plugin();

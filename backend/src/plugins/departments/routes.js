@@ -1,78 +1,15 @@
-'use strict';
-
-const { requires } = require('../../lib/permissions');
-const { scopeFrom } = require('../../lib/data-scope');
+const CrudRoutes = require('../../lib/crud/crud-routes');
 const service = require('./service');
 const schemas = require('./schemas');
 
-const departmentsPlugin = {
-  name: 'departments-plugin',
-  version: '1.0.0',
-  register: (server) => {
-    server.route([
-      {
-        method: 'GET',
-        path: '/api/v1/departments',
-        options: {
-          description: 'List departments',
-          tags: ['api', 'departments'],
-          auth: requires('departments:view'),
-          validate: { query: schemas.list },
-        },
-        handler: (request) => service.list(request.query, scopeFrom(request.auth.credentials)),
-      },
-      {
-        method: 'GET',
-        path: '/api/v1/departments/{departmentId}',
-        options: {
-          description: 'Get a department by ID',
-          tags: ['api', 'departments'],
-          auth: requires('departments:view'),
-          validate: { params: schemas.params },
-        },
-        handler: (request) => service.findById(request.params.departmentId, scopeFrom(request.auth.credentials)),
-      },
-      {
-        method: 'POST',
-        path: '/api/v1/departments',
-        options: {
-          description: 'Create a department',
-          tags: ['api', 'departments'],
-          auth: requires('departments:create'),
-          validate: { payload: schemas.create },
-        },
-        handler: async (request, h) => {
-          const department = await service.create(request.payload, scopeFrom(request.auth.credentials));
-          return h.response(department).code(201);
-        },
-      },
-      {
-        method: 'PATCH',
-        path: '/api/v1/departments/{departmentId}',
-        options: {
-          description: 'Update a department',
-          tags: ['api', 'departments'],
-          auth: requires('departments:update'),
-          validate: { params: schemas.params, payload: schemas.update },
-        },
-        handler: (request) => service.update(request.params.departmentId, request.payload, scopeFrom(request.auth.credentials)),
-      },
-      {
-        method: 'DELETE',
-        path: '/api/v1/departments/{departmentId}',
-        options: {
-          description: 'Deactivate a department',
-          tags: ['api', 'departments'],
-          auth: requires('departments:delete'),
-          validate: { params: schemas.params },
-        },
-        handler: async (request, h) => {
-          await service.remove(request.params.departmentId, scopeFrom(request.auth.credentials));
-          return h.response().code(204);
-        },
-      },
-    ]);
-  },
-};
-
-module.exports = departmentsPlugin;
+module.exports = new CrudRoutes({
+  name: 'departments',
+  tag: 'departments',
+  path: '/api/v1/departments',
+  idParam: 'departmentId',
+  primaryKey: 'department_id',
+  label: { singular: 'department', plural: 'departments' },
+  permissions: { view: 'departments:view', create: 'departments:create', update: 'departments:update', delete: 'departments:delete' },
+  schemas,
+  service,
+}).plugin();
