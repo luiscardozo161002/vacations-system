@@ -29,7 +29,7 @@ export function DataTable<T>({ columns, rows, rowKey, loading = false, emptyMess
 
   return (
     <div className="table-wrap">
-      <table className="data-table">
+      <table className="data-table" aria-busy={loading}>
         <thead>
           <tr>
             {columns.map((column, index) => (

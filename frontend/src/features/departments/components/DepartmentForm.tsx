@@ -79,7 +79,7 @@ export function DepartmentForm({ department, branches, employees, onClose, onSav
         </>
       }
     >
-      {formError && <p className="field-error">{formError}</p>}
+      {formError && <p className="field-error" role="alert">{formError}</p>}
 
       <TextField
         id="d-name"

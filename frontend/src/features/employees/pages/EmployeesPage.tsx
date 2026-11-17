@@ -191,6 +191,7 @@ export function EmployeesPage() {
           placeholder="Todos los departamentos"
         />
         <select
+          aria-label="Estado"
           value={filters.estado}
           onChange={(e) => setFilters({ estado: e.target.value, pagina: '1' })}
         >

@@ -73,7 +73,7 @@ export function ChangePasswordPage() {
           onChange={setConfirmPassword}
           required
         />
-        {error && <p className="field-error">{error}</p>}
+        {error && <p className="field-error" role="alert">{error}</p>}
         <div className="login-foot">
           <button type="button" className="link" onClick={logout}>
             Cerrar sesión

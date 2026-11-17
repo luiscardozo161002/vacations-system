@@ -80,7 +80,7 @@ export function UserAssignment({ user, branches, companies, onClose, onSaved }: 
         )
       }
     >
-      {formError && <p className="field-error">{formError}</p>}
+      {formError && <p className="field-error" role="alert">{formError}</p>}
 
       <div className="profile-head">
         <div className="avatar">{initials(name)}</div>

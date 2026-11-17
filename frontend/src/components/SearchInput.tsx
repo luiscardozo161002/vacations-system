@@ -24,7 +24,7 @@ export function SearchInput({ value, onSearch, placeholder, id }: SearchInputPro
   return (
     <div className="search-box" style={{ display: 'flex' }}>
       <Icon name="search" />
-      <input type="text" id={id} placeholder={placeholder} value={text} onChange={(e) => setText(e.target.value)} />
+      <input type="text" id={id} aria-label={placeholder} placeholder={placeholder} value={text} onChange={(e) => setText(e.target.value)} />
     </div>
   );
 }

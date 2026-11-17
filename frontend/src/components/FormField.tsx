@@ -13,7 +13,11 @@ export function FormField({ label, htmlFor, hint, style, children }: FormFieldPr
     <div className="field" style={style}>
       <label htmlFor={htmlFor}>{label}</label>
       {children}
-      {hint && <p className="field-hint">{hint}</p>}
+      {hint && (
+        <p className="field-hint" id={htmlFor && `${htmlFor}-hint`}>
+          {hint}
+        </p>
+      )}
     </div>
   );
 }
@@ -29,7 +33,7 @@ type TextFieldProps = Omit<InputHTMLAttributes<HTMLInputElement>, 'value' | 'onC
 export function TextField({ label, hint, onChange, ...input }: TextFieldProps) {
   return (
     <FormField label={label} htmlFor={input.id} hint={hint}>
-      <input {...input} onChange={(e) => onChange(e.target.value)} />
+      <input {...input} aria-describedby={hint ? `${input.id}-hint` : undefined} onChange={(e) => onChange(e.target.value)} />
     </FormField>
   );
 }

@@ -104,7 +104,7 @@ export function LoginPage() {
             onChange={setEmail}
             required
           />
-          {error && <p className="field-error">{error}</p>}
+          {error && <p className="field-error" role="alert">{error}</p>}
           <div className="login-foot">
             <button type="button" className="link" onClick={() => goTo('login')}>
               Volver a iniciar sesión
@@ -122,7 +122,7 @@ export function LoginPage() {
     return (
       <LoginCard title="Nueva contraseña" subtitle="Escribe el código de restablecimiento y tu nueva contraseña.">
         <form onSubmit={handleConfirm}>
-          {message && <p className="field-hint" style={{ marginBottom: 16 }}>{message}</p>}
+          {message && <p className="field-hint" role="status" style={{ marginBottom: 16 }}>{message}</p>}
           <TextField id="reset-token" label="Código" value={token} onChange={setToken} required />
           <TextField
             id="reset-password"
@@ -145,7 +145,7 @@ export function LoginPage() {
             onChange={setConfirmPassword}
             required
           />
-          {error && <p className="field-error">{error}</p>}
+          {error && <p className="field-error" role="alert">{error}</p>}
           <div className="login-foot">
             <button type="button" className="link" onClick={() => goTo('login')}>
               Volver a iniciar sesión
@@ -162,7 +162,7 @@ export function LoginPage() {
   return (
     <LoginCard title="Inicia sesión" subtitle="Sistema de vacaciones y avisos de ausencia">
       <form onSubmit={handleLogin}>
-        {message && <p className="field-hint" style={{ marginBottom: 16 }}>{message}</p>}
+        {message && <p className="field-hint" role="status" style={{ marginBottom: 16 }}>{message}</p>}
         <TextField
           id="login-email"
           label="Correo electrónico"
@@ -183,7 +183,7 @@ export function LoginPage() {
           onChange={setPassword}
           required
         />
-        {error && <p className="field-error">{error}</p>}
+        {error && <p className="field-error" role="alert">{error}</p>}
         <div className="login-foot">
           <label style={{ display: 'flex', alignItems: 'center', gap: 6, color: 'var(--text-muted)' }}>
             <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} /> Recordarme

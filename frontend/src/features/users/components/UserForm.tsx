@@ -75,7 +75,7 @@ export function UserForm({ roles, employees, onClose, onSaved }: UserFormProps) 
         </>
       }
     >
-      {formError && <p className="field-error">{formError}</p>}
+      {formError && <p className="field-error" role="alert">{formError}</p>}
 
       <TextField id="u-username" label="Usuario" value={username} onChange={setUsername} maxLength={50} required />
       <TextField id="u-email" label="Correo" type="email" value={email} onChange={setEmail} maxLength={120} required />

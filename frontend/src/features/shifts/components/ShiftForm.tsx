@@ -88,7 +88,7 @@ export function ShiftForm({ shift, onClose, onSaved }: ShiftFormProps) {
         </>
       }
     >
-      {formError && <p className="field-error">{formError}</p>}
+      {formError && <p className="field-error" role="alert">{formError}</p>}
 
       <TextField id="s-name" label="Nombre del turno" value={name} onChange={setName} placeholder="Ej. Turno Vespertino" />
       <TextField id="s-code" label="Código" value={code} onChange={setCode} placeholder="Ej. VESPERTINO" maxLength={20} />

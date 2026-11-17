@@ -64,7 +64,7 @@ export function RuleForm({ rule, effectiveYear, onClose, onSaved }: RuleFormProp
         </>
       }
     >
-      {formError && <p className="field-error">{formError}</p>}
+      {formError && <p className="field-error" role="alert">{formError}</p>}
 
       <TextField id="r-from" label="Antigüedad desde (años)" type="number" min={0} value={yearsFrom} onChange={setYearsFrom} />
       <TextField id="r-to" label="Antigüedad hasta (años)" type="number" min={0} value={yearsTo} onChange={setYearsTo} />

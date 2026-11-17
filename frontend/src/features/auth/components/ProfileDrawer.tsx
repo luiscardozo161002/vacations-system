@@ -127,7 +127,7 @@ export function ProfileDrawer({ user, roleLabel, onClose }: ProfileDrawerProps) 
         value={confirmPassword}
         onChange={setConfirmPassword}
       />
-      {error && <p className="field-error">{error}</p>}
+      {error && <p className="field-error" role="alert">{error}</p>}
     </Drawer>
   );
 }

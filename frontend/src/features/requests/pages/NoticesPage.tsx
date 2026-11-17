@@ -98,6 +98,7 @@ export function NoticesPage() {
 
       <div className="toolbar">
         <select
+          aria-label="Estado"
           value={filters.estado}
           onChange={(e) => setFilters({ estado: e.target.value, pagina: '1' })}
         >

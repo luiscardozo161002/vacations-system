@@ -62,6 +62,7 @@ export function GlobalSearch() {
       <input
         type="text"
         id="global-search-input"
+        aria-label="Buscar empleados"
         placeholder="Buscar empleados por nombre o número..."
         autoComplete="off"
         value={query}

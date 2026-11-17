@@ -40,6 +40,7 @@ export function SearchSelect({ id, options, value, onChange, placeholder = 'Busc
           type="text"
           id={id}
           list={`${id}-list`}
+          aria-label={placeholder}
           placeholder={placeholder}
           value={typed ?? selectedLabel}
           onChange={(e) => handleChange(e.target.value)}

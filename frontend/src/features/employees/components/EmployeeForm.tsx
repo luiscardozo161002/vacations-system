@@ -97,7 +97,7 @@ export function EmployeeForm({ employee, departments, shifts, onClose, onSaved }
         </>
       }
     >
-      {formError && <p className="field-error">{formError}</p>}
+      {formError && <p className="field-error" role="alert">{formError}</p>}
 
       <TextField
         id="f-name"

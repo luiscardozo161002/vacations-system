@@ -139,7 +139,7 @@ export function AbsenceForm({ title, submitLabel, reasons, employee, employees =
         </>
       }
     >
-      {formError && <p className="field-error">{formError}</p>}
+      {formError && <p className="field-error" role="alert">{formError}</p>}
 
       <FormField label="Empleado" htmlFor="af-employee">
         {employee ? (

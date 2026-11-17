@@ -39,7 +39,7 @@ export function TeamDashboard({ firstName, allBranches }: TeamDashboardProps) {
         </div>
       </div>
 
-      {error && <p className="field-error">{error}</p>}
+      {error && <p className="field-error" role="alert">{error}</p>}
 
       <div className="grid grid-4" style={{ marginBottom: 16 }}>
         <StatCard icon="users" label="Empleados activos" value={summary?.active_employees ?? '—'} delta={allBranches ? 'En todas las sedes' : 'En tus sedes'} />

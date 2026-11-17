@@ -42,10 +42,18 @@ const iso = (offset) => {
 
 describe('GET /calendar', () => {
   it('marca solo los días que el empleado trabaja según su turno', async () => {
-    const res = await calendar('SUPERUSER', '2026-10-01', '2026-10-31');
-    const byStart = (date) => res.result.absences.find((absence) => absence.absence_start_date === date);
+    const [office, operations] = await db('notices')
+      .insert([
+        { employee_id: 5, reason_id: 5, kind: 'request', status: 'pending', absence_start_date: '2026-10-04', absence_end_date: '2026-10-13' },
+        { employee_id: 1, reason_id: 5, kind: 'request', status: 'pending', absence_start_date: '2026-10-24', absence_end_date: '2026-10-28' },
+      ])
+      .returning('notice_id');
 
-    assert.deepEqual(byStart('2026-10-04').dates, [
+    const res = await calendar('SUPERUSER', '2026-10-01', '2026-10-31');
+    await db('notices').whereIn('notice_id', [office.notice_id, operations.notice_id]).del();
+    const find = (id) => res.result.absences.find((absence) => absence.notice_id === id);
+
+    assert.deepEqual(find(office.notice_id).dates, [
       '2026-10-05',
       '2026-10-06',
       '2026-10-07',
@@ -54,7 +62,7 @@ describe('GET /calendar', () => {
       '2026-10-12',
       '2026-10-13',
     ]);
-    assert.deepEqual(byStart('2026-10-24').dates, ['2026-10-24', '2026-10-26', '2026-10-27', '2026-10-28']);
+    assert.deepEqual(find(operations.notice_id).dates, ['2026-10-24', '2026-10-26', '2026-10-27', '2026-10-28']);
   });
 
   it('no marca los festivos ni ausencias que caen solo en descanso', async () => {

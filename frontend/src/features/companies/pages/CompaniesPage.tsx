@@ -129,7 +129,7 @@ export function CompaniesPage() {
 
       {companies && companies.length > 1 && (
         <div className="toolbar">
-          <select value={companyId ?? ''} onChange={(e) => setFilters({ empresa: e.target.value })}>
+          <select aria-label="Empresa" value={companyId ?? ''} onChange={(e) => setFilters({ empresa: e.target.value })}>
             {companies.map((item) => (
               <option key={item.company_id} value={item.company_id}>
                 {item.folio} · {item.company_name}

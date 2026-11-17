@@ -94,6 +94,7 @@ export function AuditPage() {
       </div>
       <div className="toolbar">
         <select
+          aria-label="Resultado"
           value={filters.resultado}
           onChange={(e) => setFilters({ resultado: e.target.value, pagina: '1' })}
         >

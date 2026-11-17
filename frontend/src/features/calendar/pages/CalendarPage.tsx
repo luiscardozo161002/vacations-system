@@ -86,7 +86,7 @@ export function CalendarPage() {
           <p className="page-sub">Vista mensual de ausencias aprobadas y pendientes.</p>
         </div>
       </div>
-      {error && <p className="field-error">{error}</p>}
+      {error && <p className="field-error" role="alert">{error}</p>}
       <div className="card">
         <div className="calendar-head">
           <h3 className="section-title">
