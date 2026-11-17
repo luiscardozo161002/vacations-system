@@ -25,7 +25,7 @@ backend/
     config/        Variables de entorno
     db/             Conexión Knex, migraciones, seeds
     lib/            Utilidades compartidas (app-error, error-handler, password, list-query)
-    plugins/        Un plugin Hapi por entidad (model + schemas + fields + service + routes)
+    plugins/        Rutas, esquemas, servicios, repositorios y modelos por módulo
     doc/bruno/      Colección Bruno para probar la API manualmente
 sdk/
   src/
@@ -41,14 +41,24 @@ frontend/
     styles.css      Copia idéntica del styles.css del prototipo
 ```
 
-## Módulos del backend (plugins Hapi, uno por entidad)
+## Módulos del backend
 
-company, branches, shifts (con su horario semanal anidado), departments, employees, roles, permissions, role-permissions, users, auth, auth-audit-log, vacation-accrual-rules, vacation-entitlements, reasons, notices.
+Los módulos de catálogo y negocio incluyen organización, empleados, usuarios, roles, permisos, reglas, saldos y avisos. También hay plugins para autenticación, auditoría, calendario, dashboard, notificaciones y salud.
 
-Cada plugin sigue el mismo patrón: `model.js` (Objection), `schemas.js` (Joi), `fields.js` (columnas expuestas), `service.js` (lógica + queries), `routes.js` (handlers Hapi). Las respuestas de error pasan por un `onPreResponse` global (`lib/error-handler.js`) que traduce errores de Postgres (constraints reales, verificados contra `pg_constraint`) a mensajes legibles. Todos los mensajes salen en español:
+Las rutas Hapi validan entrada y permisos con los esquemas de Joi y los scopes del módulo. Los servicios orquestan las reglas. Los repositorios concentran las consultas de los módulos que los tienen. `fields.js` declara las columnas públicas y `model.js` describe el modelo de Objection.
 
-- **Validación:** usa `lib/validation-messages.js` y responde `400 VALIDATION_ERROR`, por ejemplo "El campo department_id es obligatorio".
-- **Errores de Hapi:** salen con su propio código: `UNAUTHORIZED`, `NOT_FOUND`, `INVALID_JSON`, etc.
+El plugin `lib/error-handler.js` normaliza los fallos de la API en `{ error: { code, message } }` y conserva las cabeceras HTTP de Boom, como `WWW-Authenticate`.
+
+- La validación Joi usa `lib/validation-messages.js` y responde `400 VALIDATION_ERROR`.
+- El servicio lanza un `AppError` con un código de negocio. El manejador asigna su estado HTTP.
+- El manejador traduce errores de PostgreSQL por nombre de restricción y SQLSTATE. Un fallo de PostgreSQL sin traducción devuelve un mensaje genérico y el log del manejador guarda el SQLSTATE y la restricción.
+
+## Consultas y transacciones
+
+- Usa Objection o Knex para filtros, joins y escrituras habituales. En una expresión SQL de PostgreSQL que requiera `raw`, liga valores con `?`. Para identificadores dinámicos, usa una lista permitida y pásalos al constructor de consultas o escápalos con la API del cliente si la sentencia exige un identificador literal.
+- Reutiliza `lib/list-query.js` para filtros, columnas de ordenamiento permitidas y fechas. El esquema `isoDate` valida el calendario y conserva el texto `AAAA-MM-DD`. El filtro de auditoría incluye el último día con el límite exclusivo de la medianoche siguiente.
+- Si una operación escribe en varias tablas, abre la transacción en el servicio y pasa `trx` a cada consulta relacionada. En autenticación, la rotación, la emisión de códigos y los cambios de contraseña que pasan por el plugin `auth` bloquean primero la fila del usuario. Las actualizaciones de tokens verifican su vigencia y el número de filas afectadas dentro de la transacción.
+- Define en migraciones las restricciones e índices que respaldan las consultas nuevas. Los errores de integridad esperados se mapean en el manejador global y se verifican con una prueba del contrato HTTP.
 
 ## Empresas, sedes y alcance de datos
 
@@ -103,10 +113,12 @@ users N─N branches (user_branches)
 
 JWT (`@hapi/jwt`) con access token de vida corta (15 min) + refresh token (7 días), contraseñas con `bcryptjs`, bloqueo de cuenta tras 5 intentos fallidos (15 min), tokens de reseteo de contraseña con expiración de 1 hora, y bitácora de auditoría (`auth_audit_log`).
 
+La rotación consume el refresh token una sola vez. Cambiar o restablecer la contraseña revoca las sesiones de renovación y los códigos pendientes en la misma transacción. Una cuenta inactiva rechaza un código emitido antes de la baja. El access token ya emitido se valida por su firma y vencimiento.
+
 Auditoría de negocio (`backend/src/lib/audit.js`):
 
 - **Declarativa:** cada ruta auditada dice en `options.plugins.audit` qué evento registra (`NOTICE_APPROVED`, `EMPLOYEE_DEACTIVATED`…), sobre qué entidad y de dónde sale su id (parámetro de la URL o campo de la respuesta). Un solo `onPreResponse` guarda la fila.
-- **Qué guarda:** quién (`user_id` del token), el evento, la entidad y su id, el resultado (`success` o `failed`) y, si falló, el código del error. También los datos enviados sin contraseñas, la IP, el navegador y el id de la petición, que es el mismo que aparece en los logs de `hapi-pino`.
+- **Qué guarda.** El usuario, el evento, la entidad y su id, el resultado, el código del error cuando aplica, la IP, el navegador y el id de petición. Los metadatos de los eventos de negocio guardan campos de la petición y excluyen `password`, `currentPassword` y `newPassword` en el primer nivel.
 - **Fallos:** se registran también los rechazos de negocio (`INVALID_TRANSITION`) y los intentos sin permiso (403). Por eso la fila se escribe al responder y no dentro de la transacción de la acción: si se escribiera dentro, un fallo la desharía junto con la acción. Si la escritura de auditoría falla, se registra en el log y la respuesta no cambia.
 - **IP real:** `lib/client-ip.js` toma `X-Forwarded-For` solo cuando la petición llega de una IP de `TRUSTED_PROXIES`. Recorre la cadena de derecha a izquierda y se queda con la primera IP que no es de un proxy, así no se puede falsificar desde el navegador.
 - **Solo agregar:** la API solo lee la bitácora; no hay rutas para editarla ni borrarla.
@@ -132,7 +144,7 @@ Cuentas de empleado con contraseña temporal (`backend/src/lib/temporary-passwor
 1. El usuario cambia un filtro en `EmployeesPage`.
 2. El hook `useEmployees` arma los parámetros (memoizados) y llama a `sdk.employees.list(params, { signal })`.
 3. `HttpClient.request()` arma la query string, agrega `Authorization: Bearer <token>` si hay sesión, y hace `fetch` con el `AbortSignal` del hook — si el filtro cambia antes de que responda, la petición anterior se cancela.
-4. La ruta Hapi valida los query params con Joi, el `service.js` arma la consulta Objection, Postgres responde.
+4. Hapi valida los filtros con Joi. El servicio llama al repositorio de empleados, que aplica el alcance y ejecuta la consulta.
 5. El error handler global normaliza cualquier falla (validación, constraint de BD, 404) a `{ error: { code, message } }`.
 6. El SDK lo traduce a `SdkHttpError` si la respuesta no fue 2xx. TanStack Query guarda la respuesta en caché con su clave (`['employees', params]`) y el hook expone `data`, `loading` y `error` al componente.
 
@@ -144,4 +156,4 @@ Cuentas de empleado con contraseña temporal (`backend/src/lib/temporary-passwor
 - **El SDK es la única puerta al backend**: el frontend nunca hace `fetch` directo; todo pasa por `@vacations/sdk` para mantener un solo lugar de manejo de errores y auth.
 - **Caché y estado en el frontend**: los datos de la API viven en TanStack Query; los filtros y la página, en la URL; lo demás, en `useState` o en el contexto de sesión. No hay un store global. Tras cualquier cambio se refresca lo que está en pantalla (`refreshData`) en lugar de invalidar recurso por recurso, porque una aprobación toca solicitudes, saldos, calendario, dashboard y campana a la vez.
 - **Estilos**: se sigue el `styles.css` del prototipo tal cual; no se usan Tailwind ni librerías de componentes.
-- **Despliegue**: aún no definido (no hay Dockerfile ni CI en el repo); se documenta aquí cuando se decida.
+- **Entorno de ejecución.** Docker Compose provee PostgreSQL para desarrollo. GitHub Actions usa PostgreSQL 17 y Node.js 24 para lint, compilación y pruebas. El despliegue de producción está pendiente de definir.

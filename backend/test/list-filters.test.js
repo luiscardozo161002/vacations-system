@@ -108,4 +108,20 @@ describe('rangos de fecha', () => {
     assert.equal(res.statusCode, 400);
     assert.match(res.result.error.message, /AAAA-MM-DD/);
   });
+
+  it('rechaza fechas inexistentes en los filtros y acepta un día bisiesto', async () => {
+    for (const url of [
+      '/api/v1/auth-audit-log?from=2026-02-29',
+      '/api/v1/employees?hired_to=2026-04-31',
+      '/api/v1/notices?from=2026-13-01',
+      '/api/v1/calendar?from=0000-01-01&to=2026-02-01',
+    ]) {
+      const res = await get(url);
+      assert.equal(res.statusCode, 400, url);
+      assert.equal(res.result.error.code, 'VALIDATION_ERROR');
+    }
+
+    const valid = await get('/api/v1/auth-audit-log?from=2024-02-29');
+    assert.equal(valid.statusCode, 200);
+  });
 });

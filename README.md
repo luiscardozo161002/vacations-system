@@ -3,8 +3,8 @@
 Monorepo con npm workspaces, compuesto por tres paquetes:
 
 - **`backend/`** — API en Hapi.js con PostgreSQL.
-- **`sdk/`** — SDK cliente para consume la API.
-- **`frontend/`** — APP de React que consume el SDK.
+- **`sdk/`** — Cliente TypeScript para consumir la API.
+- **`frontend/`** — Aplicación React que consume el SDK.
 
 ## Documentación
 
@@ -13,19 +13,19 @@ Monorepo con npm workspaces, compuesto por tres paquetes:
 | [docs/PRD.md](docs/PRD.md) | Producto, usuarios, funcionalidades y reglas de negocio |
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Capas, estructura del monorepo, auth y decisiones técnicas |
 | [docs/DESIGN_SYSTEM.md](docs/DESIGN_SYSTEM.md) | Colores, tipografía y componentes del frontend |
-| [docs/ROADMAP.md](docs/ROADMAP.md) | Estado actual, fixes pendientes y plan de ramas |
+| [docs/ROADMAP.md](docs/ROADMAP.md) | Prioridades de seguridad, refactorización y calidad |
 
 ## Requisitos
 
-- Node.js 20+ y npm 10+
+- Node.js 24 para reproducir el entorno de CI
 - PostgreSQL 17, ya sea con Docker o instalado localmente
 
 ## Instalación
 
-Desde la raíz del repo (instala y enlaza los tres paquetes):
+Ejecuta la instalación desde la raíz del repositorio. El comando usa el lockfile y enlaza los tres paquetes.
 
 ```bash
-npm install
+npm ci --legacy-peer-deps
 ```
 
 ## Backend
@@ -188,7 +188,14 @@ npm run import:employees --workspace=backend -- ruta/empleados.csv --accesos
 
 ### Pruebas
 
-Las pruebas usan el runner que trae Node (`node:test`) y llaman a la API con `server.inject`, sin levantar el servidor. Corren contra su propia base, `vacations_test` (o la que diga `TEST_DB_NAME`), con las mismas credenciales de `backend/.env`. En cada corrida se crea si no existe, se migra y se vuelve a sembrar, así que nunca tocan tu base de desarrollo. Por seguridad se niegan a correr si el nombre de la base no termina en `_test`.
+Las pruebas de integración usan `node:test` y `server.inject` con PostgreSQL. Configura `DB_HOST`, `DB_PORT`, `DB_USER` y `DB_PASSWORD` en `backend/.env` o en el entorno del proceso. El comando usa `vacations_test` por defecto. Para elegir otra base, exporta `TEST_DB_NAME` en el entorno del proceso con un nombre que termine en `_test`.
+
+```bash
+npm run lint --workspace=backend
+npm test --workspace=backend
+```
+
+El usuario de PostgreSQL necesita permiso para crear la base si falta y acceso a la base administrativa `postgres`. Cada ejecución aplica las migraciones y reemplaza los datos de prueba de la base seleccionada.
 
 Las pruebas viven en `backend/test/*.test.js`. Los archivos corren uno por uno (`--test-concurrency=1`) porque comparten la misma base.
 
@@ -241,7 +248,7 @@ La colección de [Bruno](https://www.usebruno.com/) en [`backend/src/doc/bruno/`
 
 Con el servidor corriendo, `http://localhost:3000/documentation` muestra todos los endpoints en Swagger UI (agrupados por recurso, con "Try it out" para probarlos desde el navegador) y `http://localhost:3000/swagger.json` expone el spec OpenAPI 2.0 crudo. Se genera automaticamente a partir de los mismos schemas de Joi que ya validan cada ruta ([hapi-swagger](https://github.com/hapi-swagger/hapi-swagger), registrado en [server.js](backend/src/server.js) junto con `@hapi/inert` y `@hapi/vision`, que son requisito de hapi-swagger) — no hay que mantener la documentacion aparte ni duplicar los schemas.
 
-**Nota de compatibilidad:** `hapi-swagger@17.3.2` declara `peerDependencies: { joi: "17.x" }`, pero el proyecto usa `joi@^18.3.1`. Se instalo igual (`--legacy-peer-deps`) porque hapi-swagger no trae su propio Joi: solo llama a `.describe()` sobre los schemas que ya existen, y esa API no cambio entre Joi 17 y 18 — se probo endpoint por endpoint y todos generan su definicion correctamente. Si una actualizacion futura de Joi rompe esto, el error va a aparecer como un schema vacio o un 500 al pedir `/swagger.json`, no al arrancar el servidor.
+La versión del lockfile de `hapi-swagger` declara Joi 17 como dependencia par y la API usa Joi 18. El comando de instalación y CI usan `--legacy-peer-deps`. Al actualizar cualquiera de los dos paquetes, comprueba que `GET /swagger.json` responda 200 y contenga los esquemas esperados.
 
 ### Autenticación
 
@@ -263,15 +270,15 @@ Cómo funciona:
 
 - **Usuario actual:** `GET /auth/me` devuelve el usuario con su rol, su empleado vinculado (o `null`) y la lista de códigos de permiso activos del rol. Cambiar la contraseña pide la actual, revoca todas las sesiones del usuario y devuelve tokens nuevos para la sesión que hizo el cambio.
 - **Login** recibe `email` o `username` (uno de los dos, no ambos), valida la contraseña (bcrypt) y devuelve un **access token** (JWT, dura 15 minutos, firmado con `JWT_SECRET`) y un **refresh token** (opaco, dura 7 días; solo se guarda su hash en `user_sessions`, nunca el valor original).
-- **Refresh** cambia un refresh token válido por un access token nuevo y **rota** el refresh token (revoca el usado, entrega uno nuevo): si alguien reutiliza uno viejo, falla con `401 INVALID_REFRESH_TOKEN`.
-- Desde una misma IP se permiten **20 logins fallidos cada 15 minutos**; después responde `429` (incluso con la contraseña correcta) hasta que pasa la ventana. Los logins correctos no cuentan, para no bloquear a una oficina que sale a internet por una sola IP. El contador vive en memoria: se reinicia al reiniciar la API y, detrás de un proxy, todas las peticiones llegan con la IP del proxy (se ajusta al desplegar).
-- Tras **5 intentos fallidos** de login seguidos, la cuenta queda `status: 'locked'` por 15 minutos (`423 ACCOUNT_LOCKED`); se desbloquea sola al expirar ese tiempo, o antes si se completa un reset de contraseña.
-- **Password reset** responde siempre el mismo mensaje exista o no el correo, para no revelar qué correos están registrados. Como todavía no hay envío de email, fuera de `NODE_ENV=production` la respuesta de `request` incluye el token en texto plano (`devToken`) para poder probar el flujo — en producción eso se reemplaza por un correo real y la respuesta nunca lo expone. Confirmar el reset revoca todas las sesiones activas del usuario.
+- **Refresh** revoca el token usado y crea su reemplazo en una sola transacción. Cada token se puede usar una vez. Los intentos posteriores responden `401 INVALID_REFRESH_TOKEN`.
+- El límite por IP cuenta los intentos que responden `INVALID_CREDENTIALS`. Al llegar a 20 en 15 minutos, la API responde `429` hasta que vence la ventana. El contador vive en memoria por instancia. Configura `TRUSTED_PROXIES` cuando el balanceador añade la IP del cliente a `X-Forwarded-For`.
+- Tras cinco intentos fallidos de login consecutivos, la cuenta queda temporalmente bloqueada. El próximo intento después de 15 minutos o un restablecimiento de contraseña puede desbloquearla.
+- **Restablecimiento.** La solicitud devuelve un mensaje genérico. En `development` y `test` incluye `devToken` para cuentas elegibles. El envío por correo está pendiente. La confirmación consume el código una sola vez, revoca los refresh tokens y los códigos pendientes, y rechaza las cuentas inactivas. Los access tokens ya emitidos conservan su vigencia hasta expirar.
 - Todo evento relevante (`LOGIN_SUCCESS`, `LOGIN_FAILED`, `TOKEN_REFRESH`, `LOGOUT`, `PASSWORD_RESET_REQUESTED`, `PASSWORD_RESET_COMPLETED`) queda registrado en `auth_audit_log`, consultable pero no editable por la API.
 
 **Rutas protegidas:** todas las rutas exigen `Authorization: Bearer <accessToken>`, salvo `GET /api/v1/health`, las 5 de `/api/v1/auth/*` y la documentación de Swagger. Sin token, con un token vencido o con una firma inválida responden `401`. El token lleva `user_id`, `role_id`, `employee_id` y `username`. En Swagger, el botón **Authorize** recibe `Bearer <accessToken>`.
 
-**Todavía no se revisan permisos por rol:** cualquier usuario con sesión puede llamar a cualquier ruta. Eso entra con el RBAC (VM-013).
+Las rutas de negocio comprueban permisos por rol y los repositorios aplican el alcance por sede o por empleado. Los cambios de permisos y asignaciones se reflejan en el siguiente access token.
 
 ## SDK
 
@@ -448,8 +455,8 @@ La configuración vive en [frontend/src/app/navigation.ts](frontend/src/app/navi
 
 **Diálogos de confirmación:** tienen un solo botón con la acción (por ejemplo "Cancelar" o "Rechazar"). Para cerrarlos sin hacer nada se usa la X o la tecla Escape.
 
-**Recuperar contraseña:** "¿Olvidaste tu contraseña?" pide el correo y luego el código. Fuera de producción el código se llena solo con el `devToken` de la API. En producción hará falta el envío por correo (VM-054).
+**Recuperar contraseña.** «¿Olvidaste tu contraseña?» pide el correo y luego el código. En desarrollo y pruebas el formulario usa el `devToken` devuelto por la API. La entrega por correo está pendiente.
 
 ## Próximos pasos
 
-El plan completo por ticket está en [docs/ROADMAP.md](docs/ROADMAP.md).
+El orden de trabajo y los criterios de aceptación están en [docs/ROADMAP.md](docs/ROADMAP.md).

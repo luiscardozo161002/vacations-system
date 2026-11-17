@@ -3,9 +3,8 @@
 const Joi = require('joi');
 const { requires } = require('../../lib/permissions');
 const { scopeFrom } = require('../../lib/data-scope');
+const { isoDate } = require('../../lib/list-query');
 const service = require('./service');
-
-const isoDate = Joi.string().pattern(/^\d{4}-\d{2}-\d{2}$/).message('El formato es AAAA-MM-DD');
 
 const calendarPlugin = {
   name: 'calendar-plugin',

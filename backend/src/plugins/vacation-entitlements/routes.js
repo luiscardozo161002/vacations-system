@@ -2,6 +2,7 @@
 
 const { requires } = require('../../lib/permissions');
 const { scopeFrom } = require('../../lib/data-scope');
+const { isoDate } = require('../../lib/list-query');
 const Boom = require('@hapi/boom');
 const Joi = require('joi');
 const service = require('./service');
@@ -22,7 +23,7 @@ const vacationEntitlementsPlugin = {
           auth: requires('balances:update'),
           validate: {
             payload: Joi.object({
-              date: Joi.string().pattern(/^\d{4}-\d{2}-\d{2}$/).message('El formato es AAAA-MM-DD'),
+              date: isoDate,
             })
               .allow(null)
               .unknown(false),

@@ -249,10 +249,6 @@ const badRequest = (response) => {
   return ['BAD_REQUEST', message];
 };
 
-const send = (h, status, code, message) => {
-  return h.response({ error: { code, message } }).code(status);
-};
-
 module.exports = {
   name: 'api-error-handler',
 
@@ -264,36 +260,46 @@ module.exports = {
         return h.continue;
       }
 
+      const send = (status, code, message) => {
+        const result = h.response({ error: { code, message } }).code(status);
+        for (const [name, value] of Object.entries(response.output.headers)) result.header(name, value);
+        return result;
+      };
+
       const status = response.output.statusCode;
 
-      if (status === 400) return send(h, 400, ...badRequest(response));
-      if (HTTP_ERRORS[status]) return send(h, status, ...HTTP_ERRORS[status]);
-      if (status !== 500) return send(h, status, `HTTP_${status}`, response.output.payload.message);
+      if (status === 400) return send(400, ...badRequest(response));
+      if (HTTP_ERRORS[status]) return send(status, ...HTTP_ERRORS[status]);
+      if (status !== 500) return send(status, `HTTP_${status}`, response.output.payload.message);
 
       const error = response.cause || response;
 
       if (error instanceof AppError) {
-        const status = BUSINESS_STATUS[error.code];
-        if (status) return send(h, status, error.code, error.message);
+        const businessStatus = BUSINESS_STATUS[error.code];
+        if (businessStatus) return send(businessStatus, error.code, error.message);
       }
 
       if (error instanceof ValidationError) {
-        return send(h, 400, 'INVALID_MODEL_DATA', error.message);
+        return send(400, 'INVALID_MODEL_DATA', error.message);
       }
 
       const pg = error.nativeError || error;
       const dbError = DB_ERRORS[pg.constraint];
 
       if (dbError && dbError.sqlstate === pg.code) {
-        return send(h, dbError.status, dbError.code, dbError.message);
+        return send(dbError.status, dbError.code, dbError.message);
       }
 
       const fallback = SQLSTATE_FALLBACK[pg.code];
-      if (fallback) return send(h, fallback.status, fallback.code, fallback.message);
+      if (fallback) return send(fallback.status, fallback.code, fallback.message);
 
-      request.logger.error({ err: error, method: request.method, path: request.path }, 'Error no controlado');
+      // Los errores de PostgreSQL pueden incluir la sentencia o los datos de una fila.
+      const details = /^[0-9A-Z]{5}$/.test(pg.code ?? '')
+        ? { sqlstate: pg.code, constraint: pg.constraint }
+        : { err: error };
+      request.logger.error({ ...details, method: request.method, path: request.path }, 'Error no controlado');
 
-      return send(h, 500, 'INTERNAL_ERROR', 'Ocurrió un error interno');
+      return send(500, 'INTERNAL_ERROR', 'Ocurrió un error interno');
     });
   },
 };

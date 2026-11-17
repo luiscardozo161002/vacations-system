@@ -50,7 +50,7 @@ const upcomingAbsences = (scope) =>
 
 const recentActivity = (scope) =>
   withNames(scopedNotices(scope))
-    .orderByRaw('COALESCE(n.approved_at, n.request_date) DESC')
+    .orderBy('happened_at', 'desc')
     .limit(LIST_LIMIT)
     .select(
       'n.notice_id',
@@ -90,7 +90,7 @@ const teamSummary = async (scope) => {
           .join('reasons as r', 'r.reason_id', 'n.reason_id')
           .where('r.affects_vacation_balance', true)
           .where('n.status', 'approved')
-          .whereBetween('n.absence_start_date', [TODAY, db.raw(`CURRENT_DATE + ${UPCOMING_DAYS}`)])
+          .whereBetween('n.absence_start_date', [TODAY, db.raw('CURRENT_DATE + ?::integer', [UPCOMING_DAYS])])
       ),
       upcomingAbsences(scope),
       departmentsWithEmployees(scope),

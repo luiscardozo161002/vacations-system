@@ -24,9 +24,10 @@ const findUserByUsername = (username) => User.query().select(AUTH_COLUMNS).where
 
 const findUserByEmail = (email) => User.query().select(AUTH_COLUMNS).where('email', email).first();
 
-const findUserById = (userId) => User.query().select(AUTH_COLUMNS).findById(userId);
+const findUserById = (userId, trx) => User.query(trx).select(AUTH_COLUMNS).findById(userId);
+const lockUser = (userId, trx) => findUserById(userId, trx).forNoKeyUpdate();
 
-const updateUser = (userId, patch) => User.query().findById(userId).patch(patch);
+const updateUser = (userId, patch, trx) => User.query(trx).findById(userId).patch(patch);
 
 const updateProfile = (userId, data) => User.query().findById(userId).patch({ ...data, updated_at: db.fn.now() });
 
@@ -55,21 +56,25 @@ const findProfile = (userId) =>
     .where('u.user_id', userId)
     .first();
 
-const findPermissionCodes = (roleId) =>
-  db('role_permissions as rp')
+const findPermissionCodes = (roleId, trx = db) =>
+  trx('role_permissions as rp')
     .join('permissions as p', 'p.permission_id', 'rp.permission_id')
     .where({ 'rp.role_id': roleId, 'rp.status': 'active', 'p.status': 'active' })
     .orderBy('p.permission_code')
     .pluck('p.permission_code');
 
-const findRoleCode = (roleId) => db('roles').where('role_id', roleId).first('role_code').then((row) => row?.role_code ?? null);
+const findRoleCode = async (roleId, trx = db) => {
+  const row = await trx('roles').where('role_id', roleId).first('role_code');
+  return row?.role_code ?? null;
+};
 
 const BRANCH_COLUMNS = ['b.branch_id', 'b.company_id', 'c.company_name', 'b.code', 'b.branch_name'];
 
-const branchesQuery = () => db('branches as b').join('company as c', 'c.company_id', 'b.company_id').orderBy('b.branch_id');
+const branchesQuery = (trx = db) =>
+  trx('branches as b').join('company as c', 'c.company_id', 'b.company_id').orderBy('b.branch_id');
 
-const findBranches = (userId) =>
-  branchesQuery()
+const findBranches = (userId, trx) =>
+  branchesQuery(trx)
     .join('user_branches as ub', 'ub.branch_id', 'b.branch_id')
     .where('ub.user_id', userId)
     .select(BRANCH_COLUMNS);
@@ -81,33 +86,32 @@ const findEmployeeBranch = (employeeId) =>
     .where('e.employee_id', employeeId)
     .select(BRANCH_COLUMNS);
 
-const createSession = (data) => UserSession.query().insert(data);
+const createSession = (data, trx) => UserSession.query(trx).insert(data);
+
+const activeSessions = (trx) => UserSession.query(trx).whereNull('revoked_at').where('expires_at', '>', new Date());
 
 const findActiveSessionByHash = (refreshTokenHash) =>
-  UserSession.query()
-    .where('refresh_token_hash', refreshTokenHash)
-    .whereNull('revoked_at')
-    .where('expires_at', '>', new Date())
-    .first();
+  activeSessions().where('refresh_token_hash', refreshTokenHash).first('session_id', 'user_id');
 
-const revokeSession = (sessionId) => UserSession.query().findById(sessionId).patch({ revoked_at: new Date() });
+const revokeSession = (sessionId, trx) => activeSessions(trx).findById(sessionId).patch({ revoked_at: new Date() });
 
-const revokeAllSessionsForUser = (userId) =>
-  UserSession.query().where('user_id', userId).whereNull('revoked_at').patch({ revoked_at: new Date() });
+const revokeAllSessionsForUser = (userId, trx) =>
+  UserSession.query(trx).where('user_id', userId).whereNull('revoked_at').patch({ revoked_at: new Date() });
 
-const createPasswordResetToken = (data) => PasswordResetToken.query().insert(data);
+const createPasswordResetToken = (data, trx) => PasswordResetToken.query(trx).insert(data);
+
+const activeResetTokens = (trx) => PasswordResetToken.query(trx).whereNull('used_at').where('expires_at', '>', new Date());
 
 const findActiveResetTokenByHash = (tokenHash) =>
-  PasswordResetToken.query()
-    .where('token_hash', tokenHash)
-    .whereNull('used_at')
-    .where('expires_at', '>', new Date())
-    .first();
+  activeResetTokens().where('token_hash', tokenHash).first('token_id', 'user_id');
 
-const markResetTokenUsed = (tokenId) => PasswordResetToken.query().findById(tokenId).patch({ used_at: new Date() });
+const markResetTokenUsed = (tokenId, trx) => activeResetTokens(trx).findById(tokenId).patch({ used_at: new Date() });
 
-const logAuditEvent = (userId, eventType, { ip, userAgent, requestId, metadata } = {}) =>
-  AuthAuditLog.query().insert({
+const invalidateResetTokensForUser = (userId, trx) =>
+  activeResetTokens(trx).where('user_id', userId).patch({ used_at: new Date() });
+
+const logAuditEvent = (userId, eventType, { ip, userAgent, requestId, metadata } = {}, trx) =>
+  AuthAuditLog.query(trx).insert({
     user_id: userId || null,
     event_type: eventType,
     result: eventType.endsWith('_FAILED') ? 'failed' : 'success',
@@ -123,6 +127,7 @@ module.exports = {
   findUserByUsername,
   findUserByEmail,
   findUserById,
+  lockUser,
   updateUser,
   updateProfile,
   findProfile,
@@ -137,5 +142,6 @@ module.exports = {
   createPasswordResetToken,
   findActiveResetTokenByHash,
   markResetTokenUsed,
+  invalidateResetTokensForUser,
   logAuditEvent,
 };

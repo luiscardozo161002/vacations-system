@@ -1,16 +1,15 @@
 'use strict';
 
 const Joi = require('joi');
-const { listOf } = require('../../lib/list-query');
+const { listOf, isoDate } = require('../../lib/list-query');
 
 const id = Joi.number().integer().positive();
-const isoDateString = Joi.string().pattern(/^\d{4}-\d{2}-\d{2}$/).message('El formato es AAAA-MM-DD');
 const timeString = Joi.string().pattern(/^\d{2}:\d{2}(:\d{2})?$/).message('El formato es HH:MM').allow(null);
 
 const fields = {
   reason_id: id,
-  absence_start_date: isoDateString,
-  absence_end_date: isoDateString,
+  absence_start_date: isoDate,
+  absence_end_date: isoDate,
   absence_start_time: timeString,
   absence_end_time: timeString,
   remarks: Joi.string().max(255).allow(null),
@@ -45,8 +44,8 @@ const list = Joi.object({
   reason_id: listOf(id),
   kind: listOf(Joi.string().valid('request', 'notice')),
   status: listOf(Joi.string().valid('pending', 'approved', 'rejected', 'cancelled')),
-  from: isoDateString,
-  to: isoDateString,
+  from: isoDate,
+  to: isoDate,
   sort: Joi.string(),
   page: Joi.number().integer().min(1).default(1),
   pageSize: Joi.number().integer().min(1).max(100).default(20),

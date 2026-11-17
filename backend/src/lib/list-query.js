@@ -12,7 +12,16 @@ const ListJoi = Joi.extend({
 
 const listOf = (item) => ListJoi.array().items(item).min(1);
 
-const isoDate = Joi.string().pattern(/^\d{4}-\d{2}-\d{2}$/).message('El formato es AAAA-MM-DD');
+const isoDate = Joi.string()
+  .pattern(/^\d{4}-\d{2}-\d{2}$/)
+  .message('El formato es AAAA-MM-DD')
+  .custom((value, helpers) => {
+    const date = new Date(`${value}T00:00:00.000Z`);
+    if (value.startsWith('0000-') || !Number.isFinite(date.getTime()) || date.toISOString().slice(0, 10) !== value) {
+      return helpers.message({ custom: 'La fecha debe ser válida' });
+    }
+    return value;
+  });
 
 const whereAnyOf = (query, column, values) => (values === undefined ? query : query.whereIn(column, [values].flat()));
 
@@ -26,13 +35,14 @@ const buildOrderBy = (sort, allowedFields, defaultSort) => {
   if (!sort) return defaultSort;
 
   return sort.split(',').map((field) => {
-    const column = field.startsWith('-') ? field.slice(1) : field;
+    const descending = field.startsWith('-');
+    const column = descending ? field.slice(1) : field;
 
     if (!allowedFields.includes(column)) {
       throw Boom.badRequest(`No se puede ordenar por "${column}"`);
     }
 
-    return { column, order: field.startsWith('-') ? 'desc' : 'asc' };
+    return { column, order: descending ? 'desc' : 'asc' };
   });
 };
 

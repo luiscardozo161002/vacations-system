@@ -1,10 +1,9 @@
 'use strict';
 
 const Joi = require('joi');
-const { listOf } = require('../../lib/list-query');
+const { listOf, isoDate } = require('../../lib/list-query');
 
 const id = Joi.number().integer().positive();
-const isoDate = Joi.string().pattern(/^\d{4}-\d{2}-\d{2}$/).message('El formato es AAAA-MM-DD');
 
 const fields = {
   employee_id: id,
