@@ -68,9 +68,9 @@ En PowerShell:
 Copy-Item backend\.env.example backend\.env
 ```
 
-Editar `backend/.env` con los datos de conexión a PostgreSQL:
+Toda la configuración de la API sale de `backend/.env` ([`backend/src/config/index.js`](backend/src/config/index.js)). No hay valores por defecto: si falta una variable, o una numérica no es un entero, la API no arranca y dice cuál es. `.env.example` trae todas con valores de desarrollo.
 
-| Variable      | Descripción                   | Default         |
+| Variable      | Descripción                   | Ejemplo         |
 |---------------|--------------------------------|------------------|
 | `NODE_ENV`    | Entorno de ejecución            | `development`    |
 | `HOST`        | Host donde escucha la API       | `0.0.0.0`        |
@@ -79,10 +79,17 @@ Editar `backend/.env` con los datos de conexión a PostgreSQL:
 | `DB_PORT`     | Puerto de PostgreSQL            | `5432`           |
 | `DB_NAME`     | Nombre de la base de datos      | `vacations_db`   |
 | `DB_USER`     | Usuario de PostgreSQL           | `postgres`       |
-| `DB_PASSWORD` | Password de ese usuario         | *(sin default)*  |
-| `JWT_SECRET`  | Firma los access token (JWT) de `POST /api/v1/auth/login` | `dev-secret-change-me-in-production`. Con `NODE_ENV=production` la API no arranca si falta o si se deja este valor |
+| `DB_PASSWORD` | Password de ese usuario         | `postgres`       |
+| `JWT_SECRET`  | Firma los access token (JWT) | `change-me` |
+| `ACCESS_TOKEN_TTL_MINUTES` | Vida del access token, en minutos | `15` |
+| `REFRESH_TOKEN_TTL_DAYS` | Vida de la sesión (refresh token), en días | `7` |
+| `PASSWORD_RESET_TTL_HOURS` | Vida del código de restablecimiento, en horas | `1` |
+| `MAX_FAILED_LOGIN_ATTEMPTS` | Intentos fallidos seguidos antes de bloquear la cuenta | `5` |
+| `LOCKOUT_MINUTES` | Minutos que dura el bloqueo de la cuenta | `15` |
+| `MAX_FAILED_LOGINS_PER_IP` | Intentos fallidos permitidos desde una misma IP en la ventana | `20` |
+| `FAILED_LOGINS_WINDOW_MINUTES` | Ventana del límite por IP, en minutos | `15` |
 | `CORS_ORIGINS` | Orígenes del navegador que pueden llamar a la API, separados por coma | `http://localhost:5173` (el frontend de Vite) |
-| `TRUSTED_PROXIES` | IPs de los proxies o balanceadores delante de la API, separadas por coma. Solo de ellos se acepta `X-Forwarded-For` para registrar la IP real del usuario | vacío (sin proxy) |
+| `TRUSTED_PROXIES` | IPs de los proxies o balanceadores delante de la API, separadas por coma. Solo de ellos se acepta `X-Forwarded-For` para registrar la IP real del usuario. Puede ir vacía sin proxy | *(vacío)* |
 
 ### 2. Crear la base de datos (solo sin Docker)
 
