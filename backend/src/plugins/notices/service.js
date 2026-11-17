@@ -1,15 +1,14 @@
-'use strict';
-
+const CrudService = require('../../lib/crud/crud-service');
 const repository = require('./repository');
 const balance = require('./balance');
+const notifier = require('./notifications');
+const noticePdf = require('./pdf');
 const db = require('../../db');
 const { AppError } = require('../../lib/app-error');
 const { EDITABLE_FIELDS, CREATE_FIELDS } = require('./fields');
 const { scopeFrom, allowsEmployee } = require('../../lib/data-scope');
 const { findEmployeeDetails } = require('../../lib/employee-details');
-const { renderNoticePdf } = require('./pdf');
 const entitlements = require('../vacation-entitlements/service');
-const { notifyEmployee } = require('./notifications');
 
 const REVIEW_PERMISSION = 'approvals:review';
 const REGISTER_PERMISSION = 'notices:create';
@@ -31,183 +30,201 @@ const STATUS_LABELS = {
   cancelled: 'cancelado',
 };
 
-const pick = (data, fields) => {
-  const result = {};
-  for (const field of fields) {
-    if (data[field] !== undefined) result[field] = data[field];
-  }
-  return result;
-};
-
 const takenFrom = (evaluation) => ({
   days_taken: evaluation.breakdown.days,
   hours_taken: evaluation.breakdown.hours,
 });
 
-const ensureEmployeeInScope = async (credentials, employeeId) => {
-  if (!(await allowsEmployee(scopeFrom(credentials), employeeId))) {
-    throw new AppError('INVALID_EMPLOYEE', 'El empleado no existe');
+class NoticeService extends CrudService {
+  constructor({ balance, notifier, noticePdf, entitlements, ...crud }) {
+    super(crud);
+    this.balance = balance;
+    this.notifier = notifier;
+    this.noticePdf = noticePdf;
+    this.entitlements = entitlements;
   }
-};
 
-const describeAll = async (notices) => {
-  const employees = await findEmployeeDetails(notices.map((notice) => notice.employee_id));
-  const reasons = new Map(
-    (await db('reasons').whereIn('reason_id', [...new Set(notices.map((notice) => notice.reason_id))]).select('reason_id', 'description')).map(
-      (reason) => [reason.reason_id, reason.description]
-    )
-  );
+  async ensureEmployeeInScope(credentials, employeeId) {
+    if (!(await allowsEmployee(scopeFrom(credentials), employeeId))) {
+      throw new AppError('INVALID_EMPLOYEE', 'El empleado no existe');
+    }
+  }
 
-  return notices.map((notice) => {
-    const employee = employees.get(notice.employee_id);
-    return {
-      ...notice,
-      employee_name: employee?.employee_name ?? null,
-      employee_number: employee?.employee_number ?? null,
-      department_name: employee?.department_name ?? null,
-      reason_description: reasons.get(notice.reason_id) ?? null,
-    };
-  });
-};
+  async describeAll(notices) {
+    const employees = await findEmployeeDetails(notices.map((notice) => notice.employee_id));
+    const reasonIds = [...new Set(notices.map((notice) => notice.reason_id))];
+    const reasons = new Map(
+      (await db('reasons').whereIn('reason_id', reasonIds).select('reason_id', 'description')).map((reason) => [
+        reason.reason_id,
+        reason.description,
+      ])
+    );
 
-const describe = async (notice) => (await describeAll([notice]))[0];
+    return notices.map((notice) => {
+      const employee = employees.get(notice.employee_id);
+      return {
+        ...notice,
+        employee_name: employee?.employee_name ?? null,
+        employee_number: employee?.employee_number ?? null,
+        department_name: employee?.department_name ?? null,
+        reason_description: reasons.get(notice.reason_id) ?? null,
+      };
+    });
+  }
 
-const list = async (filters, scope) => {
-  const page = await repository.list(filters, scope);
-  return { ...page, data: await describeAll(page.data) };
-};
+  async describe(notice) {
+    return (await this.describeAll([notice]))[0];
+  }
 
-const findInScope = async (noticeId, scope) => {
-  const notice = await repository.findById(noticeId, scope);
-  if (!notice) throw new AppError('NOTICE_NOT_FOUND', 'El aviso no existe');
-  return notice;
-};
+  async list(filters, scope) {
+    const page = await super.list(filters, scope);
+    return { ...page, data: await this.describeAll(page.data) };
+  }
 
-const findById = async (noticeId, scope) => describe(await findInScope(noticeId, scope));
+  findInScope(id, scope) {
+    return super.findById(id, scope);
+  }
 
-const preview = async (data, credentials) => {
-  await ensureEmployeeInScope(credentials, data.employee_id);
-  return balance.toResponse(await balance.evaluate(db, data));
-};
+  async findById(id, scope) {
+    return this.describe(await this.findInScope(id, scope));
+  }
 
-const create = async (data, credentials) => {
-  await ensureEmployeeInScope(credentials, data.employee_id);
-  const registersNotice = credentials.scope.includes(REGISTER_PERMISSION);
+  async preview(data, credentials) {
+    await this.ensureEmployeeInScope(credentials, data.employee_id);
+    return this.balance.toResponse(await this.balance.evaluate(db, data));
+  }
 
-  const notice = await db.transaction(async (trx) => {
-    const evaluation = await balance.evaluate(trx, data, { lock: registersNotice });
-    balance.assertValid(evaluation);
+  async create(data, credentials) {
+    await this.ensureEmployeeInScope(credentials, data.employee_id);
+    const registersNotice = credentials.scope.includes(REGISTER_PERMISSION);
 
-    const record = { ...pick(data, CREATE_FIELDS), ...takenFrom(evaluation), created_by: credentials.user_id };
+    const notice = await db.transaction(async (trx) => {
+      const evaluation = await this.balance.evaluate(trx, data, { lock: registersNotice });
+      this.balance.assertValid(evaluation);
 
-    if (!registersNotice) {
-      return repository.create({ ...record, kind: 'request', status: 'pending' }, trx);
+      const record = { ...this.pick(data, CREATE_FIELDS), ...takenFrom(evaluation), created_by: credentials.user_id };
+
+      if (!registersNotice) {
+        return this.repository.create({ ...record, kind: 'request', status: 'pending' }, trx);
+      }
+
+      return this.repository.create(
+        {
+          ...record,
+          kind: 'notice',
+          status: 'approved',
+          approved_by: credentials.user_id,
+          approved_at: trx.fn.now(),
+          entitlement_id: await this.balance.discount(trx, evaluation),
+        },
+        trx
+      );
+    });
+    const described = await this.describe(notice);
+    if (described.kind === 'notice') await this.notifier.notifyEmployee(described, credentials.user_id);
+    return described;
+  }
+
+  async update(id, data, scope) {
+    const current = await this.findInScope(id, scope);
+    const changes = this.pick(data, EDITABLE_FIELDS);
+
+    if (!SCHEDULE_FIELDS.some((field) => changes[field] !== undefined)) {
+      return this.describe(await this.repository.update(id, changes, scope));
     }
 
-    return repository.create(
-      {
-        ...record,
-        kind: 'notice',
-        status: 'approved',
-        approved_by: credentials.user_id,
-        approved_at: trx.fn.now(),
-        entitlement_id: await balance.discount(trx, evaluation),
-      },
+    if (current.status !== 'pending') {
+      throw new AppError('NOTICE_LOCKED', 'Solo se pueden cambiar fechas y motivo de un aviso pendiente');
+    }
+
+    const evaluation = await this.balance.evaluate(db, { ...current, ...changes });
+    this.balance.assertValid(evaluation);
+    return this.describe(await this.repository.update(id, { ...changes, ...takenFrom(evaluation) }, scope));
+  }
+
+  rejectionMessage(rule, notice) {
+    if (rule.onlyBeforeStart?.includes(notice.status)) {
+      return `No se puede ${rule.verb}: la ausencia ya empezó`;
+    }
+    return `No se puede ${rule.verb} un aviso ${STATUS_LABELS[notice.status]}`;
+  }
+
+  async applyBalance(trx, notice) {
+    if (notice.status === 'cancelled') {
+      await this.balance.refund(trx, notice);
+      return notice;
+    }
+
+    if (notice.status !== 'approved') return notice;
+
+    const evaluation = await this.balance.evaluate(trx, notice, { lock: true });
+    this.balance.assertValid(evaluation);
+    return this.repository.patchById(
+      notice.notice_id,
+      { ...takenFrom(evaluation), entitlement_id: await this.balance.discount(trx, evaluation) },
       trx
     );
-  });
-  const described = await describe(notice);
-  if (described.kind === 'notice') await notifyEmployee(described, credentials.user_id);
-  return described;
-};
-
-const update = async (noticeId, data, scope) => {
-  const current = await findInScope(noticeId, scope);
-  const changes = pick(data, EDITABLE_FIELDS);
-
-  if (!SCHEDULE_FIELDS.some((field) => changes[field] !== undefined)) {
-    return describe(await repository.update(noticeId, changes, scope));
   }
 
-  if (current.status !== 'pending') {
-    throw new AppError('NOTICE_LOCKED', 'Solo se pueden cambiar fechas y motivo de un aviso pendiente');
-  }
+  async resolve(id, action, credentials) {
+    const scope = scopeFrom(credentials);
+    await this.findInScope(id, scope);
+    const isReviewer = credentials.scope.includes(REVIEW_PERMISSION);
 
-  const evaluation = await balance.evaluate(db, { ...current, ...changes });
-  balance.assertValid(evaluation);
-  return describe(await repository.update(noticeId, { ...changes, ...takenFrom(evaluation) }, scope));
-};
-
-const rejectionMessage = (rule, notice) => {
-  if (rule.onlyBeforeStart?.includes(notice.status)) {
-    return `No se puede ${rule.verb}: la ausencia ya empezó`;
-  }
-  return `No se puede ${rule.verb} un aviso ${STATUS_LABELS[notice.status]}`;
-};
-
-const applyBalance = async (trx, notice) => {
-  if (notice.status === 'cancelled') {
-    await balance.refund(trx, notice);
-    return notice;
-  }
-
-  if (notice.status !== 'approved') return notice;
-
-  const evaluation = await balance.evaluate(trx, notice, { lock: true });
-  balance.assertValid(evaluation);
-  return repository.patchById(
-    notice.notice_id,
-    { ...takenFrom(evaluation), entitlement_id: await balance.discount(trx, evaluation) },
-    trx
-  );
-};
-
-const resolve = async (noticeId, action, credentials) => {
-  const scope = scopeFrom(credentials);
-  await findInScope(noticeId, scope);
-  const isReviewer = credentials.scope.includes(REVIEW_PERMISSION);
-
-  if (isReviewer) {
-    const allowed = await repository.findReviewActions(credentials.user_id);
-    if (!allowed.includes(action)) {
-      throw new AppError('REVIEW_ACTION_FORBIDDEN', `No tienes permitido ${ACTIONS[action].verb} avisos`);
+    if (isReviewer) {
+      const allowed = await this.repository.findReviewActions(credentials.user_id);
+      if (!allowed.includes(action)) {
+        throw new AppError('REVIEW_ACTION_FORBIDDEN', `No tienes permitido ${ACTIONS[action].verb} avisos`);
+      }
     }
+
+    const rule = isReviewer ? ACTIONS[action] : OWNER_CANCEL;
+    const patch = action === 'approve' ? { approved_by: credentials.user_id, approved_at: db.fn.now() } : {};
+
+    const notice = await db.transaction(async (trx) => {
+      const updated = await this.repository.transition(id, rule, patch, trx);
+      if (!updated) {
+        throw new AppError('INVALID_TRANSITION', this.rejectionMessage(rule, await this.repository.findById(id, scope)));
+      }
+      return this.applyBalance(trx, updated);
+    });
+    const described = await this.describe(notice);
+    await this.notifier.notifyEmployee(described, credentials.user_id);
+    return described;
   }
 
-  const rule = isReviewer ? ACTIONS[action] : OWNER_CANCEL;
-  const patch = action === 'approve' ? { approved_by: credentials.user_id, approved_at: db.fn.now() } : {};
+  findCompany(employeeId) {
+    return db('employees as e')
+      .join('departments as d', 'd.department_id', 'e.department_id')
+      .join('branches as b', 'b.branch_id', 'd.branch_id')
+      .join('company as c', 'c.company_id', 'b.company_id')
+      .where('e.employee_id', employeeId)
+      .first('c.company_name', 'c.rfc', 'c.logo', 'c.location', 'c.phone_number');
+  }
 
-  const notice = await db.transaction(async (trx) => {
-    const updated = await repository.transition(noticeId, rule, patch, trx);
-    if (!updated) {
-      throw new AppError('INVALID_TRANSITION', rejectionMessage(rule, await repository.findById(noticeId, scope)));
+  async pdf(id, scope) {
+    const notice = await this.findById(id, scope);
+    if (notice.status !== 'approved') {
+      throw new AppError('NOTICE_NOT_APPROVED', 'Solo se puede descargar el PDF de un aviso aprobado');
     }
-    return applyBalance(trx, updated);
-  });
-  const described = await describe(notice);
-  await notifyEmployee(described, credentials.user_id);
-  return described;
-};
 
-const findCompany = (employeeId) =>
-  db('employees as e')
-    .join('departments as d', 'd.department_id', 'e.department_id')
-    .join('branches as b', 'b.branch_id', 'd.branch_id')
-    .join('company as c', 'c.company_id', 'b.company_id')
-    .where('e.employee_id', employeeId)
-    .first('c.company_name', 'c.rfc', 'c.logo', 'c.location', 'c.phone_number');
-
-const pdf = async (noticeId, scope) => {
-  const notice = await findById(noticeId, scope);
-  if (notice.status !== 'approved') {
-    throw new AppError('NOTICE_NOT_APPROVED', 'Solo se puede descargar el PDF de un aviso aprobado');
+    const [company, balances] = await Promise.all([
+      this.findCompany(notice.employee_id),
+      this.entitlements.list(
+        { employee_id: notice.employee_id, status: 'active', sort: '-period_start', page: 1, pageSize: 1 },
+        scope
+      ),
+    ]);
+    return this.noticePdf.render({ notice, company, balance: balances.data[0] ?? null });
   }
+}
 
-  const [company, balances] = await Promise.all([
-    findCompany(notice.employee_id),
-    entitlements.list({ employee_id: notice.employee_id, status: 'active', sort: '-period_start', page: 1, pageSize: 1 }, scope),
-  ]);
-  return renderNoticePdf({ notice, company, balance: balances.data[0] ?? null });
-};
-
-module.exports = { list, findById, preview, create, update, resolve, pdf };
+module.exports = new NoticeService({
+  repository,
+  balance,
+  notifier,
+  noticePdf,
+  entitlements,
+  editableFields: EDITABLE_FIELDS,
+  notFound: { code: 'NOTICE_NOT_FOUND', message: 'El aviso no existe' },
+});

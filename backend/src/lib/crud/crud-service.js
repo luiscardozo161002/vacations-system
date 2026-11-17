@@ -7,8 +7,8 @@ class CrudService {
     this.notFound = notFound;
   }
 
-  pick(data) {
-    const entries = this.editableFields.filter((field) => data[field] !== undefined).map((field) => [field, data[field]]);
+  pick(data, fields = this.editableFields) {
+    const entries = fields.filter((field) => data[field] !== undefined).map((field) => [field, data[field]]);
     return Object.fromEntries(entries);
   }
 

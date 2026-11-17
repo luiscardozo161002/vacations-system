@@ -1,76 +1,66 @@
-'use strict';
-
+const CrudRepository = require('../../lib/crud/crud-repository');
 const db = require('../../db');
 const Employee = require('./model');
 const { COLUMNS } = require('./fields');
-const { buildOrderBy, paginationMeta, whereAnyOf, whereDateBetween } = require('../../lib/list-query');
+const { whereAnyOf, whereDateBetween } = require('../../lib/list-query');
 const { forEmployees } = require('../../lib/data-scope');
 
-const DEFAULT_SORT = [{ column: 'employee_id', order: 'asc' }];
-
-const filtered = ({ search, company_id, department_id, status, hired_from, hired_to }, scope) => {
-  const query = Employee.query();
-  forEmployees(query, scope, 'employees.employee_id');
-
-  if (search) {
-    query.where((match) =>
-      match.whereILike('employees.employee_name', `%${search}%`).orWhereILike('employees.employee_number', `%${search}%`)
-    );
+class EmployeeRepository extends CrudRepository {
+  constructor() {
+    super({ model: Employee, columns: COLUMNS, primaryKey: 'employee_id', hasUpdatedAt: true });
   }
-  if (company_id !== undefined) {
-    query.whereIn(
-      'employees.department_id',
-      db('departments as d').join('branches as b', 'b.branch_id', 'd.branch_id').where('b.company_id', company_id).select('d.department_id')
-    );
+
+  restrictToScope(query, scope) {
+    return forEmployees(query, scope, 'employees.employee_id');
   }
-  whereAnyOf(query, 'employees.department_id', department_id);
-  whereAnyOf(query, 'employees.status', status);
-  return whereDateBetween(query, 'employees.start_date', hired_from, hired_to);
-};
 
-const list = async ({ sort, page = 1, pageSize = 20, ...filters }, scope) => {
-  const query = filtered(filters, scope).select(COLUMNS).orderBy(buildOrderBy(sort, COLUMNS, DEFAULT_SORT));
-  const { results, total } = await query.page(page - 1, pageSize);
+  applyFilters(query, { search, company_id, department_id, status, hired_from, hired_to }) {
+    if (search) {
+      query.where((match) =>
+        match.whereILike('employees.employee_name', `%${search}%`).orWhereILike('employees.employee_number', `%${search}%`)
+      );
+    }
+    if (company_id !== undefined) {
+      query.whereIn(
+        'employees.department_id',
+        db('departments as d')
+          .join('branches as b', 'b.branch_id', 'd.branch_id')
+          .where('b.company_id', company_id)
+          .select('d.department_id')
+      );
+    }
+    whereAnyOf(query, 'employees.department_id', department_id);
+    whereAnyOf(query, 'employees.status', status);
+    return whereDateBetween(query, 'employees.start_date', hired_from, hired_to);
+  }
 
-  return { data: results, pagination: paginationMeta(page, pageSize, total) };
-};
+  exportRows(filters, scope) {
+    const query = this.model.query();
+    this.restrictToScope(query, scope);
+    this.applyFilters(query, filters);
 
-const exportRows = (filters, scope) =>
-  filtered(filters, scope)
-    .join('departments as d', 'd.department_id', 'employees.department_id')
-    .join('branches as b', 'b.branch_id', 'd.branch_id')
-    .join('shifts as s', 's.shift_id', 'employees.shift_id')
-    .leftJoin('users as u', 'u.employee_id', 'employees.employee_id')
-    .orderBy('employees.employee_name')
-    .select(
-      'employees.employee_number',
-      'employees.folio',
-      'employees.employee_name',
-      'b.code as branch_code',
-      'd.department_name',
-      's.shift_name',
-      'employees.start_date',
-      'u.email',
-      'employees.status'
-    );
+    return query
+      .join('departments as d', 'd.department_id', 'employees.department_id')
+      .join('branches as b', 'b.branch_id', 'd.branch_id')
+      .join('shifts as s', 's.shift_id', 'employees.shift_id')
+      .leftJoin('users as u', 'u.employee_id', 'employees.employee_id')
+      .orderBy('employees.employee_name')
+      .select(
+        'employees.employee_number',
+        'employees.folio',
+        'employees.employee_name',
+        'b.code as branch_code',
+        'd.department_name',
+        's.shift_name',
+        'employees.start_date',
+        'u.email',
+        'employees.status'
+      );
+  }
 
-const findById = (employeeId, scope) =>
-  forEmployees(Employee.query().select(COLUMNS).where('employee_id', employeeId), scope, 'employee_id').first();
+  create(data, trx) {
+    return this.model.query(trx).insert(data).returning(this.columns);
+  }
+}
 
-const create = (data, trx) => Employee.query(trx).insert(data).returning(COLUMNS);
-
-const update = async (employeeId, data, scope) => {
-  const [employee] = await forEmployees(Employee.query().where('employee_id', employeeId), scope, 'employee_id')
-    .patch({ ...data, updated_at: db.fn.now() })
-    .returning(COLUMNS);
-  return employee || null;
-};
-
-const remove = async (employeeId, scope) => {
-  const [employee] = await forEmployees(Employee.query().where('employee_id', employeeId), scope, 'employee_id')
-    .patch({ status: 'inactive', updated_at: db.fn.now() })
-    .returning(COLUMNS);
-  return employee || null;
-};
-
-module.exports = { list, exportRows, findById, create, update, remove };
+module.exports = new EmployeeRepository();

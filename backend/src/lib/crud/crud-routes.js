@@ -36,7 +36,7 @@ class CrudRoutes {
         ...this.auditOptions(action),
         description,
         tags: ['api', this.tag],
-        auth: requires(permission),
+        auth: requires(...[permission].flat()),
         validate,
       },
       handler,

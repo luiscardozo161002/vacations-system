@@ -4,7 +4,9 @@ const { describe, it, before, after } = require('node:test');
 const assert = require('node:assert/strict');
 const createServer = require('../src/server');
 const db = require('../src/db');
-const { longDate, absenceLines } = require('../src/plugins/notices/pdf');
+const { NoticePdf } = require('../src/plugins/notices/pdf');
+
+const { longDate, absenceLines } = NoticePdf;
 
 const PASSWORD = 'Vacaciones2026!';
 
