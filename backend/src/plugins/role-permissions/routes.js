@@ -1,68 +1,63 @@
-'use strict';
-
-const { requires } = require('../../lib/permissions');
+const CrudRoutes = require('../../lib/crud/crud-routes');
 const service = require('./service');
 const schemas = require('./schemas');
 
-const rolePermissionsPlugin = {
-  name: 'role-permissions-plugin',
-  version: '1.0.0',
-  register: (server) => {
-    server.route([
-      {
-        method: 'GET',
-        path: '/api/v1/role-permissions',
-        options: {
-          description: 'List role-permission assignments',
-          tags: ['api', 'role-permissions'],
-          auth: requires('permissions:view'),
-          validate: { query: schemas.list },
-        },
-        handler: (request) => service.list(request.query),
-      },
-      {
-        method: 'GET',
-        path: '/api/v1/role-permissions/{roleId}/{permissionId}',
-        options: {
-          description: 'Check whether a permission is assigned to a role',
-          tags: ['api', 'role-permissions'],
-          auth: requires('permissions:view'),
-          validate: { params: schemas.params },
-        },
-        handler: (request) => service.findById(request.params.roleId, request.params.permissionId),
-      },
-      {
-        method: 'POST',
-        path: '/api/v1/role-permissions',
-        options: {
-          plugins: { audit: { event: 'PERMISSION_GRANTED', entity: 'role', id: 'role_id' } },
-          description: 'Assign a permission to a role',
-          tags: ['api', 'role-permissions'],
-          auth: requires('permissions:update'),
-          validate: { payload: schemas.create },
-        },
-        handler: async (request, h) => {
-          const rolePermission = await service.create(request.payload);
-          return h.response(rolePermission).code(201);
-        },
-      },
-      {
-        method: 'DELETE',
-        path: '/api/v1/role-permissions/{roleId}/{permissionId}',
-        options: {
-          plugins: { audit: { event: 'PERMISSION_REVOKED', entity: 'role', id: 'roleId' } },
-          description: 'Deactivate a role-permission assignment',
-          tags: ['api', 'role-permissions'],
-          auth: requires('permissions:update'),
-          validate: { params: schemas.params },
-        },
-        handler: async (request, h) => {
-          await service.remove(request.params.roleId, request.params.permissionId);
-          return h.response().code(204);
-        },
-      },
-    ]);
-  },
-};
+class RolePermissionRoutes extends CrudRoutes {
+  routes() {
+    return [this.listRoute(), this.getRoute(), this.createRoute(), this.removeRoute()];
+  }
 
-module.exports = rolePermissionsPlugin;
+  itemPath() {
+    return `${this.path}/{roleId}/{permissionId}`;
+  }
+
+  getRoute() {
+    return this.route({
+      method: 'GET',
+      path: this.itemPath(),
+      description: this.describe('get'),
+      permission: this.permissions.view,
+      validate: { params: this.schemas.params },
+      handler: (request) => this.service.findById(request.params.roleId, request.params.permissionId),
+    });
+  }
+
+  removeRoute() {
+    return this.route({
+      action: 'remove',
+      method: 'DELETE',
+      path: this.itemPath(),
+      description: this.describe('remove'),
+      permission: this.permissions.delete,
+      validate: { params: this.schemas.params },
+      handler: async (request, h) => {
+        await this.service.remove(request.params.roleId, request.params.permissionId);
+        return h.response().code(204);
+      },
+    });
+  }
+}
+
+module.exports = new RolePermissionRoutes({
+  name: 'role-permissions',
+  tag: 'role-permissions',
+  path: '/api/v1/role-permissions',
+  idParam: 'roleId',
+  primaryKey: 'role_id',
+  label: { singular: 'role-permission assignment', plural: 'role-permission assignments' },
+  descriptions: {
+    get: 'Check whether a permission is assigned to a role',
+    create: 'Assign a permission to a role',
+  },
+  permissions: {
+    view: 'permissions:view',
+    create: 'permissions:update',
+    delete: 'permissions:update',
+  },
+  schemas,
+  service,
+  audit: {
+    entity: 'role',
+    events: { create: 'PERMISSION_GRANTED', remove: 'PERMISSION_REVOKED' },
+  },
+}).plugin();

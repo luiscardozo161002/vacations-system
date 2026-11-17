@@ -1,103 +1,59 @@
-'use strict';
-
-const { requires } = require('../../lib/permissions');
+const CrudRoutes = require('../../lib/crud/crud-routes');
 const service = require('./service');
 const schemas = require('./schemas');
 
-const usersPlugin = {
-  name: 'users-plugin',
-  version: '1.0.0',
-  register: (server) => {
-    server.route([
-      {
-        method: 'GET',
-        path: '/api/v1/users',
-        options: {
-          description: 'List users (never returns password_hash)',
-          tags: ['api', 'users'],
-          auth: requires('users:view'),
-          validate: { query: schemas.list },
-        },
-        handler: (request) => service.list(request.query),
-      },
-      {
-        method: 'GET',
-        path: '/api/v1/users/{userId}',
-        options: {
-          description: 'Get a user by ID (never returns password_hash)',
-          tags: ['api', 'users'],
-          auth: requires('users:view'),
-          validate: { params: schemas.params },
-        },
-        handler: (request) => service.findById(request.params.userId),
-      },
-      {
-        method: 'POST',
-        path: '/api/v1/users',
-        options: {
-          plugins: { audit: { event: 'USER_CREATED', entity: 'user', id: 'user_id' } },
-          description: 'Create a user (password is hashed before storing)',
-          tags: ['api', 'users'],
-          auth: requires('users:create'),
-          validate: { payload: schemas.create },
-        },
-        handler: async (request, h) => {
-          const user = await service.create(request.payload);
-          return h.response(user).code(201);
-        },
-      },
-      {
-        method: 'PATCH',
-        path: '/api/v1/users/{userId}',
-        options: {
-          plugins: { audit: { event: 'USER_UPDATED', entity: 'user', id: 'userId' } },
-          description: 'Update a user (password is re-hashed if sent)',
-          tags: ['api', 'users'],
-          auth: requires('users:update'),
-          validate: { params: schemas.params, payload: schemas.update },
-        },
-        handler: (request) => service.update(request.params.userId, request.payload),
-      },
-      {
-        method: 'DELETE',
-        path: '/api/v1/users/{userId}',
-        options: {
-          plugins: { audit: { event: 'USER_DEACTIVATED', entity: 'user', id: 'userId' } },
-          description: 'Deactivate a user',
-          tags: ['api', 'users'],
-          auth: requires('users:delete'),
-          validate: { params: schemas.params },
-        },
-        handler: async (request, h) => {
-          await service.remove(request.params.userId);
-          return h.response().code(204);
-        },
-      },
-      {
-        method: 'GET',
-        path: '/api/v1/users/{userId}/branches',
-        options: {
-          description: 'List the branches assigned to a user',
-          tags: ['api', 'users'],
-          auth: requires('users:view'),
-          validate: { params: schemas.params },
-        },
-        handler: (request) => service.findBranches(request.params.userId),
-      },
-      {
-        method: 'PUT',
-        path: '/api/v1/users/{userId}/branches',
-        options: {
-          plugins: { audit: { event: 'USER_BRANCHES_CHANGED', entity: 'user', id: 'userId' } },
-          description: 'Replace the branches assigned to a user',
-          tags: ['api', 'users'],
-          auth: requires('users:update'),
-          validate: { params: schemas.params, payload: schemas.branches },
-        },
-        handler: (request) => service.replaceBranches(request.params.userId, request.payload.branch_ids),
-      },
-    ]);
-  },
-};
+class UserRoutes extends CrudRoutes {
+  routes() {
+    return [...super.routes(), this.listBranchesRoute(), this.replaceBranchesRoute()];
+  }
 
-module.exports = usersPlugin;
+  listBranchesRoute() {
+    return this.route({
+      method: 'GET',
+      path: `${this.itemPath()}/branches`,
+      description: 'List the branches assigned to a user',
+      permission: this.permissions.view,
+      validate: { params: this.schemas.params },
+      handler: (request) => this.service.findBranches(request.params.userId),
+    });
+  }
+
+  replaceBranchesRoute() {
+    return this.route({
+      action: 'branches',
+      method: 'PUT',
+      path: `${this.itemPath()}/branches`,
+      description: 'Replace the branches assigned to a user',
+      permission: this.permissions.update,
+      validate: { params: this.schemas.params, payload: this.schemas.branches },
+      handler: (request) => this.service.replaceBranches(request.params.userId, request.payload.branch_ids),
+    });
+  }
+}
+
+module.exports = new UserRoutes({
+  name: 'users',
+  tag: 'users',
+  path: '/api/v1/users',
+  idParam: 'userId',
+  primaryKey: 'user_id',
+  label: { singular: 'user', plural: 'users' },
+  descriptions: {
+    list: 'List users (never returns password_hash)',
+    get: 'Get a user by ID (never returns password_hash)',
+    create: 'Create a user (password is hashed before storing)',
+    update: 'Update a user (password is re-hashed if sent)',
+  },
+  permissions: { view: 'users:view', create: 'users:create', update: 'users:update', delete: 'users:delete' },
+  schemas,
+  service,
+  audit: {
+    entity: 'user',
+    events: {
+      create: 'USER_CREATED',
+      update: 'USER_UPDATED',
+      remove: 'USER_DEACTIVATED',
+      branches: 'USER_BRANCHES_CHANGED',
+    },
+  },
+}).plugin();

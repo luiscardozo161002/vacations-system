@@ -2,13 +2,14 @@ const { requires } = require('../permissions');
 const { scopeFrom } = require('../data-scope');
 
 class CrudRoutes {
-  constructor({ name, tag, path, idParam, primaryKey, label, permissions, schemas, service, audit }) {
+  constructor({ name, tag, path, idParam, primaryKey, label, descriptions = {}, permissions, schemas, service, audit }) {
     this.name = name;
     this.tag = tag;
     this.path = path;
     this.idParam = idParam;
     this.primaryKey = primaryKey;
     this.label = label;
+    this.descriptions = descriptions;
     this.permissions = permissions;
     this.schemas = schemas;
     this.service = service;
@@ -49,6 +50,17 @@ class CrudRoutes {
     return { plugins: { audit: { event, entity: this.audit.entity, id } } };
   }
 
+  describe(action) {
+    const defaults = {
+      list: `List ${this.label.plural}`,
+      get: `Get a ${this.label.singular} by ID`,
+      create: `Create a ${this.label.singular}`,
+      update: `Update a ${this.label.singular}`,
+      remove: `Deactivate a ${this.label.singular}`,
+    };
+    return this.descriptions[action] ?? defaults[action];
+  }
+
   itemPath() {
     return `${this.path}/{${this.idParam}}`;
   }
@@ -60,7 +72,7 @@ class CrudRoutes {
   listRoute() {
     return this.route({
       method: 'GET',
-      description: `List ${this.label.plural}`,
+      description: this.describe('list'),
       permission: this.permissions.view,
       validate: { query: this.schemas.list },
       handler: (request) => this.service.list(request.query, this.scope(request)),
@@ -71,7 +83,7 @@ class CrudRoutes {
     return this.route({
       method: 'GET',
       path: this.itemPath(),
-      description: `Get a ${this.label.singular} by ID`,
+      description: this.describe('get'),
       permission: this.permissions.view,
       validate: { params: this.schemas.params },
       handler: (request) => this.service.findById(request.params[this.idParam], this.scope(request)),
@@ -82,7 +94,7 @@ class CrudRoutes {
     return this.route({
       action: 'create',
       method: 'POST',
-      description: `Create a ${this.label.singular}`,
+      description: this.describe('create'),
       permission: this.permissions.create,
       validate: { payload: this.schemas.create },
       handler: async (request, h) => {
@@ -97,7 +109,7 @@ class CrudRoutes {
       action: 'update',
       method: 'PATCH',
       path: this.itemPath(),
-      description: `Update a ${this.label.singular}`,
+      description: this.describe('update'),
       permission: this.permissions.update,
       validate: { params: this.schemas.params, payload: this.schemas.update },
       handler: (request) => this.service.update(request.params[this.idParam], request.payload, this.scope(request)),
@@ -109,7 +121,7 @@ class CrudRoutes {
       action: 'remove',
       method: 'DELETE',
       path: this.itemPath(),
-      description: `Deactivate a ${this.label.singular}`,
+      description: this.describe('remove'),
       permission: this.permissions.delete,
       validate: { params: this.schemas.params },
       handler: async (request, h) => {

@@ -1,22 +1,31 @@
-'use strict';
-
 const repository = require('./repository');
 const { AppError } = require('../../lib/app-error');
 
-const list = (filters) => repository.list(filters);
+class RolePermissionService {
+  constructor(repository) {
+    this.repository = repository;
+  }
 
-const findById = async (roleId, permissionId) => {
-  const rolePermission = await repository.findById(roleId, permissionId);
-  if (!rolePermission) throw new AppError('ROLE_PERMISSION_NOT_FOUND', 'Ese permiso no está asignado a ese rol');
-  return rolePermission;
-};
+  found(rolePermission) {
+    if (!rolePermission) throw new AppError('ROLE_PERMISSION_NOT_FOUND', 'Ese permiso no está asignado a ese rol');
+    return rolePermission;
+  }
 
-const create = (data) => repository.create(data);
+  list(filters) {
+    return this.repository.list(filters);
+  }
 
-const remove = async (roleId, permissionId) => {
-  const rolePermission = await repository.remove(roleId, permissionId);
-  if (!rolePermission) throw new AppError('ROLE_PERMISSION_NOT_FOUND', 'Ese permiso no está asignado a ese rol');
-  return rolePermission;
-};
+  async findById(roleId, permissionId) {
+    return this.found(await this.repository.findById(roleId, permissionId));
+  }
 
-module.exports = { list, findById, create, remove };
+  create(data) {
+    return this.repository.create(data);
+  }
+
+  async remove(roleId, permissionId) {
+    return this.found(await this.repository.remove(roleId, permissionId));
+  }
+}
+
+module.exports = new RolePermissionService(repository);

@@ -1,42 +1,22 @@
-'use strict';
-
+const CrudRepository = require('../../lib/crud/crud-repository');
 const VacationEntitlement = require('./model');
 const { COLUMNS } = require('./fields');
-const { buildOrderBy, paginationMeta, whereAnyOf } = require('../../lib/list-query');
 const { forEmployees } = require('../../lib/data-scope');
 
-const DEFAULT_SORT = [{ column: 'entitlement_id', order: 'asc' }];
+class VacationEntitlementRepository extends CrudRepository {
+  constructor() {
+    super({ model: VacationEntitlement, columns: COLUMNS, primaryKey: 'entitlement_id' });
+  }
 
-const list = async ({ employee_id, period_year, status, sort, page = 1, pageSize = 20 }, scope) => {
-  const query = VacationEntitlement.query().select(COLUMNS).orderBy(buildOrderBy(sort, COLUMNS, DEFAULT_SORT));
-  forEmployees(query, scope, 'employee_id');
+  restrictToScope(query, scope) {
+    return forEmployees(query, scope, 'employee_id');
+  }
 
-  if (employee_id !== undefined) query.where('employee_id', employee_id);
-  if (period_year !== undefined) query.where('period_year', period_year);
-  whereAnyOf(query, 'status', status);
+  applyFilters(query, filters) {
+    if (filters.employee_id !== undefined) query.where('employee_id', filters.employee_id);
+    if (filters.period_year !== undefined) query.where('period_year', filters.period_year);
+    return super.applyFilters(query, filters);
+  }
+}
 
-  const { results, total } = await query.page(page - 1, pageSize);
-
-  return { data: results, pagination: paginationMeta(page, pageSize, total) };
-};
-
-const findById = (entitlementId, scope) =>
-  forEmployees(VacationEntitlement.query().select(COLUMNS).where('entitlement_id', entitlementId), scope, 'employee_id').first();
-
-const create = (data) => VacationEntitlement.query().insert(data).returning(COLUMNS);
-
-const update = async (entitlementId, data, scope) => {
-  const [entitlement] = await forEmployees(VacationEntitlement.query().where('entitlement_id', entitlementId), scope, 'employee_id')
-    .patch(data)
-    .returning(COLUMNS);
-  return entitlement || null;
-};
-
-const remove = async (entitlementId, scope) => {
-  const [entitlement] = await forEmployees(VacationEntitlement.query().where('entitlement_id', entitlementId), scope, 'employee_id')
-    .patch({ status: 'inactive' })
-    .returning(COLUMNS);
-  return entitlement || null;
-};
-
-module.exports = { list, findById, create, update, remove };
+module.exports = new VacationEntitlementRepository();

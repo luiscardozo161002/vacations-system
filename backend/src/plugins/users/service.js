@@ -1,86 +1,71 @@
-'use strict';
-
+const CrudService = require('../../lib/crud/crud-service');
 const repository = require('./repository');
 const db = require('../../db');
-const { AppError } = require('../../lib/app-error');
 const password = require('../../lib/password');
 const { EDITABLE_FIELDS } = require('./fields');
 
-const pick = (data) => {
-  const result = {};
-  for (const field of EDITABLE_FIELDS) {
-    if (data[field] !== undefined) result[field] = data[field];
-  }
-  return result;
-};
-
-const describeAll = async (users) => {
-  const [roles, employees, branches] = await Promise.all([
-    db('roles').whereIn('role_id', users.map((user) => user.role_id)).select('role_id', 'role_code'),
-    db('employees').whereIn('employee_id', users.map((user) => user.employee_id).filter(Boolean)).select('employee_id', 'employee_name'),
-    db('user_branches as ub')
-      .join('branches as b', 'b.branch_id', 'ub.branch_id')
-      .whereIn('ub.user_id', users.map((user) => user.user_id))
-      .orderBy('b.branch_id')
-      .select('ub.user_id', 'b.code'),
-  ]);
-  const roleOf = new Map(roles.map((role) => [role.role_id, role.role_code]));
-  const employeeOf = new Map(employees.map((employee) => [employee.employee_id, employee.employee_name]));
-
-  return users.map((user) => ({
-    ...user,
-    role_code: roleOf.get(user.role_id) ?? null,
-    employee_name: employeeOf.get(user.employee_id) ?? null,
-    branch_codes: branches.filter((branch) => branch.user_id === user.user_id).map((branch) => branch.code),
-  }));
-};
-
-const describe = async (user) => (await describeAll([user]))[0];
-
-const list = async (filters) => {
-  const page = await repository.list(filters);
-  return { ...page, data: await describeAll(page.data) };
-};
-
-const findStored = async (userId) => {
-  const user = await repository.findById(userId);
-  if (!user) throw new AppError('USER_NOT_FOUND', 'El usuario no existe');
-  return user;
-};
-
-const findById = async (userId) => describe(await findStored(userId));
-
-const create = async (data) => {
-  const payload = { ...pick(data), password_hash: await password.hash(data.password) };
-  return describe(await repository.create(payload));
-};
-
-const update = async (userId, data) => {
-  const payload = pick(data);
-  if (data.password !== undefined) {
-    payload.password_hash = await password.hash(data.password);
+class UserService extends CrudService {
+  async list(filters) {
+    const page = await super.list(filters);
+    return { ...page, data: await this.describeAll(page.data) };
   }
 
-  const user = await repository.update(userId, payload);
-  if (!user) throw new AppError('USER_NOT_FOUND', 'El usuario no existe');
-  return describe(user);
-};
+  async findById(id) {
+    return this.describe(await super.findById(id));
+  }
 
-const remove = async (userId) => {
-  const user = await repository.remove(userId);
-  if (!user) throw new AppError('USER_NOT_FOUND', 'El usuario no existe');
-  return user;
-};
+  async create(data) {
+    const user = await this.repository.create({ ...this.pick(data), password_hash: await password.hash(data.password) });
+    return this.describe(user);
+  }
 
-const findBranches = async (userId) => {
-  await findStored(userId);
-  return repository.findBranches(userId);
-};
+  async update(id, data) {
+    const changes = this.pick(data);
+    if (data.password !== undefined) changes.password_hash = await password.hash(data.password);
+    return this.describe(this.found(await this.repository.update(id, changes)));
+  }
 
-const replaceBranches = async (userId, branchIds) => {
-  await findStored(userId);
-  await repository.replaceBranches(userId, [...new Set(branchIds)]);
-  return repository.findBranches(userId);
-};
+  async findBranches(id) {
+    await super.findById(id);
+    return this.repository.findBranches(id);
+  }
 
-module.exports = { list, findById, create, update, remove, findBranches, replaceBranches };
+  async replaceBranches(id, branchIds) {
+    await super.findById(id);
+    await this.repository.replaceBranches(id, [...new Set(branchIds)]);
+    return this.repository.findBranches(id);
+  }
+
+  async describe(user) {
+    return (await this.describeAll([user]))[0];
+  }
+
+  async describeAll(users) {
+    const [roles, employees, branches] = await Promise.all([
+      db('roles').whereIn('role_id', users.map((user) => user.role_id)).select('role_id', 'role_code'),
+      db('employees')
+        .whereIn('employee_id', users.map((user) => user.employee_id).filter(Boolean))
+        .select('employee_id', 'employee_name'),
+      db('user_branches as ub')
+        .join('branches as b', 'b.branch_id', 'ub.branch_id')
+        .whereIn('ub.user_id', users.map((user) => user.user_id))
+        .orderBy('b.branch_id')
+        .select('ub.user_id', 'b.code'),
+    ]);
+    const roleOf = new Map(roles.map((role) => [role.role_id, role.role_code]));
+    const employeeOf = new Map(employees.map((employee) => [employee.employee_id, employee.employee_name]));
+
+    return users.map((user) => ({
+      ...user,
+      role_code: roleOf.get(user.role_id) ?? null,
+      employee_name: employeeOf.get(user.employee_id) ?? null,
+      branch_codes: branches.filter((branch) => branch.user_id === user.user_id).map((branch) => branch.code),
+    }));
+  }
+}
+
+module.exports = new UserService({
+  repository,
+  editableFields: EDITABLE_FIELDS,
+  notFound: { code: 'USER_NOT_FOUND', message: 'El usuario no existe' },
+});
