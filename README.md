@@ -133,6 +133,33 @@ Si la API responde 500 justo después de bajar cambios, lo más común es una mi
 
 **Encabezados de seguridad:** se activan con `security: true` de hapi (`X-Frame-Options`, `X-Content-Type-Options`, HSTS, etc.). Hace lo mismo que `helmet` en Express, así que no hace falta esa dependencia.
 
+### NGINX local en Windows
+
+[nginx/development.conf](nginx/development.conf) publica la API en `http://127.0.0.1:8080` y reenvía las peticiones a Hapi en `127.0.0.1:3000`. NGINX reemplaza `X-Forwarded-For` con la IP de la conexión y se conecta a Hapi desde `127.0.0.2`. La auditoría y el límite de intentos fallidos usan la IP que Hapi resuelve a partir de esa cabecera.
+
+En `backend/.env`, usa estos valores y reinicia el backend.
+
+```dotenv
+HOST=127.0.0.1
+PORT=3000
+TRUSTED_PROXIES=127.0.0.2
+```
+
+En `frontend/.env`, configura `VITE_API_BASE_URL=http://127.0.0.1:8080` y reinicia Vite para que lea el cambio.
+
+Extrae el ZIP de NGINX para Windows dentro de `.nginx` en la raíz del repositorio. En PowerShell, ajusta la ruta de la versión si descargaste otra. [Descargas de NGINX](https://nginx.org/en/download.html)
+
+```powershell
+$nginxRoot = (Resolve-Path .\.nginx\nginx-1.31.8).Path.Replace('\', '/')
+$nginxConfig = (Resolve-Path .\nginx\development.conf).Path.Replace('\', '/')
+& "$nginxRoot/nginx.exe" -p "$nginxRoot/" -c $nginxConfig -t
+Start-Process -FilePath "$nginxRoot/nginx.exe" -WorkingDirectory $nginxRoot `
+  -ArgumentList '-c', ('"{0}"' -f $nginxConfig) -WindowStyle Hidden
+Invoke-RestMethod http://127.0.0.1:8080/api/v1/health
+```
+
+Para detener el proxy, ejecuta `& "$nginxRoot/nginx.exe" -p "$nginxRoot/" -c $nginxConfig -s quit`.
+
 ### Comandos del backend
 
 | Comando                                                 | Qué hace                                  |
