@@ -1,5 +1,6 @@
 import { HttpClient } from '../core/http-client';
 import { CrudResource, toQuery } from '../core/crud-resource';
+import type { OneOrMany } from '../types/common';
 
 export type EmployeeStatus = 'active' | 'inactive';
 
@@ -40,8 +41,10 @@ export interface CreatedEmployee extends Employee {
 export interface ListEmployeesParams {
   search?: string;
   company_id?: number;
-  department_id?: number;
-  status?: EmployeeStatus;
+  department_id?: OneOrMany<number>;
+  status?: OneOrMany<EmployeeStatus>;
+  hired_from?: string;
+  hired_to?: string;
   sort?: string;
   page?: number;
   pageSize?: number;

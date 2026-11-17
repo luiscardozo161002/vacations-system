@@ -1,7 +1,7 @@
 import { HttpClient } from '../core/http-client';
 import { CrudResource } from '../core/crud-resource';
 import type { ReviewAction, UserBranch } from './auth';
-import type { ListParams } from '../types/common';
+import type { ListParams, OneOrMany } from '../types/common';
 
 export type UserStatus = 'active' | 'inactive' | 'locked';
 
@@ -26,8 +26,8 @@ export interface User {
 }
 
 export interface ListUsersParams extends ListParams {
-  role_id?: number;
-  status?: UserStatus;
+  role_id?: OneOrMany<number>;
+  status?: OneOrMany<UserStatus>;
   employee_id?: number;
 }
 

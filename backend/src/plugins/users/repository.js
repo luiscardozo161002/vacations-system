@@ -3,15 +3,15 @@
 const db = require('../../db');
 const User = require('./model');
 const { SAFE_COLUMNS } = require('./fields');
-const { buildOrderBy, paginationMeta } = require('../../lib/list-query');
+const { buildOrderBy, paginationMeta, whereAnyOf } = require('../../lib/list-query');
 
 const DEFAULT_SORT = [{ column: 'user_id', order: 'asc' }];
 
 const list = async ({ role_id, status, employee_id, sort, page = 1, pageSize = 20 }) => {
   const query = User.query().select(SAFE_COLUMNS).orderBy(buildOrderBy(sort, SAFE_COLUMNS, DEFAULT_SORT));
 
-  if (role_id !== undefined) query.where('role_id', role_id);
-  if (status !== undefined) query.where('status', status);
+  whereAnyOf(query, 'role_id', role_id);
+  whereAnyOf(query, 'status', status);
   if (employee_id !== undefined) query.where('employee_id', employee_id);
 
   const { results, total } = await query.page(page - 1, pageSize);

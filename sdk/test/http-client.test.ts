@@ -34,6 +34,14 @@ describe('transporte', () => {
     assert.equal(calls[0].url, `${baseUrl}/api/v1/employees?page=2&status=active`);
   });
 
+  it('manda las listas de valores separadas por comas', async () => {
+    const { http, calls } = setup(() => json(200, {}));
+
+    await http.request('/api/v1/notices', { query: { status: ['pending', 'approved'], department_id: [1, 2] } });
+
+    assert.equal(calls[0].url, `${baseUrl}/api/v1/notices?status=pending%2Capproved&department_id=1%2C2`);
+  });
+
   it('manda el método, el body en JSON y el token', async () => {
     const { http, calls } = setup(() => json(201, { id: 1 }));
 

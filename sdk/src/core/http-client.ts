@@ -7,7 +7,9 @@ export interface SdkClientOptions {
   onSessionExpired?: () => void;
 }
 
-export type QueryValue = string | number | boolean | undefined | null;
+type QueryScalar = string | number | boolean;
+
+export type QueryValue = QueryScalar | QueryScalar[] | undefined | null;
 
 export interface RequestOptions {
   method?: string;
@@ -22,7 +24,7 @@ const buildQueryString = (query?: Record<string, QueryValue>): string => {
 
   const params = new URLSearchParams();
   for (const [key, value] of Object.entries(query)) {
-    if (value !== undefined && value !== null) params.set(key, String(value));
+    if (value !== undefined && value !== null) params.set(key, Array.isArray(value) ? value.join(',') : String(value));
   }
 
   const qs = params.toString();

@@ -3,7 +3,7 @@
 const db = require('../../db');
 const Notice = require('./model');
 const { COLUMNS } = require('./fields');
-const { buildOrderBy, paginationMeta } = require('../../lib/list-query');
+const { buildOrderBy, paginationMeta, whereAnyOf } = require('../../lib/list-query');
 const { forEmployees } = require('../../lib/data-scope');
 
 const DEFAULT_SORT = [{ column: 'notice_id', order: 'asc' }];
@@ -15,13 +15,13 @@ const list = async (
   const query = Notice.query().select(COLUMNS).orderBy(buildOrderBy(sort, COLUMNS, DEFAULT_SORT));
   forEmployees(query, scope, 'employee_id');
 
-  if (employee_id !== undefined) query.where('employee_id', employee_id);
+  whereAnyOf(query, 'employee_id', employee_id);
   if (department_id !== undefined) {
-    query.whereIn('employee_id', db('employees').where('department_id', department_id).select('employee_id'));
+    query.whereIn('employee_id', whereAnyOf(db('employees'), 'department_id', department_id).select('employee_id'));
   }
-  if (reason_id !== undefined) query.where('reason_id', reason_id);
-  if (kind !== undefined) query.where('kind', kind);
-  if (status !== undefined) query.where('status', status);
+  whereAnyOf(query, 'reason_id', reason_id);
+  whereAnyOf(query, 'kind', kind);
+  whereAnyOf(query, 'status', status);
   if (from !== undefined) query.where('absence_end_date', '>=', from);
   if (to !== undefined) query.where('absence_start_date', '<=', to);
 

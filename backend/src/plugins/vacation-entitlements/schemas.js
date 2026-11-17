@@ -1,6 +1,7 @@
 'use strict';
 
 const Joi = require('joi');
+const { listOf } = require('../../lib/list-query');
 
 const id = Joi.number().integer().positive();
 const isoDate = Joi.string().pattern(/^\d{4}-\d{2}-\d{2}$/).message('El formato es AAAA-MM-DD');
@@ -40,7 +41,7 @@ const params = Joi.object({
 const list = Joi.object({
   employee_id: id,
   period_year: Joi.number().integer().min(2000).max(2100),
-  status: Joi.string().valid('active', 'inactive'),
+  status: listOf(Joi.string().valid('active', 'inactive')),
   sort: Joi.string(),
   page: Joi.number().integer().min(1).default(1),
   pageSize: Joi.number().integer().min(1).max(100).default(20),

@@ -1,6 +1,26 @@
 'use strict';
 
 const Boom = require('@hapi/boom');
+const Joi = require('joi');
+const db = require('../db');
+
+const ListJoi = Joi.extend({
+  type: 'array',
+  base: Joi.array(),
+  coerce: { from: 'string', method: (value) => ({ value: value.split(',').map((part) => part.trim()) }) },
+});
+
+const listOf = (item) => ListJoi.array().items(item).min(1);
+
+const isoDate = Joi.string().pattern(/^\d{4}-\d{2}-\d{2}$/).message('El formato es AAAA-MM-DD');
+
+const whereAnyOf = (query, column, values) => (values === undefined ? query : query.whereIn(column, [values].flat()));
+
+const whereDateBetween = (query, column, from, to) => {
+  if (from !== undefined) query.where(column, '>=', from);
+  if (to !== undefined) query.where(column, '<', db.raw('?::date + 1', [to]));
+  return query;
+};
 
 const buildOrderBy = (sort, allowedFields, defaultSort) => {
   if (!sort) return defaultSort;
@@ -23,4 +43,4 @@ const paginationMeta = (page, pageSize, total) => ({
   totalPages: Math.ceil(total / pageSize),
 });
 
-module.exports = { buildOrderBy, paginationMeta };
+module.exports = { buildOrderBy, paginationMeta, listOf, isoDate, whereAnyOf, whereDateBetween };

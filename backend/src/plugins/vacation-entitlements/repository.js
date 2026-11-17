@@ -2,7 +2,7 @@
 
 const VacationEntitlement = require('./model');
 const { COLUMNS } = require('./fields');
-const { buildOrderBy, paginationMeta } = require('../../lib/list-query');
+const { buildOrderBy, paginationMeta, whereAnyOf } = require('../../lib/list-query');
 const { forEmployees } = require('../../lib/data-scope');
 
 const DEFAULT_SORT = [{ column: 'entitlement_id', order: 'asc' }];
@@ -13,7 +13,7 @@ const list = async ({ employee_id, period_year, status, sort, page = 1, pageSize
 
   if (employee_id !== undefined) query.where('employee_id', employee_id);
   if (period_year !== undefined) query.where('period_year', period_year);
-  if (status !== undefined) query.where('status', status);
+  whereAnyOf(query, 'status', status);
 
   const { results, total } = await query.page(page - 1, pageSize);
 

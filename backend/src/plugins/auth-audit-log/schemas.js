@@ -1,6 +1,7 @@
 'use strict';
 
 const Joi = require('joi');
+const { listOf, isoDate } = require('../../lib/list-query');
 
 const id = Joi.number().integer().positive();
 
@@ -10,8 +11,10 @@ const params = Joi.object({
 
 const list = Joi.object({
   user_id: id,
-  event_type: Joi.string().max(40),
-  result: Joi.string().valid('success', 'failed'),
+  event_type: listOf(Joi.string().max(40)),
+  result: listOf(Joi.string().valid('success', 'failed')),
+  from: isoDate,
+  to: isoDate,
   search: Joi.string().trim().max(100),
   sort: Joi.string(),
   page: Joi.number().integer().min(1).default(1),

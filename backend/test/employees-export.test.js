@@ -60,7 +60,7 @@ describe('GET /employees/export', () => {
     const event = await db('auth_audit_log').where('event_type', 'EMPLOYEES_EXPORTED').orderBy('log_id', 'desc').first();
 
     assert.equal(event.user_id, 2);
-    assert.deepEqual(event.metadata.changes, { status: 'inactive' });
+    assert.deepEqual(event.metadata.changes, { status: ['inactive'] });
   });
 
   it('el Empleado no puede exportar', async () => {

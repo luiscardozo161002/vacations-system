@@ -1,6 +1,7 @@
 'use strict';
 
 const Joi = require('joi');
+const { listOf } = require('../../lib/list-query');
 
 const id = Joi.number().integer().positive();
 
@@ -36,8 +37,8 @@ const branches = Joi.object({
 }).unknown(false);
 
 const list = Joi.object({
-  role_id: id,
-  status: Joi.string().valid('active', 'inactive', 'locked'),
+  role_id: listOf(id),
+  status: listOf(Joi.string().valid('active', 'inactive', 'locked')),
   employee_id: id,
   sort: Joi.string(),
   page: Joi.number().integer().min(1).default(1),

@@ -17,6 +17,8 @@ export interface DaysAndHours {
 
 export type RecordStatus = 'active' | 'inactive';
 
+export type OneOrMany<T> = T | T[];
+
 export interface ListParams {
   sort?: string;
   page?: number;

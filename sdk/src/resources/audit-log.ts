@@ -1,6 +1,6 @@
 import { HttpClient } from '../core/http-client';
 import { CallOptions, toQuery } from '../core/crud-resource';
-import type { ListParams, Paginated } from '../types/common';
+import type { ListParams, OneOrMany, Paginated } from '../types/common';
 
 export interface AuditLogEntry {
   log_id: number;
@@ -19,8 +19,10 @@ export interface AuditLogEntry {
 
 export interface ListAuditLogParams extends ListParams {
   user_id?: number;
-  event_type?: string;
-  result?: 'success' | 'failed';
+  event_type?: OneOrMany<string>;
+  result?: OneOrMany<'success' | 'failed'>;
+  from?: string;
+  to?: string;
   search?: string;
 }
 

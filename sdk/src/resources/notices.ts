@@ -1,6 +1,6 @@
 import { HttpClient } from '../core/http-client';
 import { CallOptions, toQuery } from '../core/crud-resource';
-import type { DaysAndHours, ListParams, Paginated } from '../types/common';
+import type { DaysAndHours, ListParams, OneOrMany, Paginated } from '../types/common';
 
 export type NoticeKind = 'request' | 'notice';
 
@@ -31,11 +31,11 @@ export interface Notice {
 }
 
 export interface ListNoticesParams extends ListParams {
-  employee_id?: number;
-  department_id?: number;
-  reason_id?: number;
-  kind?: NoticeKind;
-  status?: NoticeStatus;
+  employee_id?: OneOrMany<number>;
+  department_id?: OneOrMany<number>;
+  reason_id?: OneOrMany<number>;
+  kind?: OneOrMany<NoticeKind>;
+  status?: OneOrMany<NoticeStatus>;
   from?: string;
   to?: string;
 }

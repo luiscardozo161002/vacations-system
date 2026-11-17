@@ -208,6 +208,11 @@ Para que un PR no se pueda mergear con el CI en rojo hay que activar la protecci
 
 Todos los recursos siguen el mismo esquema CRUD con paginación en el listado (`GET /`, `GET /{id}`, `POST /`, `PATCH /{id}`, `DELETE /{id}`) y baja lógica: `DELETE` pone `status = 'inactive'`, nunca borra el registro (salvo `notices`, que usa `'cancelled'` en vez de `'inactive'`, porque ese es su propio enum de estado).
 
+**Filtros de los listados:**
+- **Varios valores:** los filtros de estado, tipo e ids aceptan varios valores separados por comas (`/api/v1/notices?status=pending,approved&department_id=1,2`) o el parámetro repetido. Desde el SDK basta con pasar un arreglo (`status: ['pending', 'approved']`).
+- **Rangos de fecha** (`AAAA-MM-DD`, ambos días incluidos): `from`/`to` en avisos (ausencias que se cruzan con el rango) y en auditoría (fecha del evento), y `hired_from`/`hired_to` en empleados (fecha de ingreso).
+- **Dónde vive:** todo sale de [`lib/list-query.js`](backend/src/lib/list-query.js), el mismo helper del orden (`sort`) y la paginación.
+
 | Recurso                            | Base                                  | Notas                                                         |
 |-------------------------------------|-----------------------------------------|------------------------------------------------------------------|
 | Health check                        | `GET /api/v1/health`                    |                                                                     |

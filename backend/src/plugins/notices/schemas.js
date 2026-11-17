@@ -1,6 +1,7 @@
 'use strict';
 
 const Joi = require('joi');
+const { listOf } = require('../../lib/list-query');
 
 const id = Joi.number().integer().positive();
 const isoDateString = Joi.string().pattern(/^\d{4}-\d{2}-\d{2}$/).message('El formato es AAAA-MM-DD');
@@ -39,11 +40,11 @@ const params = Joi.object({
 });
 
 const list = Joi.object({
-  employee_id: id,
-  department_id: id,
-  reason_id: id,
-  kind: Joi.string().valid('request', 'notice'),
-  status: Joi.string().valid('pending', 'approved', 'rejected', 'cancelled'),
+  employee_id: listOf(id),
+  department_id: listOf(id),
+  reason_id: listOf(id),
+  kind: listOf(Joi.string().valid('request', 'notice')),
+  status: listOf(Joi.string().valid('pending', 'approved', 'rejected', 'cancelled')),
   from: isoDateString,
   to: isoDateString,
   sort: Joi.string(),

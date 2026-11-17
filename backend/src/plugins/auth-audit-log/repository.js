@@ -3,18 +3,19 @@
 const db = require('../../db');
 const AuthAuditLog = require('./model');
 const { COLUMNS } = require('./fields');
-const { buildOrderBy, paginationMeta } = require('../../lib/list-query');
+const { buildOrderBy, paginationMeta, whereAnyOf, whereDateBetween } = require('../../lib/list-query');
 
 const DEFAULT_SORT = [{ column: 'log_id', order: 'desc' }];
 const REFRESH_EVENT = 'TOKEN_REFRESH';
 
-const filtered = ({ user_id, event_type, result, search }) => {
+const filtered = ({ user_id, event_type, result, search, from, to }) => {
   const query = db('auth_audit_log as a').leftJoin('users as u', 'u.user_id', 'a.user_id');
 
   if (user_id !== undefined) query.where('a.user_id', user_id);
-  if (event_type !== undefined) query.where('a.event_type', event_type);
+  if (event_type !== undefined) whereAnyOf(query, 'a.event_type', event_type);
   else query.whereNot('a.event_type', REFRESH_EVENT);
-  if (result !== undefined) query.where('a.result', result);
+  whereAnyOf(query, 'a.result', result);
+  whereDateBetween(query, 'a.created_at', from, to);
   if (search) {
     query.where((match) =>
       match.whereILike('u.username', `%${search}%`).orWhereILike('a.event_type', `%${search}%`)

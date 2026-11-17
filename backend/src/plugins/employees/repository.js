@@ -3,12 +3,12 @@
 const db = require('../../db');
 const Employee = require('./model');
 const { COLUMNS } = require('./fields');
-const { buildOrderBy, paginationMeta } = require('../../lib/list-query');
+const { buildOrderBy, paginationMeta, whereAnyOf, whereDateBetween } = require('../../lib/list-query');
 const { forEmployees } = require('../../lib/data-scope');
 
 const DEFAULT_SORT = [{ column: 'employee_id', order: 'asc' }];
 
-const filtered = ({ search, company_id, department_id, status }, scope) => {
+const filtered = ({ search, company_id, department_id, status, hired_from, hired_to }, scope) => {
   const query = Employee.query();
   forEmployees(query, scope, 'employees.employee_id');
 
@@ -23,9 +23,9 @@ const filtered = ({ search, company_id, department_id, status }, scope) => {
       db('departments as d').join('branches as b', 'b.branch_id', 'd.branch_id').where('b.company_id', company_id).select('d.department_id')
     );
   }
-  if (department_id !== undefined) query.where('employees.department_id', department_id);
-  if (status !== undefined) query.where('employees.status', status);
-  return query;
+  whereAnyOf(query, 'employees.department_id', department_id);
+  whereAnyOf(query, 'employees.status', status);
+  return whereDateBetween(query, 'employees.start_date', hired_from, hired_to);
 };
 
 const list = async ({ sort, page = 1, pageSize = 20, ...filters }, scope) => {
