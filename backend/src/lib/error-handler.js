@@ -249,6 +249,8 @@ const badRequest = (response) => {
   return ['BAD_REQUEST', message];
 };
 
+const isPostgresError = (error) => /^[0-9A-Z]{5}$/.test(error.code ?? '');
+
 module.exports = {
   name: 'api-error-handler',
 
@@ -293,10 +295,7 @@ module.exports = {
       const fallback = SQLSTATE_FALLBACK[pg.code];
       if (fallback) return send(fallback.status, fallback.code, fallback.message);
 
-      // Los errores de PostgreSQL pueden incluir la sentencia o los datos de una fila.
-      const details = /^[0-9A-Z]{5}$/.test(pg.code ?? '')
-        ? { sqlstate: pg.code, constraint: pg.constraint }
-        : { err: error };
+      const details = isPostgresError(pg) ? { sqlstate: pg.code, constraint: pg.constraint } : { err: error };
       request.logger.error({ ...details, method: request.method, path: request.path }, 'Error no controlado');
 
       return send(500, 'INTERNAL_ERROR', 'Ocurrió un error interno');
