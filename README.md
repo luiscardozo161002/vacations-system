@@ -68,7 +68,7 @@ En PowerShell:
 Copy-Item backend\.env.example backend\.env
 ```
 
-Toda la configuración de la API sale de `backend/.env` ([`backend/src/config/index.js`](backend/src/config/index.js)). No hay valores por defecto: si falta una variable, o una numérica no es un entero, la API no arranca y dice cuál es. `.env.example` trae todas con valores de desarrollo.
+La API carga `backend/.env` y también acepta variables del entorno del proceso. Usa `.env.example` como referencia. Para iniciar, configura el nombre y el usuario de la base de datos y el secreto JWT. Si alguno es inválido, el arranque muestra un mensaje genérico. Los ajustes numéricos ausentes o inválidos toman su valor por defecto. `TRUSTED_PROXIES` puede quedar sin configurar si la API recibe conexiones directas. [Configuración del backend](backend/src/config/index.js)
 
 | Variable      | Descripción                   | Ejemplo         |
 |---------------|--------------------------------|------------------|

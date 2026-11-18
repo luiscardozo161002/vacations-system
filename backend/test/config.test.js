@@ -1,53 +1,79 @@
-require('./env');
-
-const { describe, it } = require('node:test');
+const { describe, it, mock } = require('node:test');
 const assert = require('node:assert/strict');
-const Environment = require('../src/config/environment');
-const { Config } = require('../src/config');
+const dotenv = require('dotenv');
 
-const variables = {
-  NODE_ENV: 'development',
-  HOST: '0.0.0.0',
-  PORT: '3000',
-  DB_HOST: 'localhost',
-  DB_PORT: '5432',
-  DB_NAME: 'vacations_test',
-  DB_USER: 'postgres',
-  DB_PASSWORD: 'postgres',
-  JWT_SECRET: 'change-me',
-  ACCESS_TOKEN_TTL_MINUTES: '15',
-  REFRESH_TOKEN_TTL_DAYS: '7',
-  PASSWORD_RESET_TTL_HOURS: '1',
-  MAX_FAILED_LOGIN_ATTEMPTS: '5',
-  LOCKOUT_MINUTES: '15',
-  MAX_FAILED_LOGINS_PER_IP: '20',
-  FAILED_LOGINS_WINDOW_MINUTES: '15',
-  CORS_ORIGINS: 'http://localhost:5173, http://localhost:5174',
-  TRUSTED_PROXIES: '',
+const configPath = require.resolve('../src/config');
+
+const configFor = (overrides = {}) => {
+  const originalEnv = process.env;
+  const loadDotenv = mock.method(dotenv, 'config', () => ({}));
+  process.env = { DB_NAME: 'vacations_test', DB_USER: 'postgres', JWT_SECRET: 'change-me', ...overrides };
+
+  try {
+    return require(configPath);
+  } finally {
+    delete require.cache[configPath];
+    process.env = originalEnv;
+    loadDotenv.mock.restore();
+  }
 };
 
-const configFor = (overrides) => new Config(new Environment({ ...variables, ...overrides }));
-
 describe('Config', () => {
-  it('converts the values to numbers and lists', () => {
-    const config = configFor({});
+  it('uses development defaults when optional variables are missing', () => {
+    const config = configFor();
 
+    assert.equal(config.env, 'development');
     assert.equal(config.server.port, 3000);
     assert.equal(config.auth.accessTokenTtlSeconds, 900);
-    assert.deepEqual(config.cors.origins, ['http://localhost:5173', 'http://localhost:5174']);
+    assert.equal(config.auth.maxFailedLoginsPerIp, 20);
+    assert.deepEqual(config.cors.origins, ['http://localhost:5173']);
     assert.deepEqual(config.proxy.trusted, []);
   });
 
-  it('fails when a variable is missing or is not a whole number', () => {
-    const { PORT, ...withoutPort } = variables;
+  it('converts the values to numbers and lists', () => {
+    const config = configFor({
+      PORT: '3001',
+      ACCESS_TOKEN_TTL_MINUTES: '2',
+      CORS_ORIGINS: 'http://localhost:5173, http://localhost:5174',
+      TRUSTED_PROXIES: ' 127.0.0.2, ,',
+    });
 
-    assert.throws(() => new Config(new Environment(withoutPort)), /Missing environment variable PORT/);
-    assert.throws(() => configFor({ PORT: '15m' }), /PORT must be a whole number/);
+    assert.equal(config.server.port, 3001);
+    assert.equal(config.auth.accessTokenTtlSeconds, 120);
+    assert.deepEqual(config.cors.origins, ['http://localhost:5173', 'http://localhost:5174']);
+    assert.deepEqual(config.proxy.trusted, ['127.0.0.2']);
   });
 
-  it('rejects a short JWT secret in production only', () => {
-    assert.throws(() => configFor({ NODE_ENV: 'production' }), /JWT_SECRET must have at least 32 characters/);
+  it('uses defaults for invalid numeric overrides', () => {
+    const config = configFor({ PORT: '15m', DB_PORT: '70000', MAX_FAILED_LOGINS_PER_IP: '0' });
+
+    assert.equal(config.server.port, 3000);
+    assert.equal(config.db.port, 5432);
+    assert.equal(config.auth.maxFailedLoginsPerIp, 20);
+  });
+
+  it('keeps a valid CORS origin when the configured list is empty', () => {
+    const config = configFor({ CORS_ORIGINS: ' , ' });
+
+    assert.deepEqual(config.cors.origins, ['http://localhost:5173']);
+  });
+
+  it('reports invalid required settings with a generic message', () => {
+    let message;
+    const genericError = (error) => {
+      message ??= error.message;
+      assert.equal(error.message, message);
+      assert.ok(error.message.trim());
+      assert.doesNotMatch(error.message, /DB_NAME|DB_USER|JWT_SECRET|vacations_test|postgres|change-me|secreto-demasiado-corto/i);
+      return true;
+    };
+
+    assert.throws(() => configFor({ DB_NAME: undefined }), genericError);
+    assert.throws(() => configFor({ DB_USER: '' }), genericError);
+    assert.throws(() => configFor({ JWT_SECRET: undefined }), genericError);
+    assert.throws(() => configFor({ NODE_ENV: 'production', JWT_SECRET: 'secreto-demasiado-corto' }), genericError);
+    assert.throws(() => configFor({ NODE_ENV: 'production', JWT_SECRET: ' '.repeat(32) }), genericError);
     assert.doesNotThrow(() => configFor({ NODE_ENV: 'production', JWT_SECRET: 'a'.repeat(32) }));
-    assert.doesNotThrow(() => configFor({ NODE_ENV: 'development' }));
+    assert.doesNotThrow(() => configFor({ NODE_ENV: 'development', JWT_SECRET: 'change-me' }));
   });
 });
