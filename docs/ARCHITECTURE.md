@@ -45,7 +45,14 @@ frontend/
 
 Los módulos de catálogo y negocio incluyen organización, empleados, usuarios, roles, permisos, reglas, saldos y avisos. También hay plugins para autenticación, auditoría, calendario, dashboard, notificaciones y salud.
 
-Las rutas Hapi validan entrada y permisos con los esquemas de Joi y los scopes del módulo. Los servicios orquestan las reglas. Los repositorios concentran las consultas de los módulos que los tienen. `fields.js` declara las columnas públicas y `model.js` describe el modelo de Objection.
+El backend está escrito con clases. Cada módulo exporta una instancia de su repositorio, su servicio y su grupo de rutas.
+
+- **Rutas:** `ApiRoutes` (`lib/api-routes.js`) arma el plugin de Hapi, los permisos y la auditoría. `CrudRoutes` (`lib/crud`) extiende `ApiRoutes` con las cinco rutas del CRUD; un módulo la extiende para agregar las suyas, por ejemplo el horario de un turno o la exportación de empleados.
+- **Servicios:** `CrudService` trae listar, buscar, crear, editar, dar de baja y el error de "no existe". El módulo lo extiende solo para lo que lo distingue: validar referencias, calcular totales o describir las filas.
+- **Repositorios:** `CrudRepository` trae el listado con orden y paginación, la baja lógica y los hooks `applyFilters` y `restrictToScope`; el módulo sobrescribe solo sus filtros y su alcance.
+- **Alcance de datos:** `DataScope.from(credentials)` restringe las consultas a las sedes del usuario (`restrictEmployees`, `restrictDepartments`…) y valida referencias (`allowsEmployee`…).
+- **Un módulo nuevo:** crea el repositorio y el servicio con las clases base, define las rutas con `CrudRoutes` y registra el plugin en `server.js`. `fields.js` declara las columnas públicas y `model.js` describe el modelo de Objection.
+- **Funciones puras:** los cálculos de fechas, periodos, festivos y saldo (`lib/request-breakdown.js`, `lib/periods.js`, `lib/holidays.js`, `lib/balance.js`) y los filtros de listado (`lib/list-query.js`) siguen como funciones, porque no guardan estado.
 
 El plugin `lib/error-handler.js` normaliza los fallos de la API en `{ error: { code, message } }` y conserva las cabeceras HTTP de Boom, como `WWW-Authenticate`.
 
