@@ -1,6 +1,8 @@
 'use strict';
 
-const EPSILON = 1e-6;
+const config = require('../config');
+
+const EPSILON = config.balance.epsilon;
 
 const round2 = (value) => Math.round(value * 100) / 100;
 

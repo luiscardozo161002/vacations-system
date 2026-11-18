@@ -1,9 +1,6 @@
 const db = require('../db');
 const clientIp = require('./client-ip');
-
-const SECRET_FIELDS = ['password', 'currentPassword', 'newPassword'];
-const MAX_USER_AGENT_LENGTH = 255;
-const MAX_REQUEST_ID_LENGTH = 64;
+const config = require('../config');
 
 class AuditLog {
   plugin() {
@@ -29,7 +26,7 @@ class AuditLog {
 
   changesOf(payload) {
     if (!payload || typeof payload !== 'object') return null;
-    return Object.fromEntries(Object.entries(payload).filter(([field]) => !SECRET_FIELDS.includes(field)));
+    return Object.fromEntries(Object.entries(payload).filter(([field]) => !config.audit.secretFields.includes(field)));
   }
 
   entityIdOf(request, id) {
@@ -40,8 +37,8 @@ class AuditLog {
   requestContext(request) {
     return {
       ip: clientIp.resolve(request),
-      userAgent: request.headers['user-agent']?.slice(0, MAX_USER_AGENT_LENGTH) ?? null,
-      requestId: request.info.id.slice(0, MAX_REQUEST_ID_LENGTH),
+      userAgent: request.headers['user-agent']?.slice(0, config.audit.maxUserAgentLength) ?? null,
+      requestId: request.info.id.slice(0, config.audit.maxRequestIdLength),
     };
   }
 

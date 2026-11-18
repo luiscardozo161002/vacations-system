@@ -1,7 +1,7 @@
 const Joi = require('joi');
 require('dotenv').config();
 
-const positiveInteger = (fallback) => Joi.number().integer().positive().default(fallback);
+const GenericValidation = require('../lib/generic-validators');
 
 const schema = Joi.object({
   NODE_ENV: Joi.string().valid('development', 'test', 'production').default('development'),
@@ -15,16 +15,21 @@ const schema = Joi.object({
   DB_PASSWORD: Joi.string().allow(''),
 
   JWT_SECRET: Joi.string().trim().required().when('NODE_ENV', { is: 'production', then: Joi.string().min(32) }),
-  ACCESS_TOKEN_TTL_MINUTES: positiveInteger(15),
-  REFRESH_TOKEN_TTL_DAYS: positiveInteger(7),
-  PASSWORD_RESET_TTL_HOURS: positiveInteger(1),
-  MAX_FAILED_LOGIN_ATTEMPTS: positiveInteger(5),
-  LOCKOUT_MINUTES: positiveInteger(15),
-  MAX_FAILED_LOGINS_PER_IP: positiveInteger(20),
-  FAILED_LOGINS_WINDOW_MINUTES: positiveInteger(15),
+  ACCESS_TOKEN_TTL_MINUTES: GenericValidation.positive(15),
+  REFRESH_TOKEN_TTL_DAYS: GenericValidation.positive(7),
+  PASSWORD_RESET_TTL_HOURS: GenericValidation.positive(1),
+  MAX_FAILED_LOGIN_ATTEMPTS: GenericValidation.positive(5),
+  LOCKOUT_MINUTES: GenericValidation.positive(15),
+  MAX_FAILED_LOGINS_PER_IP: GenericValidation.positive(20),
+  FAILED_LOGINS_WINDOW_MINUTES: GenericValidation.positive(15),
 
-  CORS_ORIGINS: Joi.string().default('http://localhost:5173'),
-  TRUSTED_PROXIES: Joi.string().allow('').default(''),
+  CORS_ORIGINS: GenericValidation.list(['http://localhost:5173']),
+  TRUSTED_PROXIES: GenericValidation.list(),
+
+  SECRET_FIELDS: GenericValidation.list(['password', 'currentPassword', 'newPassword']),
+  MAX_USER_AGENT_LENGTH: GenericValidation.positive(255),
+  MAX_REQUEST_ID_LENGTH: GenericValidation.positive(64),
+  EPSILON: GenericValidation.decimal(0.000001),
 });
 
 const { error, value: vars } = schema.validate(process.env, { abortEarly: false, allowUnknown: true });
@@ -32,8 +37,6 @@ const { error, value: vars } = schema.validate(process.env, { abortEarly: false,
 if (error) {
   throw new Error(`Invalid environment variables: ${error.message}`);
 }
-
-const list = (value) => value.split(',').map((item) => item.trim()).filter(Boolean);
 
 module.exports = {
   env: vars.NODE_ENV,
@@ -58,6 +61,12 @@ module.exports = {
     maxFailedLoginsPerIp: vars.MAX_FAILED_LOGINS_PER_IP,
     failedLoginsWindowMinutes: vars.FAILED_LOGINS_WINDOW_MINUTES,
   },
-  proxy: { trusted: list(vars.TRUSTED_PROXIES) },
-  cors: { origins: list(vars.CORS_ORIGINS) },
+  proxy: { trusted: vars.TRUSTED_PROXIES },
+  cors: { origins: vars.CORS_ORIGINS },
+  audit: {
+    secretFields: vars.SECRET_FIELDS,
+    maxUserAgentLength: vars.MAX_USER_AGENT_LENGTH,
+    maxRequestIdLength: vars.MAX_REQUEST_ID_LENGTH,
+  },
+  balance: { epsilon: vars.EPSILON },
 };
