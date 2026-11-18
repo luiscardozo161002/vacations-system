@@ -1,11 +1,12 @@
 const db = require('../../db');
+const config = require('../../config');
 const DataScope = require('../../lib/data-scope');
 const { currentPeriod } = require('../../lib/periods');
 const { describe: describeTime } = require('../../lib/balance');
 const notifier = require('../../lib/notify');
 const entitlements = require('./service');
 
-const SYSTEM_SCOPE = new DataScope({ role: 'SUPERUSER', branchIds: [], employeeId: 0 });
+const SYSTEM_SCOPE = new DataScope({ role: config.roles.global, branchIds: [], employeeId: 0 });
 
 class VacationRollover {
   constructor(entitlements) {

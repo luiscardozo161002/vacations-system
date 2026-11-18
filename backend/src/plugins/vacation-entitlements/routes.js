@@ -1,5 +1,6 @@
 const Boom = require('@hapi/boom');
 const Joi = require('joi');
+const config = require('../../config');
 const CrudRoutes = require('../../lib/crud/crud-routes');
 const { isoDate } = require('../../lib/list-query');
 const service = require('./service');
@@ -19,7 +20,7 @@ class VacationEntitlementRoutes extends CrudRoutes {
       permission: this.permissions.update,
       validate: { payload: Joi.object({ date: isoDate }).allow(null).unknown(false) },
       handler: (request) => {
-        if (request.auth.credentials.role !== 'SUPERUSER') throw Boom.forbidden();
+        if (request.auth.credentials.role !== config.roles.global) throw Boom.forbidden();
         return rollover.run(request.payload?.date);
       },
     });

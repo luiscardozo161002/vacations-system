@@ -1,14 +1,14 @@
 const db = require('../../db');
+const config = require('../../config');
 const { AppError } = require('../../lib/app-error');
 const { holidaysBetween } = require('../../lib/holidays');
 const { workingDates } = require('../../lib/request-breakdown');
 
 const MAX_RANGE_DAYS = 62;
-const DAY_MS = 24 * 60 * 60 * 1000;
 
 class CalendarService {
   rangeDays(from, to) {
-    return (Date.parse(`${to}T00:00:00Z`) - Date.parse(`${from}T00:00:00Z`)) / DAY_MS + 1;
+    return (Date.parse(`${to}T00:00:00Z`) - Date.parse(`${from}T00:00:00Z`)) / config.time.dayMs + 1;
   }
 
   sharedDepartmentMates(employeeId) {

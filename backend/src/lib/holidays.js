@@ -1,7 +1,8 @@
 'use strict';
 
-const FIRST_TRANSFER_YEAR = 2024;
-const TRANSFER_EVERY_YEARS = 6;
+const config = require('../config');
+
+const { firstTransferYear, transferEveryYears } = config.holidays;
 const MONDAY = 1;
 
 const pad = (value) => String(value).padStart(2, '0');
@@ -14,7 +15,7 @@ const nthMonday = (year, month, nth) => {
   return isoDate(year, month, firstMonday + (nth - 1) * 7);
 };
 
-const isTransferYear = (year) => year >= FIRST_TRANSFER_YEAR && (year - FIRST_TRANSFER_YEAR) % TRANSFER_EVERY_YEARS === 0;
+const isTransferYear = (year) => year >= firstTransferYear && (year - firstTransferYear) % transferEveryYears === 0;
 
 const holidaysOfYear = (year) =>
   [

@@ -3,8 +3,6 @@ const createServer = require('./server');
 const config = require('./config');
 const rollover = require('./plugins/vacation-entitlements/rollover');
 
-const DAY_MS = 24 * 60 * 60 * 1000;
-
 class Application {
   async start() {
     const server = await createServer();
@@ -16,7 +14,7 @@ class Application {
 
   scheduleRollover() {
     this.runRollover();
-    setInterval(() => this.runRollover(), DAY_MS);
+    setInterval(() => this.runRollover(), config.rollover.intervalMs);
   }
 
   async runRollover() {

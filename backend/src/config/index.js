@@ -25,11 +25,30 @@ const schema = Joi.object({
 
   CORS_ORIGINS: GenericValidation.list(['http://localhost:5173']),
   TRUSTED_PROXIES: GenericValidation.list(),
+  IPV4_MAPPED: GenericValidation.text('::ffff:'),
 
   SECRET_FIELDS: GenericValidation.list(['password', 'currentPassword', 'newPassword']),
   MAX_USER_AGENT_LENGTH: GenericValidation.positive(255),
   MAX_REQUEST_ID_LENGTH: GenericValidation.positive(64),
   EPSILON: GenericValidation.decimal(0.000001),
+
+  ROLE_GLOBAL: GenericValidation.text('SUPERUSER'),
+  ROLE_SCOPED: GenericValidation.text('USER'),
+
+  PASSWORD_SALT_ROUNDS: GenericValidation.positive(10),
+  TOKEN_BYTES: GenericValidation.positive(32),
+  TEMP_PASSWORD_ALPHABET: GenericValidation.text('ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789').min(2),
+  TEMP_PASSWORD_LENGTH: GenericValidation.positive(10),
+  TEMP_PASSWORD_VALID_MONTHS: GenericValidation.positive(1),
+
+  DEFAULT_DAILY_HOURS: GenericValidation.decimal(8),
+  REMINDER_DAYS: GenericValidation.positive(7),
+  ROLLOVER_INTERVAL_HOURS: GenericValidation.positive(24).max(500),
+  FIRST_TRANSFER_YEAR: GenericValidation.positive(2024),
+  TRANSFER_EVERY_YEARS: GenericValidation.positive(6),
+
+  CSV_INCLUDE_BOM: GenericValidation.flag(true),
+  INVALID_JSON_MESSAGE: GenericValidation.text('Invalid request payload JSON format'),
 });
 
 const { error, value: vars } = schema.validate(process.env, { abortEarly: false, allowUnknown: true });
@@ -37,6 +56,8 @@ const { error, value: vars } = schema.validate(process.env, { abortEarly: false,
 if (error) {
   throw new Error(`Invalid environment variables: ${error.message}`);
 }
+
+const HOUR_MS = 60 * 60 * 1000;
 
 module.exports = {
   env: vars.NODE_ENV,
@@ -61,7 +82,7 @@ module.exports = {
     maxFailedLoginsPerIp: vars.MAX_FAILED_LOGINS_PER_IP,
     failedLoginsWindowMinutes: vars.FAILED_LOGINS_WINDOW_MINUTES,
   },
-  proxy: { trusted: vars.TRUSTED_PROXIES },
+  proxy: { trusted: vars.TRUSTED_PROXIES, ipv4Mapped: vars.IPV4_MAPPED },
   cors: { origins: vars.CORS_ORIGINS },
   audit: {
     secretFields: vars.SECRET_FIELDS,
@@ -69,4 +90,29 @@ module.exports = {
     maxRequestIdLength: vars.MAX_REQUEST_ID_LENGTH,
   },
   balance: { epsilon: vars.EPSILON },
+  roles: {
+    global: vars.ROLE_GLOBAL,
+    scoped: vars.ROLE_SCOPED,
+  },
+  security: {
+    saltRounds: vars.PASSWORD_SALT_ROUNDS,
+    tokenBytes: vars.TOKEN_BYTES,
+  },
+  temporaryPassword: {
+    alphabet: vars.TEMP_PASSWORD_ALPHABET,
+    length: vars.TEMP_PASSWORD_LENGTH,
+    validMonths: vars.TEMP_PASSWORD_VALID_MONTHS,
+  },
+  work: {
+    defaultDailyHours: vars.DEFAULT_DAILY_HOURS,
+    reminderDays: vars.REMINDER_DAYS,
+  },
+  rollover: { intervalMs: vars.ROLLOVER_INTERVAL_HOURS * HOUR_MS },
+  holidays: {
+    firstTransferYear: vars.FIRST_TRANSFER_YEAR,
+    transferEveryYears: vars.TRANSFER_EVERY_YEARS,
+  },
+  csv: { bom: vars.CSV_INCLUDE_BOM ? '﻿' : '' },
+  errors: { invalidJsonMessage: vars.INVALID_JSON_MESSAGE },
+  time: { dayMs: 24 * HOUR_MS },
 };

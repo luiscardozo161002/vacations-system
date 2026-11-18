@@ -1,7 +1,9 @@
 'use strict';
 
-const DEFAULT_DAILY_HOURS = 8;
-const DAY_MS = 24 * 60 * 60 * 1000;
+const config = require('../config');
+
+const { dayMs } = config.time;
+const { defaultDailyHours } = config.work;
 
 const toHours = (time) => {
   const [hours, minutes = 0] = time.split(':').map(Number);
@@ -13,7 +15,7 @@ const round2 = (value) => Math.round(value * 100) / 100;
 const datesBetween = (startDate, endDate) => {
   const dates = [];
   const end = Date.parse(`${endDate}T00:00:00Z`);
-  for (let time = Date.parse(`${startDate}T00:00:00Z`); time <= end; time += DAY_MS) {
+  for (let time = Date.parse(`${startDate}T00:00:00Z`); time <= end; time += dayMs) {
     dates.push(new Date(time));
   }
   return dates;
@@ -40,7 +42,7 @@ const shiftDailyHours = (schedule) => {
   const firstWorkingDay = [...schedule]
     .sort((a, b) => a.day_of_week - b.day_of_week)
     .find((day) => day.is_working_day && day.check_in_time && day.check_out_time);
-  if (!firstWorkingDay) return DEFAULT_DAILY_HOURS;
+  if (!firstWorkingDay) return defaultDailyHours;
   return toHours(firstWorkingDay.check_out_time) - toHours(firstWorkingDay.check_in_time);
 };
 

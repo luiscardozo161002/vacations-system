@@ -1,10 +1,9 @@
 const bcrypt = require('bcryptjs');
-
-const SALT_ROUNDS = 10;
+const config = require('../config');
 
 class PasswordHasher {
   hash(plain) {
-    return bcrypt.hash(plain, SALT_ROUNDS);
+    return bcrypt.hash(plain, config.security.saltRounds);
   }
 
   verify(plain, hashed) {

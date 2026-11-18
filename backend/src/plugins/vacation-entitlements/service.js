@@ -1,11 +1,10 @@
+const config = require('../../config');
 const CrudService = require('../../lib/crud/crud-service');
 const repository = require('./repository');
 const { AppError } = require('../../lib/app-error');
 const { EDITABLE_FIELDS } = require('./fields');
 const employeeDetails = require('../../lib/employee-details');
 const { toTotalHours, splitHours } = require('../../lib/balance');
-
-const DEFAULT_DAILY_HOURS = 8;
 
 class VacationEntitlementService extends CrudService {
   async list(filters, scope) {
@@ -42,7 +41,7 @@ class VacationEntitlementService extends CrudService {
 
     return entitlements.map((entitlement) => {
       const { daily_hours: dailyHours, ...employee } = employees.get(entitlement.employee_id) ?? {
-        daily_hours: DEFAULT_DAILY_HOURS,
+        daily_hours: config.work.defaultDailyHours,
       };
       const used = toTotalHours(entitlement.used_days, entitlement.used_hours, dailyHours);
       return {

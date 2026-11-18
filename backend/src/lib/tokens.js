@@ -1,8 +1,9 @@
 const crypto = require('crypto');
+const config = require('../config');
 
 class Tokens {
   generate() {
-    return crypto.randomBytes(32).toString('hex');
+    return crypto.randomBytes(config.security.tokenBytes).toString('hex');
   }
 
   hash(token) {

@@ -1,18 +1,17 @@
 const crypto = require('crypto');
 const password = require('./password');
+const config = require('../config');
 
-const ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';
-const LENGTH = 10;
-const VALID_MONTHS = 1;
+const { alphabet, length, validMonths } = config.temporaryPassword;
 
 class TemporaryPassword {
   generate() {
-    return Array.from(crypto.randomBytes(LENGTH), (byte) => ALPHABET[byte % ALPHABET.length]).join('');
+    return Array.from(crypto.randomBytes(length), (byte) => alphabet[byte % alphabet.length]).join('');
   }
 
   expiresAt(from = new Date()) {
     const date = new Date(from);
-    date.setMonth(date.getMonth() + VALID_MONTHS);
+    date.setMonth(date.getMonth() + validMonths);
     return date.toISOString();
   }
 

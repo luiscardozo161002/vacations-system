@@ -1,4 +1,4 @@
-const BOM = '﻿';
+const config = require('../config');
 
 class CsvWriter {
   quote(value) {
@@ -6,7 +6,7 @@ class CsvWriter {
   }
 
   write(rows) {
-    return BOM + rows.map((row) => row.map((value) => this.quote(value)).join(',')).join('\r\n');
+    return config.csv.bom + rows.map((row) => row.map((value) => this.quote(value)).join(',')).join('\r\n');
   }
 }
 

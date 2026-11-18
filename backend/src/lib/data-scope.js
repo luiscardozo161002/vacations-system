@@ -1,4 +1,5 @@
 const db = require('../db');
+const config = require('../config');
 
 class DataScope {
   static from(credentials) {
@@ -16,11 +17,15 @@ class DataScope {
   }
 
   get isGlobal() {
-    return this.role === 'SUPERUSER';
+    return this.role === config.roles.global;
+  }
+
+  get isScoped() {
+    return this.role === config.roles.scoped;
   }
 
   branchIdsQuery() {
-    if (this.role === 'USER') return db('branches').whereIn('branch_id', this.branchIds).select('branch_id');
+    if (this.isScoped) return db('branches').whereIn('branch_id', this.branchIds).select('branch_id');
     return db('employees as e')
       .join('departments as d', 'd.department_id', 'e.department_id')
       .where('e.employee_id', this.employeeId)
@@ -36,7 +41,7 @@ class DataScope {
   }
 
   employeeIdsQuery() {
-    if (this.role === 'USER') {
+    if (this.isScoped) {
       return db('employees').whereIn('department_id', this.departmentIdsQuery()).select('employee_id');
     }
     return db('employees').where('employee_id', this.employeeId).select('employee_id');

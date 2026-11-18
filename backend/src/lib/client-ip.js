@@ -1,6 +1,6 @@
 const config = require('../config');
 
-const IPV4_MAPPED = '::ffff:';
+const { ipv4Mapped } = config.proxy;
 
 class ClientIp {
   constructor(trustedProxies) {
@@ -8,7 +8,7 @@ class ClientIp {
   }
 
   normalize(ip) {
-    return ip?.startsWith(IPV4_MAPPED) ? ip.slice(IPV4_MAPPED.length) : ip;
+    return ip?.startsWith(ipv4Mapped) ? ip.slice(ipv4Mapped.length) : ip;
   }
 
   resolve(request) {

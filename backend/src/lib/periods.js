@@ -1,12 +1,14 @@
 'use strict';
 
-const DAY_MS = 24 * 60 * 60 * 1000;
-const REMINDER_DAYS = 7;
+const config = require('../config');
+
+const { dayMs } = config.time;
+const { reminderDays } = config.work;
 
 const toDate = (iso) => new Date(`${iso}T00:00:00Z`);
 const toIso = (date) => date.toISOString().slice(0, 10);
 
-const addDays = (iso, days) => toIso(new Date(toDate(iso).getTime() + days * DAY_MS));
+const addDays = (iso, days) => toIso(new Date(toDate(iso).getTime() + days * dayMs));
 
 const addYears = (iso, years) => {
   const [year, month, day] = iso.split('-').map(Number);
@@ -23,8 +25,8 @@ const currentPeriod = (startDate, today) => {
     yearsOfService: years,
     start: addYears(startDate, years),
     end: addDays(nextAnniversary, -1),
-    reminderFrom: addDays(nextAnniversary, -REMINDER_DAYS),
+    reminderFrom: addDays(nextAnniversary, -reminderDays),
   };
 };
 
-module.exports = { REMINDER_DAYS, addDays, addYears, currentPeriod };
+module.exports = { addDays, addYears, currentPeriod };

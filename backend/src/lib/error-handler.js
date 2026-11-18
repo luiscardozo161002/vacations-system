@@ -1,5 +1,6 @@
 const { ValidationError } = require('objection');
 const { AppError } = require('./app-error');
+const config = require('../config');
 
 const BUSINESS_STATUS = {
   NOT_FOUND: 404,
@@ -238,8 +239,6 @@ const HTTP_ERRORS = {
   415: ['UNSUPPORTED_MEDIA_TYPE', 'El formato de la petición no es compatible'],
 };
 
-const HAPI_INVALID_JSON = 'Invalid request payload JSON format';
-
 class ErrorHandler {
   plugin() {
     return {
@@ -274,7 +273,7 @@ class ErrorHandler {
   describeBadRequest(response) {
     const message = response.output.payload.message;
     if (response.data?.validation) return { status: 400, code: 'VALIDATION_ERROR', message };
-    if (message === HAPI_INVALID_JSON) {
+    if (message === config.errors.invalidJsonMessage) {
       return { status: 400, code: 'INVALID_JSON', message: 'El cuerpo de la petición no es JSON válido' };
     }
     return { status: 400, code: 'BAD_REQUEST', message };

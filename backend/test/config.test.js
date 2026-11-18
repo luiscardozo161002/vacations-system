@@ -52,6 +52,7 @@ describe('Config', () => {
     assert.equal(config.audit.maxRequestIdLength, 64);
     assert.equal(config.balance.epsilon, 0.000001);
     assert.deepEqual(config.proxy.trusted, []);
+    assert.equal(config.proxy.ipv4Mapped, '::ffff:');
   });
 
   it('reads the audit and balance settings from the environment', () => {
@@ -68,6 +69,46 @@ describe('Config', () => {
     assert.equal(config.audit.maxRequestIdLength, 32);
     assert.equal(config.balance.epsilon, 0.001);
     assert.deepEqual(config.proxy.trusted, []);
+  });
+
+  it('defaults the roles, security, work and holiday settings', () => {
+    const config = configFor();
+
+    assert.deepEqual(config.roles, { global: 'SUPERUSER', scoped: 'USER' });
+    assert.deepEqual(config.security, { saltRounds: 10, tokenBytes: 32 });
+    assert.equal(config.temporaryPassword.length, 10);
+    assert.equal(config.temporaryPassword.validMonths, 1);
+    assert.deepEqual(config.work, { defaultDailyHours: 8, reminderDays: 7 });
+    assert.deepEqual(config.holidays, { firstTransferYear: 2024, transferEveryYears: 6 });
+    assert.equal(config.rollover.intervalMs, 24 * 60 * 60 * 1000);
+    assert.equal(config.time.dayMs, 24 * 60 * 60 * 1000);
+    assert.equal(config.csv.bom, '﻿');
+    assert.equal(config.errors.invalidJsonMessage, 'Invalid request payload JSON format');
+  });
+
+  it('reads the roles, security, work and holiday settings from the environment', () => {
+    const config = configFor({
+      ROLE_GLOBAL: 'ROOT',
+      PASSWORD_SALT_ROUNDS: '4',
+      TEMP_PASSWORD_ALPHABET: 'ab12',
+      DEFAULT_DAILY_HOURS: '7.5',
+      ROLLOVER_INTERVAL_HOURS: '12',
+      CSV_INCLUDE_BOM: 'false',
+    });
+
+    assert.equal(config.roles.global, 'ROOT');
+    assert.equal(config.security.saltRounds, 4);
+    assert.equal(config.temporaryPassword.alphabet, 'ab12');
+    assert.equal(config.work.defaultDailyHours, 7.5);
+    assert.equal(config.rollover.intervalMs, 12 * 60 * 60 * 1000);
+    assert.equal(config.csv.bom, '');
+  });
+
+  it('rejects an invalid roles, security or work setting', () => {
+    assert.throws(() => configFor({ PASSWORD_SALT_ROUNDS: '0' }), /PASSWORD_SALT_ROUNDS/);
+    assert.throws(() => configFor({ TEMP_PASSWORD_ALPHABET: 'a' }), /TEMP_PASSWORD_ALPHABET/);
+    assert.throws(() => configFor({ ROLLOVER_INTERVAL_HOURS: '1000' }), /ROLLOVER_INTERVAL_HOURS/);
+    assert.throws(() => configFor({ CSV_INCLUDE_BOM: 'maybe' }), /CSV_INCLUDE_BOM/);
   });
 
   it('names every invalid variable without exposing its value', () => {
