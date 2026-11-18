@@ -1,9 +1,13 @@
-'use strict';
+const BOM = '﻿';
 
-const BOM = '\uFEFF';
+class CsvWriter {
+  quote(value) {
+    return `"${String(value ?? '').replace(/"/g, '""')}"`;
+  }
 
-const quote = (value) => `"${String(value ?? '').replace(/"/g, '""')}"`;
+  write(rows) {
+    return BOM + rows.map((row) => row.map((value) => this.quote(value)).join(',')).join('\r\n');
+  }
+}
 
-const toCsv = (rows) => BOM + rows.map((row) => row.map(quote).join(',')).join('\r\n');
-
-module.exports = { toCsv };
+module.exports = new CsvWriter();

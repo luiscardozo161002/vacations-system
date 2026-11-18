@@ -1,5 +1,5 @@
 const db = require('../../db');
-const { notify, shortDate } = require('../../lib/notify');
+const notifier = require('../../lib/notify');
 
 const TITLES = {
   request: {
@@ -18,14 +18,14 @@ const LINKS = { request: '/solicitudes', notice: '/avisos' };
 
 class NoticeNotifier {
   describeRange({ absence_start_date: start, absence_end_date: end }) {
-    return start === end ? `el ${shortDate(start)}` : `del ${shortDate(start)} al ${shortDate(end)}`;
+    return start === end ? `el ${notifier.shortDate(start)}` : `del ${notifier.shortDate(start)} al ${notifier.shortDate(end)}`;
   }
 
   async notifyEmployee(notice, actorUserId) {
     const user = await db('users').where('employee_id', notice.employee_id).first('user_id');
     if (!user || user.user_id === actorUserId) return;
 
-    await notify({
+    await notifier.send({
       user_id: user.user_id,
       kind: `${notice.kind}_${notice.status}`,
       reference: String(notice.notice_id),

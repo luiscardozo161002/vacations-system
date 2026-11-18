@@ -1,6 +1,6 @@
 exports.seed = async function (knex) {
   if (process.env.NODE_ENV === 'production') {
-    throw new Error('El seed borra todas las tablas; no se corre en produccion');
+    throw new Error('The seed deletes every table and cannot run in production');
   }
 
   await knex('notices').del();

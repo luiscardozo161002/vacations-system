@@ -5,13 +5,13 @@ class Environment {
 
   text(name) {
     const value = this.variables[name];
-    if (value === undefined) throw new Error(`Falta la variable de entorno ${name}`);
+    if (value === undefined) throw new Error(`Missing environment variable ${name}`);
     return value;
   }
 
   integer(name) {
     const value = this.text(name);
-    if (!/^\d+$/.test(value)) throw new Error(`La variable de entorno ${name} debe ser un número entero`);
+    if (!/^\d+$/.test(value)) throw new Error(`Environment variable ${name} must be a whole number`);
     return Number(value);
   }
 

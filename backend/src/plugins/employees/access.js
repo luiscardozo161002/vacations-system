@@ -1,6 +1,6 @@
 const db = require('../../db');
 const { AppError } = require('../../lib/app-error');
-const { issueTemporaryPassword } = require('../../lib/temporary-password');
+const temporaryPassword = require('../../lib/temporary-password');
 
 const ACCOUNT_COLUMNS = [
   'u.user_id',
@@ -41,7 +41,7 @@ class EmployeeAccess {
 
   async createAccount(employeeId, email, trx) {
     const role = await trx('roles').where('role_code', 'EMPLOYEE').first('role_id');
-    const { plain, fields } = await issueTemporaryPassword();
+    const { plain, fields } = await temporaryPassword.issue();
     await trx('users').insert({
       employee_id: employeeId,
       role_id: role.role_id,
@@ -59,7 +59,7 @@ class EmployeeAccess {
         'Este empleado tiene una cuenta administrativa; su acceso se gestiona en Usuarios'
       );
     }
-    const { plain, fields } = await issueTemporaryPassword();
+    const { plain, fields } = await temporaryPassword.issue();
     await trx('users')
       .where('user_id', account.user_id)
       .update({

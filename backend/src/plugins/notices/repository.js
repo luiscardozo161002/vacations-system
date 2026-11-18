@@ -3,7 +3,6 @@ const db = require('../../db');
 const Notice = require('./model');
 const { COLUMNS } = require('./fields');
 const { whereAnyOf } = require('../../lib/list-query');
-const { forEmployees } = require('../../lib/data-scope');
 
 class NoticeRepository extends CrudRepository {
   constructor() {
@@ -11,7 +10,7 @@ class NoticeRepository extends CrudRepository {
   }
 
   restrictToScope(query, scope) {
-    return forEmployees(query, scope, 'employee_id');
+    return scope.restrictEmployees(query, 'employee_id');
   }
 
   applyFilters(query, filters) {

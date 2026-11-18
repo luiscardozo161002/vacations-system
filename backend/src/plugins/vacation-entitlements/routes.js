@@ -3,7 +3,7 @@ const Joi = require('joi');
 const CrudRoutes = require('../../lib/crud/crud-routes');
 const { isoDate } = require('../../lib/list-query');
 const service = require('./service');
-const { rollover } = require('./rollover');
+const rollover = require('./rollover');
 const schemas = require('./schemas');
 
 class VacationEntitlementRoutes extends CrudRoutes {
@@ -20,7 +20,7 @@ class VacationEntitlementRoutes extends CrudRoutes {
       validate: { payload: Joi.object({ date: isoDate }).allow(null).unknown(false) },
       handler: (request) => {
         if (request.auth.credentials.role !== 'SUPERUSER') throw Boom.forbidden();
-        return rollover(request.payload?.date);
+        return rollover.run(request.payload?.date);
       },
     });
   }

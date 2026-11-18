@@ -3,7 +3,6 @@ const db = require('../../db');
 const Employee = require('./model');
 const { COLUMNS } = require('./fields');
 const { whereAnyOf, whereDateBetween } = require('../../lib/list-query');
-const { forEmployees } = require('../../lib/data-scope');
 
 class EmployeeRepository extends CrudRepository {
   constructor() {
@@ -11,7 +10,7 @@ class EmployeeRepository extends CrudRepository {
   }
 
   restrictToScope(query, scope) {
-    return forEmployees(query, scope, 'employees.employee_id');
+    return scope.restrictEmployees(query, 'employees.employee_id');
   }
 
   applyFilters(query, { search, company_id, department_id, status, hired_from, hired_to }) {

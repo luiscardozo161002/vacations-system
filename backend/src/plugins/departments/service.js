@@ -3,7 +3,6 @@ const repository = require('./repository');
 const db = require('../../db');
 const { AppError } = require('../../lib/app-error');
 const { EDITABLE_FIELDS } = require('./fields');
-const { allowsBranch, allowsEmployee } = require('../../lib/data-scope');
 
 const byKey = (rows, key) => new Map(rows.map((row) => [row[key], row]));
 
@@ -28,10 +27,10 @@ class DepartmentService extends CrudService {
   }
 
   async checkReferences(data, scope) {
-    if (data.branch_id !== undefined && !(await allowsBranch(scope, data.branch_id))) {
+    if (data.branch_id !== undefined && !(await scope.allowsBranch(data.branch_id))) {
       throw new AppError('INVALID_BRANCH', 'La sede no existe');
     }
-    if (data.manager_employee_id != null && !(await allowsEmployee(scope, data.manager_employee_id))) {
+    if (data.manager_employee_id != null && !(await scope.allowsEmployee(data.manager_employee_id))) {
       throw new AppError('INVALID_MANAGER', 'El empleado asignado como responsable no existe');
     }
   }

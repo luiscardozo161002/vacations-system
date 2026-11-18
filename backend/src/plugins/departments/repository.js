@@ -1,7 +1,6 @@
 const CrudRepository = require('../../lib/crud/crud-repository');
 const Department = require('./model');
 const { COLUMNS } = require('./fields');
-const { inDepartments } = require('../../lib/data-scope');
 
 class DepartmentRepository extends CrudRepository {
   constructor() {
@@ -9,7 +8,7 @@ class DepartmentRepository extends CrudRepository {
   }
 
   restrictToScope(query, scope) {
-    return inDepartments(query, scope, 'department_id');
+    return scope.restrictDepartments(query, 'department_id');
   }
 
   applyFilters(query, filters) {

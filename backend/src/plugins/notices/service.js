@@ -6,8 +6,8 @@ const noticePdf = require('./pdf');
 const db = require('../../db');
 const { AppError } = require('../../lib/app-error');
 const { EDITABLE_FIELDS, CREATE_FIELDS } = require('./fields');
-const { scopeFrom, allowsEmployee } = require('../../lib/data-scope');
-const { findEmployeeDetails } = require('../../lib/employee-details');
+const DataScope = require('../../lib/data-scope');
+const employeeDetails = require('../../lib/employee-details');
 const entitlements = require('../vacation-entitlements/service');
 
 const REVIEW_PERMISSION = 'approvals:review';
@@ -45,13 +45,13 @@ class NoticeService extends CrudService {
   }
 
   async ensureEmployeeInScope(credentials, employeeId) {
-    if (!(await allowsEmployee(scopeFrom(credentials), employeeId))) {
+    if (!(await DataScope.from(credentials).allowsEmployee(employeeId))) {
       throw new AppError('INVALID_EMPLOYEE', 'El empleado no existe');
     }
   }
 
   async describeAll(notices) {
-    const employees = await findEmployeeDetails(notices.map((notice) => notice.employee_id));
+    const employees = await employeeDetails.find(notices.map((notice) => notice.employee_id));
     const reasonIds = [...new Set(notices.map((notice) => notice.reason_id))];
     const reasons = new Map(
       (await db('reasons').whereIn('reason_id', reasonIds).select('reason_id', 'description')).map((reason) => [
@@ -167,7 +167,7 @@ class NoticeService extends CrudService {
   }
 
   async resolve(id, action, credentials) {
-    const scope = scopeFrom(credentials);
+    const scope = DataScope.from(credentials);
     await this.findInScope(id, scope);
     const isReviewer = credentials.scope.includes(REVIEW_PERMISSION);
 

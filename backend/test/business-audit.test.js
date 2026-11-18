@@ -4,7 +4,9 @@ const { describe, it, before, after } = require('node:test');
 const assert = require('node:assert/strict');
 const createServer = require('../src/server');
 const db = require('../src/db');
-const { clientIp } = require('../src/lib/client-ip');
+const { ClientIp } = require('../src/lib/client-ip');
+
+const clientIp = (request, trustedProxies) => new ClientIp(trustedProxies).resolve(request);
 
 const PASSWORD = 'Vacaciones2026!';
 const RH_USER_ID = 2;

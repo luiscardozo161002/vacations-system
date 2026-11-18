@@ -1,5 +1,3 @@
-'use strict';
-
 const { ValidationError } = require('objection');
 const { AppError } = require('./app-error');
 
@@ -242,63 +240,74 @@ const HTTP_ERRORS = {
 
 const HAPI_INVALID_JSON = 'Invalid request payload JSON format';
 
-const badRequest = (response) => {
-  const message = response.output.payload.message;
-  if (response.data?.validation) return ['VALIDATION_ERROR', message];
-  if (message === HAPI_INVALID_JSON) return ['INVALID_JSON', 'El cuerpo de la petición no es JSON válido'];
-  return ['BAD_REQUEST', message];
-};
+class ErrorHandler {
+  plugin() {
+    return {
+      name: 'api-error-handler',
+      register: (server) => server.ext('onPreResponse', (request, h) => this.handle(request, h)),
+    };
+  }
 
-const isPostgresError = (error) => /^[0-9A-Z]{5}$/.test(error.code ?? '');
+  handle(request, h) {
+    const response = request.response;
+    if (!response.isBoom) return h.continue;
 
-module.exports = {
-  name: 'api-error-handler',
+    const { status, code, message } = this.describe(request, response);
+    const reply = h.response({ error: { code, message } }).code(status);
+    for (const [name, value] of Object.entries(response.output.headers)) reply.header(name, value);
+    return reply;
+  }
 
-  register(server) {
-    server.ext('onPreResponse', (request, h) => {
-      const response = request.response;
+  describe(request, response) {
+    const status = response.output.statusCode;
 
-      if (!response.isBoom) {
-        return h.continue;
-      }
+    if (status === 400) return this.describeBadRequest(response);
+    if (HTTP_ERRORS[status]) {
+      const [code, message] = HTTP_ERRORS[status];
+      return { status, code, message };
+    }
+    if (status !== 500) return { status, code: `HTTP_${status}`, message: response.output.payload.message };
 
-      const send = (status, code, message) => {
-        const result = h.response({ error: { code, message } }).code(status);
-        for (const [name, value] of Object.entries(response.output.headers)) result.header(name, value);
-        return result;
-      };
+    return this.describeServerError(request, response.cause || response);
+  }
 
-      const status = response.output.statusCode;
+  describeBadRequest(response) {
+    const message = response.output.payload.message;
+    if (response.data?.validation) return { status: 400, code: 'VALIDATION_ERROR', message };
+    if (message === HAPI_INVALID_JSON) {
+      return { status: 400, code: 'INVALID_JSON', message: 'El cuerpo de la petición no es JSON válido' };
+    }
+    return { status: 400, code: 'BAD_REQUEST', message };
+  }
 
-      if (status === 400) return send(400, ...badRequest(response));
-      if (HTTP_ERRORS[status]) return send(status, ...HTTP_ERRORS[status]);
-      if (status !== 500) return send(status, `HTTP_${status}`, response.output.payload.message);
+  describeServerError(request, error) {
+    if (error instanceof AppError && BUSINESS_STATUS[error.code]) {
+      return { status: BUSINESS_STATUS[error.code], code: error.code, message: error.message };
+    }
 
-      const error = response.cause || response;
+    if (error instanceof ValidationError) return { status: 400, code: 'INVALID_MODEL_DATA', message: error.message };
 
-      if (error instanceof AppError) {
-        const businessStatus = BUSINESS_STATUS[error.code];
-        if (businessStatus) return send(businessStatus, error.code, error.message);
-      }
+    const pg = error.nativeError || error;
+    const dbError = DB_ERRORS[pg.constraint];
+    if (dbError && dbError.sqlstate === pg.code) {
+      return { status: dbError.status, code: dbError.code, message: dbError.message };
+    }
 
-      if (error instanceof ValidationError) {
-        return send(400, 'INVALID_MODEL_DATA', error.message);
-      }
+    const fallback = SQLSTATE_FALLBACK[pg.code];
+    if (fallback) return fallback;
 
-      const pg = error.nativeError || error;
-      const dbError = DB_ERRORS[pg.constraint];
+    this.logUnhandled(request, pg, error);
+    return { status: 500, code: 'INTERNAL_ERROR', message: 'Ocurrió un error interno' };
+  }
 
-      if (dbError && dbError.sqlstate === pg.code) {
-        return send(dbError.status, dbError.code, dbError.message);
-      }
+  isPostgresError(error) {
+    return /^[0-9A-Z]{5}$/.test(error.code ?? '');
+  }
 
-      const fallback = SQLSTATE_FALLBACK[pg.code];
-      if (fallback) return send(fallback.status, fallback.code, fallback.message);
+  logUnhandled(request, pg, error) {
+    const details = this.isPostgresError(pg) ? { sqlstate: pg.code, constraint: pg.constraint } : { err: error };
+    request.logger.error({ ...details, method: request.method, path: request.path }, 'Unhandled error');
+  }
+}
 
-      const details = isPostgresError(pg) ? { sqlstate: pg.code, constraint: pg.constraint } : { err: error };
-      request.logger.error({ ...details, method: request.method, path: request.path }, 'Error no controlado');
-
-      return send(500, 'INTERNAL_ERROR', 'Ocurrió un error interno');
-    });
-  },
-};
+module.exports = new ErrorHandler().plugin();

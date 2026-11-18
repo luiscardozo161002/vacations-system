@@ -1,7 +1,6 @@
 const CrudRepository = require('../../lib/crud/crud-repository');
 const VacationEntitlement = require('./model');
 const { COLUMNS } = require('./fields');
-const { forEmployees } = require('../../lib/data-scope');
 
 class VacationEntitlementRepository extends CrudRepository {
   constructor() {
@@ -9,7 +8,7 @@ class VacationEntitlementRepository extends CrudRepository {
   }
 
   restrictToScope(query, scope) {
-    return forEmployees(query, scope, 'employee_id');
+    return scope.restrictEmployees(query, 'employee_id');
   }
 
   applyFilters(query, filters) {

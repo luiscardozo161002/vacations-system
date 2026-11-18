@@ -1,10 +1,8 @@
-const { requires } = require('../permissions');
-const { scopeFrom } = require('../data-scope');
+const ApiRoutes = require('../api-routes');
 
-class CrudRoutes {
-  constructor({ name, tag, path, idParam, primaryKey, label, descriptions = {}, permissions, schemas, service, audit }) {
-    this.name = name;
-    this.tag = tag;
+class CrudRoutes extends ApiRoutes {
+  constructor({ path, idParam, primaryKey, label, descriptions = {}, permissions, schemas, audit, ...api }) {
+    super(api);
     this.path = path;
     this.idParam = idParam;
     this.primaryKey = primaryKey;
@@ -12,42 +10,22 @@ class CrudRoutes {
     this.descriptions = descriptions;
     this.permissions = permissions;
     this.schemas = schemas;
-    this.service = service;
     this.audit = audit;
-  }
-
-  plugin() {
-    return {
-      name: `${this.name}-plugin`,
-      version: '1.0.0',
-      register: (server) => server.route(this.routes()),
-    };
   }
 
   routes() {
     return [this.listRoute(), this.getRoute(), this.createRoute(), this.updateRoute(), this.removeRoute()];
   }
 
-  route({ method, path = this.path, description, permission, validate, handler, action }) {
-    return {
-      method,
-      path,
-      options: {
-        ...this.auditOptions(action),
-        description,
-        tags: ['api', this.tag],
-        auth: requires(...[permission].flat()),
-        validate,
-      },
-      handler,
-    };
+  route({ action, path = this.path, ...definition }) {
+    return super.route({ ...definition, path, plugins: this.auditPlugins(action) });
   }
 
-  auditOptions(action) {
+  auditPlugins(action) {
     const event = this.audit?.events[action];
-    if (!event) return {};
+    if (!event) return undefined;
     const id = action === 'create' ? this.primaryKey : this.idParam;
-    return { plugins: { audit: { event, entity: this.audit.entity, id } } };
+    return { audit: { event, entity: this.audit.entity, id } };
   }
 
   describe(action) {
@@ -63,10 +41,6 @@ class CrudRoutes {
 
   itemPath() {
     return `${this.path}/{${this.idParam}}`;
-  }
-
-  scope(request) {
-    return scopeFrom(request.auth.credentials);
   }
 
   listRoute() {

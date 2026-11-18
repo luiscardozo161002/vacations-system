@@ -1,7 +1,6 @@
 const CrudRepository = require('../../lib/crud/crud-repository');
 const Company = require('./model');
 const { COLUMNS } = require('./fields');
-const { inCompanies } = require('../../lib/data-scope');
 
 class CompanyRepository extends CrudRepository {
   constructor() {
@@ -9,7 +8,7 @@ class CompanyRepository extends CrudRepository {
   }
 
   restrictToScope(query, scope) {
-    return inCompanies(query, scope, 'company_id');
+    return scope.restrictCompanies(query, 'company_id');
   }
 }
 

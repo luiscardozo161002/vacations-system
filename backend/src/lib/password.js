@@ -1,10 +1,15 @@
-'use strict';
-
 const bcrypt = require('bcryptjs');
 
 const SALT_ROUNDS = 10;
 
-const hash = (plain) => bcrypt.hash(plain, SALT_ROUNDS);
-const verify = (plain, hashed) => bcrypt.compare(plain, hashed);
+class PasswordHasher {
+  hash(plain) {
+    return bcrypt.hash(plain, SALT_ROUNDS);
+  }
 
-module.exports = { hash, verify };
+  verify(plain, hashed) {
+    return bcrypt.compare(plain, hashed);
+  }
+}
+
+module.exports = new PasswordHasher();

@@ -1,8 +1,6 @@
-'use strict';
-
 const db = require('../../db');
 const { AppError } = require('../../lib/app-error');
-const { forEmployees, inDepartments } = require('../../lib/data-scope');
+const DataScope = require('../../lib/data-scope');
 const notices = require('../notices/service');
 const entitlements = require('../vacation-entitlements/service');
 const { holidaysBetween } = require('../../lib/holidays');
@@ -12,135 +10,161 @@ const LIST_LIMIT = 4;
 const MY_LIST_LIMIT = 5;
 const TODAY = db.raw('CURRENT_DATE');
 
-const count = async (query) => Number((await query.count('* as total').first()).total);
+class DashboardService {
+  constructor({ notices, entitlements }) {
+    this.notices = notices;
+    this.entitlements = entitlements;
+  }
 
-const scopedNotices = (scope) => forEmployees(db('notices as n'), scope, 'n.employee_id');
+  async count(query) {
+    return Number((await query.count('* as total').first()).total);
+  }
 
-const withNames = (query) =>
-  query
-    .join('employees as e', 'e.employee_id', 'n.employee_id')
-    .join('departments as d', 'd.department_id', 'e.department_id')
-    .join('reasons as r', 'r.reason_id', 'n.reason_id');
+  scopedNotices(scope) {
+    return scope.restrictEmployees(db('notices as n'), 'n.employee_id');
+  }
 
-const departmentsWithEmployees = (scope) =>
-  inDepartments(db('departments as d'), scope, 'd.department_id')
-    .join('branches as b', 'b.branch_id', 'd.branch_id')
-    .leftJoin('employees as e', (join) => join.on('e.department_id', 'd.department_id').andOnVal('e.status', 'active'))
-    .where('d.status', 'active')
-    .groupBy('d.department_id', 'd.department_name', 'b.code')
-    .orderBy(['d.department_name', 'b.code'])
-    .select('d.department_id', 'd.department_name', 'b.code as branch_code', db.raw('COUNT(e.employee_id)::int AS active_employees'));
+  withNames(query) {
+    return query
+      .join('employees as e', 'e.employee_id', 'n.employee_id')
+      .join('departments as d', 'd.department_id', 'e.department_id')
+      .join('reasons as r', 'r.reason_id', 'n.reason_id');
+  }
 
-const upcomingAbsences = (scope) =>
-  withNames(scopedNotices(scope))
-    .where('n.status', 'approved')
-    .where('n.absence_end_date', '>=', TODAY)
-    .orderBy('n.absence_start_date')
-    .limit(LIST_LIMIT)
-    .select(
-      'n.notice_id',
-      'e.employee_name',
-      'd.department_name',
-      'r.description as reason_description',
-      'n.absence_start_date',
-      'n.absence_end_date',
-      'n.days_taken',
-      'n.hours_taken'
+  departmentsWithEmployees(scope) {
+    return scope
+      .restrictDepartments(db('departments as d'), 'd.department_id')
+      .join('branches as b', 'b.branch_id', 'd.branch_id')
+      .leftJoin('employees as e', (join) => join.on('e.department_id', 'd.department_id').andOnVal('e.status', 'active'))
+      .where('d.status', 'active')
+      .groupBy('d.department_id', 'd.department_name', 'b.code')
+      .orderBy(['d.department_name', 'b.code'])
+      .select(
+        'd.department_id',
+        'd.department_name',
+        'b.code as branch_code',
+        db.raw('COUNT(e.employee_id)::int AS active_employees')
+      );
+  }
+
+  upcomingAbsences(scope) {
+    return this.withNames(this.scopedNotices(scope))
+      .where('n.status', 'approved')
+      .where('n.absence_end_date', '>=', TODAY)
+      .orderBy('n.absence_start_date')
+      .limit(LIST_LIMIT)
+      .select(
+        'n.notice_id',
+        'e.employee_name',
+        'd.department_name',
+        'r.description as reason_description',
+        'n.absence_start_date',
+        'n.absence_end_date',
+        'n.days_taken',
+        'n.hours_taken'
+      );
+  }
+
+  recentActivity(scope) {
+    return this.withNames(this.scopedNotices(scope))
+      .orderBy('happened_at', 'desc')
+      .limit(LIST_LIMIT)
+      .select(
+        'n.notice_id',
+        'n.kind',
+        'n.status',
+        'e.employee_name',
+        'r.description as reason_description',
+        db.raw('COALESCE(n.approved_at, n.request_date) AS happened_at')
+      );
+  }
+
+  async countAbsentToday(scope) {
+    const { today } = await db.first(db.raw("to_char(CURRENT_DATE, 'YYYY-MM-DD') AS today"));
+    if (holidaysBetween(today, today).length) return 0;
+
+    const row = await this.scopedNotices(scope)
+      .join('employees as e', 'e.employee_id', 'n.employee_id')
+      .join('shift_schedules as ss', (join) =>
+        join.on('ss.shift_id', 'e.shift_id').andOn('ss.day_of_week', db.raw('EXTRACT(ISODOW FROM CURRENT_DATE)'))
+      )
+      .where('ss.is_working_day', true)
+      .where('n.status', 'approved')
+      .where('n.absence_start_date', '<=', TODAY)
+      .where('n.absence_end_date', '>=', TODAY)
+      .countDistinct('n.employee_id as total')
+      .first();
+    return Number(row.total);
+  }
+
+  countUpcomingVacations(scope) {
+    return this.count(
+      this.scopedNotices(scope)
+        .join('reasons as r', 'r.reason_id', 'n.reason_id')
+        .where('r.affects_vacation_balance', true)
+        .where('n.status', 'approved')
+        .whereBetween('n.absence_start_date', [TODAY, db.raw('CURRENT_DATE + ?::integer', [UPCOMING_DAYS])])
     );
+  }
 
-const recentActivity = (scope) =>
-  withNames(scopedNotices(scope))
-    .orderBy('happened_at', 'desc')
-    .limit(LIST_LIMIT)
-    .select(
-      'n.notice_id',
-      'n.kind',
-      'n.status',
-      'e.employee_name',
-      'r.description as reason_description',
-      db.raw('COALESCE(n.approved_at, n.request_date) AS happened_at')
-    );
+  async teamSummary(scope) {
+    const [activeEmployees, absentToday, pendingRequests, upcomingVacations, absences, departments, activity] =
+      await Promise.all([
+        this.count(scope.restrictEmployees(db('employees'), 'employee_id').where('status', 'active')),
+        this.countAbsentToday(scope),
+        this.count(this.scopedNotices(scope).where({ 'n.kind': 'request', 'n.status': 'pending' })),
+        this.countUpcomingVacations(scope),
+        this.upcomingAbsences(scope),
+        this.departmentsWithEmployees(scope),
+        this.recentActivity(scope),
+      ]);
 
-const countAbsentToday = async (scope) => {
-  const { today } = await db.first(db.raw("to_char(CURRENT_DATE, 'YYYY-MM-DD') AS today"));
-  if (holidaysBetween(today, today).length) return 0;
+    return {
+      active_employees: activeEmployees,
+      absent_today: absentToday,
+      pending_requests: pendingRequests,
+      upcoming_vacations: upcomingVacations,
+      upcoming_absences: absences,
+      by_department: departments,
+      recent_activity: activity,
+    };
+  }
 
-  const row = await scopedNotices(scope)
-    .join('employees as e', 'e.employee_id', 'n.employee_id')
-    .join('shift_schedules as ss', (join) =>
-      join.on('ss.shift_id', 'e.shift_id').andOn('ss.day_of_week', db.raw('EXTRACT(ISODOW FROM CURRENT_DATE)'))
-    )
-    .where('ss.is_working_day', true)
-    .where('n.status', 'approved')
-    .where('n.absence_start_date', '<=', TODAY)
-    .where('n.absence_end_date', '>=', TODAY)
-    .countDistinct('n.employee_id as total')
-    .first();
-  return Number(row.total);
-};
+  findMyProfile(employeeId) {
+    return db('employees as e')
+      .join('departments as d', 'd.department_id', 'e.department_id')
+      .join('shifts as s', 's.shift_id', 'e.shift_id')
+      .where('e.employee_id', employeeId)
+      .first(
+        'e.employee_id',
+        'e.employee_name',
+        'e.employee_number',
+        'e.start_date',
+        'd.department_name',
+        's.shift_name',
+        db.raw('EXTRACT(YEAR FROM age(CURRENT_DATE, e.start_date))::int AS years_of_service')
+      );
+  }
 
-const teamSummary = async (scope) => {
-  const [activeEmployees, absentToday, pendingRequests, upcomingVacations, absences, departments, activity] =
-    await Promise.all([
-      count(forEmployees(db('employees'), scope, 'employee_id').where('status', 'active')),
-      countAbsentToday(scope),
-      count(scopedNotices(scope).where({ 'n.kind': 'request', 'n.status': 'pending' })),
-      count(
-        scopedNotices(scope)
-          .join('reasons as r', 'r.reason_id', 'n.reason_id')
-          .where('r.affects_vacation_balance', true)
-          .where('n.status', 'approved')
-          .whereBetween('n.absence_start_date', [TODAY, db.raw('CURRENT_DATE + ?::integer', [UPCOMING_DAYS])])
-      ),
-      upcomingAbsences(scope),
-      departmentsWithEmployees(scope),
-      recentActivity(scope),
+  async mySummary(scope) {
+    if (!scope.employeeId) throw new AppError('EMPLOYEE_NOT_FOUND', 'Tu usuario no tiene un empleado vinculado');
+
+    const own = new DataScope({ role: 'EMPLOYEE', branchIds: [], employeeId: scope.employeeId });
+    const recent = { sort: '-request_date', page: 1, pageSize: MY_LIST_LIMIT };
+    const [profile, balances, requests, registered] = await Promise.all([
+      this.findMyProfile(scope.employeeId),
+      this.entitlements.list({ status: 'active', page: 1, pageSize: 1, sort: '-period_start' }, own),
+      this.notices.list({ ...recent, kind: 'request' }, own),
+      this.notices.list({ ...recent, kind: 'notice' }, own),
     ]);
 
-  return {
-    active_employees: activeEmployees,
-    absent_today: absentToday,
-    pending_requests: pendingRequests,
-    upcoming_vacations: upcomingVacations,
-    upcoming_absences: absences,
-    by_department: departments,
-    recent_activity: activity,
-  };
-};
+    return {
+      profile,
+      balance: balances.data[0] ?? null,
+      requests: requests.data,
+      notices: registered.data,
+    };
+  }
+}
 
-const findMyProfile = (employeeId) =>
-  db('employees as e')
-    .join('departments as d', 'd.department_id', 'e.department_id')
-    .join('shifts as s', 's.shift_id', 'e.shift_id')
-    .where('e.employee_id', employeeId)
-    .first(
-      'e.employee_id',
-      'e.employee_name',
-      'e.employee_number',
-      'e.start_date',
-      'd.department_name',
-      's.shift_name',
-      db.raw('EXTRACT(YEAR FROM age(CURRENT_DATE, e.start_date))::int AS years_of_service')
-    );
-
-const mySummary = async (scope) => {
-  if (!scope.employeeId) throw new AppError('EMPLOYEE_NOT_FOUND', 'Tu usuario no tiene un empleado vinculado');
-
-  const own = { role: 'EMPLOYEE', branchIds: [], employeeId: scope.employeeId };
-  const recent = { sort: '-request_date', page: 1, pageSize: MY_LIST_LIMIT };
-  const [profile, balances, requests, registered] = await Promise.all([
-    findMyProfile(scope.employeeId),
-    entitlements.list({ status: 'active', page: 1, pageSize: 1, sort: '-period_start' }, own),
-    notices.list({ ...recent, kind: 'request' }, own),
-    notices.list({ ...recent, kind: 'notice' }, own),
-  ]);
-
-  return {
-    profile,
-    balance: balances.data[0] ?? null,
-    requests: requests.data,
-    notices: registered.data,
-  };
-};
-
-module.exports = { teamSummary, mySummary };
+module.exports = new DashboardService({ notices, entitlements });

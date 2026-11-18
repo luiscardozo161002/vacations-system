@@ -1,44 +1,82 @@
-'use strict';
-
 const db = require('../db');
 
-const scopeFrom = (credentials) => ({
-  role: credentials.role,
-  branchIds: credentials.branch_ids || [],
-  employeeId: credentials.employee_id || 0,
-});
+class DataScope {
+  static from(credentials) {
+    return new DataScope({
+      role: credentials.role,
+      branchIds: credentials.branch_ids || [],
+      employeeId: credentials.employee_id || 0,
+    });
+  }
 
-const isGlobal = (scope) => scope.role === 'SUPERUSER';
+  constructor({ role, branchIds, employeeId }) {
+    this.role = role;
+    this.branchIds = branchIds;
+    this.employeeId = employeeId;
+  }
 
-const branchIds = (scope) =>
-  scope.role === 'USER'
-    ? db('branches').whereIn('branch_id', scope.branchIds).select('branch_id')
-    : db('employees as e')
-        .join('departments as d', 'd.department_id', 'e.department_id')
-        .where('e.employee_id', scope.employeeId)
-        .select('d.branch_id');
+  get isGlobal() {
+    return this.role === 'SUPERUSER';
+  }
 
-const companyIds = (scope) => db('branches').whereIn('branch_id', branchIds(scope)).select('company_id');
+  branchIdsQuery() {
+    if (this.role === 'USER') return db('branches').whereIn('branch_id', this.branchIds).select('branch_id');
+    return db('employees as e')
+      .join('departments as d', 'd.department_id', 'e.department_id')
+      .where('e.employee_id', this.employeeId)
+      .select('d.branch_id');
+  }
 
-const departmentIds = (scope) => db('departments').whereIn('branch_id', branchIds(scope)).select('department_id');
+  companyIdsQuery() {
+    return db('branches').whereIn('branch_id', this.branchIdsQuery()).select('company_id');
+  }
 
-const employeeIds = (scope) =>
-  scope.role === 'USER'
-    ? db('employees').whereIn('department_id', departmentIds(scope)).select('employee_id')
-    : db('employees').where('employee_id', scope.employeeId).select('employee_id');
+  departmentIdsQuery() {
+    return db('departments').whereIn('branch_id', this.branchIdsQuery()).select('department_id');
+  }
 
-const restrict = (ids) => (query, scope, column) => (isGlobal(scope) ? query : query.whereIn(column, ids(scope)));
+  employeeIdsQuery() {
+    if (this.role === 'USER') {
+      return db('employees').whereIn('department_id', this.departmentIdsQuery()).select('employee_id');
+    }
+    return db('employees').where('employee_id', this.employeeId).select('employee_id');
+  }
 
-const allows = (ids, column) => async (scope, id) =>
-  isGlobal(scope) || Boolean(await ids(scope).where(column, id).first());
+  restrict(query, column, idsQuery) {
+    return this.isGlobal ? query : query.whereIn(column, idsQuery);
+  }
 
-module.exports = {
-  scopeFrom,
-  inCompanies: restrict(companyIds),
-  inBranches: restrict(branchIds),
-  inDepartments: restrict(departmentIds),
-  forEmployees: restrict(employeeIds),
-  allowsBranch: allows(branchIds, 'branch_id'),
-  allowsDepartment: allows(departmentIds, 'department_id'),
-  allowsEmployee: allows(employeeIds, 'employee_id'),
-};
+  restrictCompanies(query, column) {
+    return this.restrict(query, column, this.companyIdsQuery());
+  }
+
+  restrictBranches(query, column) {
+    return this.restrict(query, column, this.branchIdsQuery());
+  }
+
+  restrictDepartments(query, column) {
+    return this.restrict(query, column, this.departmentIdsQuery());
+  }
+
+  restrictEmployees(query, column) {
+    return this.restrict(query, column, this.employeeIdsQuery());
+  }
+
+  async allows(idsQuery, column, id) {
+    return this.isGlobal || Boolean(await idsQuery.where(column, id).first());
+  }
+
+  allowsBranch(id) {
+    return this.allows(this.branchIdsQuery(), 'branch_id', id);
+  }
+
+  allowsDepartment(id) {
+    return this.allows(this.departmentIdsQuery(), 'department_id', id);
+  }
+
+  allowsEmployee(id) {
+    return this.allows(this.employeeIdsQuery(), 'employee_id', id);
+  }
+}
+
+module.exports = DataScope;

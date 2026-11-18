@@ -2,10 +2,9 @@ const CrudService = require('../../lib/crud/crud-service');
 const db = require('../../db');
 const repository = require('./repository');
 const access = require('./access');
-const { toCsv } = require('../../lib/csv');
+const csv = require('../../lib/csv');
 const { AppError } = require('../../lib/app-error');
 const { EDITABLE_FIELDS } = require('./fields');
-const { allowsDepartment } = require('../../lib/data-scope');
 
 const EXPORT_HEADERS = ['Número', 'Folio', 'Nombre', 'Sede', 'Departamento', 'Turno', 'Fecha de ingreso', 'Correo', 'Estado'];
 const STATUS_LABELS = { active: 'Activo', inactive: 'Inactivo' };
@@ -15,7 +14,7 @@ const toMexicanDate = (iso) => iso.split('-').reverse().join('/');
 class EmployeeService extends CrudService {
   async exportCsv(filters, scope) {
     const rows = await this.repository.exportRows(filters, scope);
-    return toCsv([
+    return csv.write([
       EXPORT_HEADERS,
       ...rows.map((row) => [
         row.employee_number,
@@ -59,7 +58,7 @@ class EmployeeService extends CrudService {
   }
 
   async checkReferences(data, scope) {
-    if (data.department_id !== undefined && !(await allowsDepartment(scope, data.department_id))) {
+    if (data.department_id !== undefined && !(await scope.allowsDepartment(data.department_id))) {
       throw new AppError('INVALID_DEPARTMENT', 'El departamento no existe');
     }
   }

@@ -1,32 +1,36 @@
-'use strict';
+class AttemptLimiter {
+  constructor({ max, windowMs }) {
+    this.max = max;
+    this.windowMs = windowMs;
+    this.attempts = new Map();
+  }
 
-const createAttemptLimiter = ({ max, windowMs }) => {
-  const attempts = new Map();
-
-  const isBlocked = (key) => {
-    const entry = attempts.get(key);
+  isBlocked(key) {
+    const entry = this.attempts.get(key);
     if (!entry) return false;
     if (entry.resetAt <= Date.now()) {
-      attempts.delete(key);
+      this.attempts.delete(key);
       return false;
     }
-    return entry.count >= max;
-  };
+    return entry.count >= this.max;
+  }
 
-  const record = (key) => {
+  record(key) {
     const now = Date.now();
-    const entry = attempts.get(key);
+    const entry = this.attempts.get(key);
     if (entry && entry.resetAt > now) {
       entry.count += 1;
       return;
     }
-    attempts.set(key, { count: 1, resetAt: now + windowMs });
-    for (const [storedKey, stored] of attempts) {
-      if (stored.resetAt <= now) attempts.delete(storedKey);
+    this.attempts.set(key, { count: 1, resetAt: now + this.windowMs });
+    this.removeExpired(now);
+  }
+
+  removeExpired(now) {
+    for (const [key, entry] of this.attempts) {
+      if (entry.resetAt <= now) this.attempts.delete(key);
     }
-  };
+  }
+}
 
-  return { isBlocked, record };
-};
-
-module.exports = { createAttemptLimiter };
+module.exports = AttemptLimiter;

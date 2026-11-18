@@ -1,7 +1,6 @@
 const CrudService = require('../../lib/crud/crud-service');
 const repository = require('./repository');
 const db = require('../../db');
-const { forEmployees } = require('../../lib/data-scope');
 const { AppError } = require('../../lib/app-error');
 const { EDITABLE_FIELDS } = require('./fields');
 
@@ -34,7 +33,8 @@ class ShiftService extends CrudService {
   }
 
   async withEmployeeCounts(shifts, scope) {
-    const counts = await forEmployees(db('employees'), scope, 'employee_id')
+    const counts = await scope
+      .restrictEmployees(db('employees'), 'employee_id')
       .whereIn('shift_id', shifts.map((shift) => shift.shift_id))
       .where('status', 'active')
       .groupBy('shift_id')

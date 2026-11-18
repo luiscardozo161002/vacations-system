@@ -1,27 +1,21 @@
-'use strict';
-
 const Joi = require('joi');
-const { requires } = require('../../lib/permissions');
-const { scopeFrom } = require('../../lib/data-scope');
+const ApiRoutes = require('../../lib/api-routes');
 const { isoDate } = require('../../lib/list-query');
 const service = require('./service');
 
-const calendarPlugin = {
-  name: 'calendar-plugin',
-  version: '1.0.0',
-  register: (server) => {
-    server.route({
-      method: 'GET',
-      path: '/api/v1/calendar',
-      options: {
+class CalendarRoutes extends ApiRoutes {
+  routes() {
+    return [
+      this.route({
+        method: 'GET',
+        path: '/api/v1/calendar',
         description: 'Absences and LFT holidays in a date range',
-        tags: ['api', 'calendar'],
-        auth: requires('calendar:view'),
+        permission: 'calendar:view',
         validate: { query: Joi.object({ from: isoDate.required(), to: isoDate.required() }).unknown(false) },
-      },
-      handler: (request) => service.getCalendar(request.query, scopeFrom(request.auth.credentials)),
-    });
-  },
-};
+        handler: (request) => this.service.getCalendar(request.query, this.scope(request)),
+      }),
+    ];
+  }
+}
 
-module.exports = calendarPlugin;
+module.exports = new CalendarRoutes({ name: 'calendar', service }).plugin();

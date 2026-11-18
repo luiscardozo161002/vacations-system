@@ -1,7 +1,6 @@
 const CrudRepository = require('../../lib/crud/crud-repository');
 const Branch = require('./model');
 const { COLUMNS } = require('./fields');
-const { inBranches } = require('../../lib/data-scope');
 
 class BranchRepository extends CrudRepository {
   constructor() {
@@ -9,7 +8,7 @@ class BranchRepository extends CrudRepository {
   }
 
   restrictToScope(query, scope) {
-    return inBranches(query, scope, 'branch_id');
+    return scope.restrictBranches(query, 'branch_id');
   }
 
   applyFilters(query, filters) {

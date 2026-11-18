@@ -2,9 +2,8 @@ const CrudService = require('../../lib/crud/crud-service');
 const repository = require('./repository');
 const { AppError } = require('../../lib/app-error');
 const { EDITABLE_FIELDS } = require('./fields');
-const { findEmployeeDetails } = require('../../lib/employee-details');
+const employeeDetails = require('../../lib/employee-details');
 const { toTotalHours, splitHours } = require('../../lib/balance');
-const { allowsEmployee } = require('../../lib/data-scope');
 
 const DEFAULT_DAILY_HOURS = 8;
 
@@ -29,7 +28,7 @@ class VacationEntitlementService extends CrudService {
   }
 
   async checkReferences(data, scope) {
-    if (data.employee_id !== undefined && !(await allowsEmployee(scope, data.employee_id))) {
+    if (data.employee_id !== undefined && !(await scope.allowsEmployee(data.employee_id))) {
       throw new AppError('INVALID_EMPLOYEE', 'El empleado no existe');
     }
   }
@@ -39,7 +38,7 @@ class VacationEntitlementService extends CrudService {
   }
 
   async describeAll(entitlements) {
-    const employees = await findEmployeeDetails(entitlements.map((entitlement) => entitlement.employee_id));
+    const employees = await employeeDetails.find(entitlements.map((entitlement) => entitlement.employee_id));
 
     return entitlements.map((entitlement) => {
       const { daily_hours: dailyHours, ...employee } = employees.get(entitlement.employee_id) ?? {

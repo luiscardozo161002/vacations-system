@@ -10,9 +10,9 @@ const pkg = require('../package.json');
 
 require('./db');
 const errorHandler = require('./lib/error-handler');
-const { auditPlugin } = require('./lib/audit');
+const auditLog = require('./lib/audit');
 const { VALIDATION_MESSAGES } = require('./lib/validation-messages');
-const healthPlugin = require('./plugins/health');
+const healthPlugin = require('./plugins/health/routes');
 const employeesPlugin = require('./plugins/employees/routes');
 const departmentsPlugin = require('./plugins/departments/routes');
 const shiftsPlugin = require('./plugins/shifts/routes');
@@ -32,91 +32,106 @@ const usersPlugin = require('./plugins/users/routes');
 const authAuditLogPlugin = require('./plugins/auth-audit-log/routes');
 const authPlugin = require('./plugins/auth/routes');
 
-const swaggerOptions = {
-  info: {
-    title: 'API Documentation System Vacation Management',
-    version: pkg.version,
-  },
-  grouping: 'tags',
-  securityDefinitions: {
-    jwt: { type: 'apiKey', name: 'Authorization', in: 'header' },
-  },
-  security: [{ jwt: [] }],
-};
-
 const LOG_LEVELS = { production: 'info', test: 'silent' };
 
-const loggerOptions = {
-  level: LOG_LEVELS[config.env] ?? 'debug',
-  redact: ['req.headers.authorization', 'req.headers.cookie'],
-  ignorePaths: ['/api/v1/health'],
-  ...(config.env === 'development' && {
-    transport: {
-      target: 'pino-pretty',
-      options: { singleLine: true, translateTime: 'SYS:HH:MM:ss', ignore: 'pid,hostname,req,res,responseTime' },
-    },
-  }),
-};
+class ApiServer {
+  constructor(config) {
+    this.config = config;
+  }
 
-const createServer = async () => {
-  const server = Hapi.server({
-    host: config.server.host,
-    port: config.server.port,
-    routes: {
-      security: true,
-      cors: {
-        origin: config.cors.origins,
+  swaggerOptions() {
+    return {
+      info: {
+        title: 'API Documentation System Vacation Management',
+        version: pkg.version,
       },
-      validate: {
-        options: {
-          messages: VALIDATION_MESSAGES,
-          errors: { wrap: { label: false, array: false } },
+      grouping: 'tags',
+      securityDefinitions: {
+        jwt: { type: 'apiKey', name: 'Authorization', in: 'header' },
+      },
+      security: [{ jwt: [] }],
+    };
+  }
+
+  loggerOptions() {
+    return {
+      level: LOG_LEVELS[this.config.env] ?? 'debug',
+      redact: ['req.headers.authorization', 'req.headers.cookie'],
+      ignorePaths: ['/api/v1/health'],
+      ...(this.config.env === 'development' && {
+        transport: {
+          target: 'pino-pretty',
+          options: { singleLine: true, translateTime: 'SYS:HH:MM:ss', ignore: 'pid,hostname,req,res,responseTime' },
         },
-        failAction: (_request, _h, err) => {
-          throw Boom.badRequest(err.message, { validation: true });
+      }),
+    };
+  }
+
+  createHapiServer() {
+    return Hapi.server({
+      host: this.config.server.host,
+      port: this.config.server.port,
+      routes: {
+        security: true,
+        cors: { origin: this.config.cors.origins },
+        validate: {
+          options: {
+            messages: VALIDATION_MESSAGES,
+            errors: { wrap: { label: false, array: false } },
+          },
+          failAction: (_request, _h, err) => {
+            throw Boom.badRequest(err.message, { validation: true });
+          },
         },
       },
-    },
-  });
+    });
+  }
 
-  await server.register({ plugin: HapiPino, options: loggerOptions });
-  await server.register(Jwt);
+  registerAuth(server) {
+    server.auth.strategy('jwt', 'jwt', {
+      keys: this.config.auth.jwtSecret,
+      verify: { aud: false, iss: false, sub: false, maxAgeSec: this.config.auth.accessTokenTtlSeconds },
+      validate: (artifacts) => ({ isValid: true, credentials: artifacts.decoded.payload }),
+    });
+    server.auth.default('jwt');
+  }
 
-  server.auth.strategy('jwt', 'jwt', {
-    keys: config.auth.jwtSecret,
-    verify: { aud: false, iss: false, sub: false, maxAgeSec: config.auth.accessTokenTtlSeconds },
-    validate: (artifacts) => ({ isValid: true, credentials: artifacts.decoded.payload }),
-  });
-  server.auth.default('jwt');
+  async create() {
+    const server = this.createHapiServer();
 
-  await server.register([
-    Inert,
-    Vision,
-    { plugin: HapiSwagger, options: swaggerOptions },
-    auditPlugin,
-    errorHandler,
-    healthPlugin,
-    employeesPlugin,
-    departmentsPlugin,
-    shiftsPlugin,
-    companyPlugin,
-    branchesPlugin,
-    reasonsPlugin,
-    rolesPlugin,
-    permissionsPlugin,
-    rolePermissionsPlugin,
-    vacationAccrualRulesPlugin,
-    vacationEntitlementsPlugin,
-    noticesPlugin,
-    calendarPlugin,
-    dashboardPlugin,
-    notificationsPlugin,
-    usersPlugin,
-    authAuditLogPlugin,
-    authPlugin,
-  ]);
+    await server.register({ plugin: HapiPino, options: this.loggerOptions() });
+    await server.register(Jwt);
+    this.registerAuth(server);
 
-  return server;
-};
+    await server.register([
+      Inert,
+      Vision,
+      { plugin: HapiSwagger, options: this.swaggerOptions() },
+      auditLog.plugin(),
+      errorHandler,
+      healthPlugin,
+      employeesPlugin,
+      departmentsPlugin,
+      shiftsPlugin,
+      companyPlugin,
+      branchesPlugin,
+      reasonsPlugin,
+      rolesPlugin,
+      permissionsPlugin,
+      rolePermissionsPlugin,
+      vacationAccrualRulesPlugin,
+      vacationEntitlementsPlugin,
+      noticesPlugin,
+      calendarPlugin,
+      dashboardPlugin,
+      notificationsPlugin,
+      usersPlugin,
+      authAuditLogPlugin,
+      authPlugin,
+    ]);
 
-module.exports = createServer;
+    return server;
+  }
+}
+
+module.exports = () => new ApiServer(config).create();
