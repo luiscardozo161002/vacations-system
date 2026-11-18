@@ -2,6 +2,10 @@ require('dotenv').config();
 
 const Environment = require('./environment');
 
+const MIN_PRODUCTION_SECRET_LENGTH = 32;
+
+const isEnvProduction = (env) => env === 'production';
+
 class Config {
   constructor(environment) {
     this.env = environment.text('NODE_ENV');
@@ -32,7 +36,12 @@ class Config {
 
     this.proxy = { trusted: environment.list('TRUSTED_PROXIES') };
     this.cors = { origins: environment.list('CORS_ORIGINS') };
+
+    if (this.env === 'production' && this.auth.jwtSecret.length < MIN_PRODUCTION_SECRET_LENGTH) {
+      throw new Error(`JWT_SECRET must have at least ${MIN_PRODUCTION_SECRET_LENGTH} characters in production`);
+    }
   }
 }
 
 module.exports = new Config(new Environment());
+module.exports.Config = Config;

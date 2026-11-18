@@ -80,7 +80,7 @@ Toda la configuración de la API sale de `backend/.env` ([`backend/src/config/in
 | `DB_NAME`     | Nombre de la base de datos      | `vacations_db`   |
 | `DB_USER`     | Usuario de PostgreSQL           | `postgres`       |
 | `DB_PASSWORD` | Password de ese usuario         | `postgres`       |
-| `JWT_SECRET`  | Firma los access token (JWT) | `change-me` |
+| `JWT_SECRET`  | Firma los access token (JWT). Con `NODE_ENV=production` debe tener al menos 32 caracteres | `change-me` |
 | `ACCESS_TOKEN_TTL_MINUTES` | Vida del access token, en minutos | `15` |
 | `REFRESH_TOKEN_TTL_DAYS` | Vida de la sesión (refresh token), en días | `7` |
 | `PASSWORD_RESET_TTL_HOURS` | Vida del código de restablecimiento, en horas | `1` |
