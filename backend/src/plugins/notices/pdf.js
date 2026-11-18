@@ -1,12 +1,9 @@
 const PDFDocument = require('pdfkit');
 const config = require('../../config');
 
-const DEFAULT_PHONE = 'TEL. 01-773-78-50497 / 504-98 / 500-09      FAX 506-22';
-const MANAGER = 'RECURSOS HUMANOS';
-const LOGO_TIMEOUT_MS = 3000;
+const { defaultPhone, managerName, logoTimeoutMs } = config.pdf;
 const PAGE = { width: 612, left: 40, right: 572 };
 const COPY_HEIGHT = 362;
-const TIME_ZONE = 'America/Mexico_City';
 const MONTHS = [
   'enero',
   'febrero',
@@ -38,7 +35,7 @@ class NoticePdf {
   }
 
   static requestDay(value) {
-    return new Date(value).toLocaleDateString('en-CA', { timeZone: TIME_ZONE });
+    return new Date(value).toLocaleDateString('en-CA', { timeZone: config.timeZone });
   }
 
   static plural(count, word) {
@@ -64,7 +61,7 @@ class NoticePdf {
     if (!url || config.env === 'test') return null;
     if (this.logos.has(url)) return this.logos.get(url);
     try {
-      const response = await fetch(url, { signal: AbortSignal.timeout(LOGO_TIMEOUT_MS) });
+      const response = await fetch(url, { signal: AbortSignal.timeout(logoTimeoutMs) });
       const logo = response.ok ? Buffer.from(await response.arrayBuffer()) : null;
       this.logos.set(url, logo);
       return logo;
@@ -98,7 +95,7 @@ class NoticePdf {
     doc.font('Helvetica').fontSize(8);
     doc.text(company.location ?? '', headerX, top + 22, { width: headerWidth, align: 'center' });
     doc.text(`R.F.C. ${company.rfc ?? ''}`, headerX, top + 34, { width: headerWidth, align: 'center' });
-    doc.text(company.phone_number ? `TEL. ${company.phone_number}` : DEFAULT_PHONE, headerX, top + 45, {
+    doc.text(company.phone_number ? `TEL. ${company.phone_number}` : defaultPhone, headerX, top + 45, {
       width: headerWidth,
       align: 'center',
     });
@@ -138,7 +135,7 @@ class NoticePdf {
     this.label(doc, 'DEPARTAMENTO:', PAGE.left, top + 140);
     this.box(doc, PAGE.left, top + 150, 260, 16, (notice.department_name ?? '').toUpperCase(), { bold: true });
     this.label(doc, 'ENCARGADO:', 312, top + 140);
-    this.box(doc, 312, top + 150, 260, 16, MANAGER, { bold: true });
+    this.box(doc, 312, top + 150, 260, 16, managerName, { bold: true });
 
     this.label(doc, 'MOTIVO:', PAGE.left, top + 174);
     this.box(doc, PAGE.left, top + 184, 330, 18, (notice.reason_description ?? '').toUpperCase(), { bold: true });

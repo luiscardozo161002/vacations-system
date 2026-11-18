@@ -1,6 +1,7 @@
 'use strict';
 
 const Joi = require('joi');
+const { pageSize } = require('../../lib/list-query');
 
 const id = Joi.number().integer().positive();
 
@@ -31,7 +32,7 @@ const list = Joi.object({
   effective_year: Joi.number().integer().min(2000).max(2100),
   sort: Joi.string(),
   page: Joi.number().integer().min(1).default(1),
-  pageSize: Joi.number().integer().min(1).max(100).default(20),
+  pageSize,
 }).unknown(false);
 
 module.exports = { create, update, params, list };

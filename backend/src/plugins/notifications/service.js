@@ -1,9 +1,9 @@
 const db = require('../../db');
+const config = require('../../config');
 const notices = require('../notices/service');
 const DataScope = require('../../lib/data-scope');
 
-const LIST_LIMIT = 20;
-const PENDING_LIMIT = 10;
+const { listLimit, pendingLimit } = config.notifications;
 const COLUMNS = ['notification_id', 'kind', 'title', 'body', 'link', 'read_at', 'created_at'];
 
 class NotificationService {
@@ -14,7 +14,7 @@ class NotificationService {
   async findPending(credentials) {
     if (!credentials.scope.includes('approvals:review')) return { total: 0, data: [] };
     const page = await this.notices.list(
-      { status: 'pending', sort: 'request_date', page: 1, pageSize: PENDING_LIMIT },
+      { status: 'pending', sort: 'request_date', page: 1, pageSize: pendingLimit },
       DataScope.from(credentials)
     );
     return { total: page.pagination.total, data: page.data };
@@ -23,7 +23,7 @@ class NotificationService {
   async listMine(credentials) {
     const userId = credentials.user_id;
     const [data, unread, pending] = await Promise.all([
-      db('notifications').where('user_id', userId).orderBy('created_at', 'desc').limit(LIST_LIMIT).select(COLUMNS),
+      db('notifications').where('user_id', userId).orderBy('created_at', 'desc').limit(listLimit).select(COLUMNS),
       db('notifications').where('user_id', userId).whereNull('read_at').count('* as total').first(),
       this.findPending(credentials),
     ]);

@@ -47,6 +47,22 @@ const schema = Joi.object({
   FIRST_TRANSFER_YEAR: GenericValidation.positive(2024),
   TRANSFER_EVERY_YEARS: GenericValidation.positive(6),
 
+  PAGE_SIZE_DEFAULT: GenericValidation.positive(20),
+  PAGE_SIZE_MAX: GenericValidation.positive(100),
+  PASSWORD_MIN_LENGTH: GenericValidation.positive(8),
+  PASSWORD_MAX_LENGTH: GenericValidation.positive(100),
+  CALENDAR_MAX_RANGE_DAYS: GenericValidation.positive(62),
+  DASHBOARD_UPCOMING_DAYS: GenericValidation.positive(30),
+  DASHBOARD_LIST_LIMIT: GenericValidation.positive(4),
+  DASHBOARD_MY_LIST_LIMIT: GenericValidation.positive(5),
+  NOTIFICATIONS_LIST_LIMIT: GenericValidation.positive(20),
+  NOTIFICATIONS_PENDING_LIMIT: GenericValidation.positive(10),
+
+  TIME_ZONE: GenericValidation.timeZone('America/Mexico_City'),
+  PDF_DEFAULT_PHONE: GenericValidation.text('TEL. 01-773-78-50497 / 504-98 / 500-09      FAX 506-22'),
+  PDF_MANAGER_NAME: GenericValidation.text('RECURSOS HUMANOS'),
+  PDF_LOGO_TIMEOUT_MS: GenericValidation.positive(3000),
+
   CSV_INCLUDE_BOM: GenericValidation.flag(true),
   INVALID_JSON_MESSAGE: GenericValidation.text('Invalid request payload JSON format'),
 });
@@ -111,6 +127,30 @@ module.exports = {
   holidays: {
     firstTransferYear: vars.FIRST_TRANSFER_YEAR,
     transferEveryYears: vars.TRANSFER_EVERY_YEARS,
+  },
+  pagination: {
+    defaultPageSize: vars.PAGE_SIZE_DEFAULT,
+    maxPageSize: vars.PAGE_SIZE_MAX,
+  },
+  passwordPolicy: {
+    minLength: vars.PASSWORD_MIN_LENGTH,
+    maxLength: vars.PASSWORD_MAX_LENGTH,
+  },
+  calendar: { maxRangeDays: vars.CALENDAR_MAX_RANGE_DAYS },
+  dashboard: {
+    upcomingDays: vars.DASHBOARD_UPCOMING_DAYS,
+    listLimit: vars.DASHBOARD_LIST_LIMIT,
+    myListLimit: vars.DASHBOARD_MY_LIST_LIMIT,
+  },
+  notifications: {
+    listLimit: vars.NOTIFICATIONS_LIST_LIMIT,
+    pendingLimit: vars.NOTIFICATIONS_PENDING_LIMIT,
+  },
+  timeZone: vars.TIME_ZONE,
+  pdf: {
+    defaultPhone: vars.PDF_DEFAULT_PHONE,
+    managerName: vars.PDF_MANAGER_NAME,
+    logoTimeoutMs: vars.PDF_LOGO_TIMEOUT_MS,
   },
   csv: { bom: vars.CSV_INCLUDE_BOM ? '﻿' : '' },
   errors: { invalidJsonMessage: vars.INVALID_JSON_MESSAGE },

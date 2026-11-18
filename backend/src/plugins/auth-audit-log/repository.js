@@ -1,5 +1,6 @@
 const CrudRepository = require('../../lib/crud/crud-repository');
 const db = require('../../db');
+const config = require('../../config');
 const AuthAuditLog = require('./model');
 const { COLUMNS } = require('./fields');
 const { buildOrderBy, paginationMeta, whereAnyOf, whereDateBetween } = require('../../lib/list-query');
@@ -28,7 +29,7 @@ class AuthAuditLogRepository extends CrudRepository {
     return query;
   }
 
-  async list({ sort, page = 1, pageSize = 20, ...filters }) {
+  async list({ sort, page = 1, pageSize = config.pagination.defaultPageSize, ...filters }) {
     const orderBy = buildOrderBy(sort, this.columns, this.defaultSort).map(({ column, order }) => ({
       column: `a.${column}`,
       order,

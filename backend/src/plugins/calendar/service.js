@@ -4,7 +4,7 @@ const { AppError } = require('../../lib/app-error');
 const { holidaysBetween } = require('../../lib/holidays');
 const { workingDates } = require('../../lib/request-breakdown');
 
-const MAX_RANGE_DAYS = 62;
+const { maxRangeDays } = config.calendar;
 
 class CalendarService {
   rangeDays(from, to) {
@@ -56,8 +56,8 @@ class CalendarService {
 
   async getCalendar({ from, to }, scope) {
     if (to < from) throw new AppError('INVALID_RANGE', 'La fecha final debe ser igual o posterior a la inicial');
-    if (this.rangeDays(from, to) > MAX_RANGE_DAYS) {
-      throw new AppError('RANGE_TOO_LONG', `El rango admite máximo ${MAX_RANGE_DAYS} días`);
+    if (this.rangeDays(from, to) > maxRangeDays) {
+      throw new AppError('RANGE_TOO_LONG', `El rango admite máximo ${maxRangeDays} días`);
     }
 
     const holidays = holidaysBetween(from, to);

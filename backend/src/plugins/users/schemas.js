@@ -1,7 +1,8 @@
 'use strict';
 
 const Joi = require('joi');
-const { listOf } = require('../../lib/list-query');
+const config = require('../../config');
+const { listOf, pageSize } = require('../../lib/list-query');
 
 const id = Joi.number().integer().positive();
 
@@ -14,7 +15,7 @@ const fields = {
   review_actions: Joi.array().items(Joi.string().valid('approve', 'reject', 'cancel')).unique(),
 };
 
-const password = Joi.string().min(8).max(100);
+const password = Joi.string().min(config.passwordPolicy.minLength).max(config.passwordPolicy.maxLength);
 
 const create = Joi.object({
   employee_id: fields.employee_id,
@@ -42,7 +43,7 @@ const list = Joi.object({
   employee_id: id,
   sort: Joi.string(),
   page: Joi.number().integer().min(1).default(1),
-  pageSize: Joi.number().integer().min(1).max(100).default(20),
+  pageSize,
 }).unknown(false);
 
 module.exports = { create, update, params, list, branches };

@@ -17,6 +17,19 @@ class GenericValidator {
     return Joi.boolean().default(fallback);
   }
 
+  timeZone(fallback) {
+    return Joi.string()
+      .custom((value, helpers) => {
+        try {
+          Intl.DateTimeFormat('en', { timeZone: value });
+          return value;
+        } catch {
+          return helpers.error('any.invalid');
+        }
+      })
+      .default(fallback);
+  }
+
   list(fallback = []) {
     return Joi.string()
       .empty('')

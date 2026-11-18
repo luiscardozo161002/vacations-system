@@ -3,6 +3,7 @@
 const Boom = require('@hapi/boom');
 const Joi = require('joi');
 const db = require('../db');
+const config = require('../config');
 
 const ListJoi = Joi.extend({
   type: 'array',
@@ -11,6 +12,12 @@ const ListJoi = Joi.extend({
 });
 
 const listOf = (item) => ListJoi.array().items(item).min(1);
+
+const pageSize = Joi.number()
+  .integer()
+  .min(1)
+  .max(config.pagination.maxPageSize)
+  .default(config.pagination.defaultPageSize);
 
 const isoDate = Joi.string()
   .pattern(/^\d{4}-\d{2}-\d{2}$/)
@@ -53,4 +60,4 @@ const paginationMeta = (page, pageSize, total) => ({
   totalPages: Math.ceil(total / pageSize),
 });
 
-module.exports = { buildOrderBy, paginationMeta, listOf, isoDate, whereAnyOf, whereDateBetween };
+module.exports = { buildOrderBy, paginationMeta, listOf, pageSize, isoDate, whereAnyOf, whereDateBetween };

@@ -1,11 +1,14 @@
 'use strict';
 
 const Joi = require('joi');
+const config = require('../../config');
+
+const { minLength, maxLength } = config.passwordPolicy;
 
 const login = Joi.object({
   email: Joi.string().email().max(120),
   username: Joi.string().max(50),
-  password: Joi.string().max(100).required(),
+  password: Joi.string().max(maxLength).required(),
 })
   .xor('email', 'username')
   .unknown(false);
@@ -24,7 +27,7 @@ const passwordResetRequest = Joi.object({
 
 const passwordResetConfirm = Joi.object({
   token: Joi.string().required(),
-  newPassword: Joi.string().min(8).max(100).required(),
+  newPassword: Joi.string().min(minLength).max(maxLength).required(),
 }).unknown(false);
 
 const updateMe = Joi.object({
@@ -35,8 +38,8 @@ const updateMe = Joi.object({
   .unknown(false);
 
 const changePassword = Joi.object({
-  currentPassword: Joi.string().max(100).required(),
-  newPassword: Joi.string().min(8).max(100).required(),
+  currentPassword: Joi.string().max(maxLength).required(),
+  newPassword: Joi.string().min(minLength).max(maxLength).required(),
 }).unknown(false);
 
 module.exports = {

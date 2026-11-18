@@ -1,7 +1,7 @@
 'use strict';
 
 const Joi = require('joi');
-const { listOf, isoDate } = require('../../lib/list-query');
+const { listOf, isoDate, pageSize } = require('../../lib/list-query');
 
 const id = Joi.number().integer().positive();
 
@@ -43,7 +43,7 @@ const list = Joi.object({
   status: listOf(Joi.string().valid('active', 'inactive')),
   sort: Joi.string(),
   page: Joi.number().integer().min(1).default(1),
-  pageSize: Joi.number().integer().min(1).max(100).default(20),
+  pageSize,
 }).unknown(false);
 
 module.exports = { create, update, params, list };

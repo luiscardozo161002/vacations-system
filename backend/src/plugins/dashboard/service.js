@@ -1,13 +1,12 @@
 const db = require('../../db');
+const config = require('../../config');
 const { AppError } = require('../../lib/app-error');
 const DataScope = require('../../lib/data-scope');
 const notices = require('../notices/service');
 const entitlements = require('../vacation-entitlements/service');
 const { holidaysBetween } = require('../../lib/holidays');
 
-const UPCOMING_DAYS = 30;
-const LIST_LIMIT = 4;
-const MY_LIST_LIMIT = 5;
+const { upcomingDays, listLimit, myListLimit } = config.dashboard;
 const TODAY = db.raw('CURRENT_DATE');
 
 class DashboardService {
@@ -52,7 +51,7 @@ class DashboardService {
       .where('n.status', 'approved')
       .where('n.absence_end_date', '>=', TODAY)
       .orderBy('n.absence_start_date')
-      .limit(LIST_LIMIT)
+      .limit(listLimit)
       .select(
         'n.notice_id',
         'e.employee_name',
@@ -68,7 +67,7 @@ class DashboardService {
   recentActivity(scope) {
     return this.withNames(this.scopedNotices(scope))
       .orderBy('happened_at', 'desc')
-      .limit(LIST_LIMIT)
+      .limit(listLimit)
       .select(
         'n.notice_id',
         'n.kind',
@@ -103,7 +102,7 @@ class DashboardService {
         .join('reasons as r', 'r.reason_id', 'n.reason_id')
         .where('r.affects_vacation_balance', true)
         .where('n.status', 'approved')
-        .whereBetween('n.absence_start_date', [TODAY, db.raw('CURRENT_DATE + ?::integer', [UPCOMING_DAYS])])
+        .whereBetween('n.absence_start_date', [TODAY, db.raw('CURRENT_DATE + ?::integer', [upcomingDays])])
     );
   }
 
@@ -150,7 +149,7 @@ class DashboardService {
     if (!scope.employeeId) throw new AppError('EMPLOYEE_NOT_FOUND', 'Tu usuario no tiene un empleado vinculado');
 
     const own = new DataScope({ role: 'EMPLOYEE', branchIds: [], employeeId: scope.employeeId });
-    const recent = { sort: '-request_date', page: 1, pageSize: MY_LIST_LIMIT };
+    const recent = { sort: '-request_date', page: 1, pageSize: myListLimit };
     const [profile, balances, requests, registered] = await Promise.all([
       this.findMyProfile(scope.employeeId),
       this.entitlements.list({ status: 'active', page: 1, pageSize: 1, sort: '-period_start' }, own),

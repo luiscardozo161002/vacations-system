@@ -104,6 +104,41 @@ describe('Config', () => {
     assert.equal(config.csv.bom, '');
   });
 
+  it('defaults the pagination, password, dashboard and PDF settings', () => {
+    const config = configFor();
+
+    assert.deepEqual(config.pagination, { defaultPageSize: 20, maxPageSize: 100 });
+    assert.deepEqual(config.passwordPolicy, { minLength: 8, maxLength: 100 });
+    assert.equal(config.calendar.maxRangeDays, 62);
+    assert.deepEqual(config.dashboard, { upcomingDays: 30, listLimit: 4, myListLimit: 5 });
+    assert.deepEqual(config.notifications, { listLimit: 20, pendingLimit: 10 });
+    assert.equal(config.timeZone, 'America/Mexico_City');
+    assert.equal(config.pdf.managerName, 'RECURSOS HUMANOS');
+    assert.equal(config.pdf.logoTimeoutMs, 3000);
+  });
+
+  it('reads the pagination, password and PDF settings from the environment', () => {
+    const config = configFor({
+      PAGE_SIZE_DEFAULT: '10',
+      PAGE_SIZE_MAX: '50',
+      PASSWORD_MIN_LENGTH: '12',
+      TIME_ZONE: 'UTC',
+      PDF_MANAGER_NAME: 'PEOPLE',
+      PDF_DEFAULT_PHONE: 'TEL. 000',
+    });
+
+    assert.deepEqual(config.pagination, { defaultPageSize: 10, maxPageSize: 50 });
+    assert.equal(config.passwordPolicy.minLength, 12);
+    assert.equal(config.timeZone, 'UTC');
+    assert.equal(config.pdf.managerName, 'PEOPLE');
+    assert.equal(config.pdf.defaultPhone, 'TEL. 000');
+  });
+
+  it('rejects an unknown time zone and a zero limit', () => {
+    assert.throws(() => configFor({ TIME_ZONE: 'Mars/Olympus' }), /TIME_ZONE/);
+    assert.throws(() => configFor({ CALENDAR_MAX_RANGE_DAYS: '0' }), /CALENDAR_MAX_RANGE_DAYS/);
+  });
+
   it('rejects an invalid roles, security or work setting', () => {
     assert.throws(() => configFor({ PASSWORD_SALT_ROUNDS: '0' }), /PASSWORD_SALT_ROUNDS/);
     assert.throws(() => configFor({ TEMP_PASSWORD_ALPHABET: 'a' }), /TEMP_PASSWORD_ALPHABET/);
