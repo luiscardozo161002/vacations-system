@@ -1,31 +1,19 @@
-import { HttpClient, QueryValue } from './http-client';
+import { ApiResource, CallOptions } from './api-resource';
 import type { Paginated } from '../types/common';
 
-export interface CallOptions {
-  signal?: AbortSignal;
-}
+export type { CallOptions } from './api-resource';
 
-export const toQuery = (params?: object): Record<string, QueryValue> | undefined =>
-  params as Record<string, QueryValue> | undefined;
-
-export class CrudResource<TItem, TListParams extends object, TCreate, TUpdate> {
-  constructor(
-    protected readonly http: HttpClient,
-    protected readonly path: string,
-  ) {}
-
+export class ReadResource<TItem, TListParams extends object> extends ApiResource {
   list(params?: TListParams, options: CallOptions = {}): Promise<Paginated<TItem>> {
-    return this.http.request<Paginated<TItem>>(this.path, {
-      method: 'GET',
-      query: toQuery(params),
-      signal: options.signal,
-    });
+    return this.http.request<Paginated<TItem>>(this.path, { query: params, signal: options.signal });
   }
 
   get(id: number, options: CallOptions = {}): Promise<TItem> {
-    return this.http.request<TItem>(`${this.path}/${id}`, { method: 'GET', signal: options.signal });
+    return this.http.request<TItem>(`${this.path}/${id}`, { signal: options.signal });
   }
+}
 
+export class CrudResource<TItem, TListParams extends object, TCreate, TUpdate> extends ReadResource<TItem, TListParams> {
   create(input: TCreate): Promise<TItem> {
     return this.http.request<TItem>(this.path, { method: 'POST', body: input });
   }

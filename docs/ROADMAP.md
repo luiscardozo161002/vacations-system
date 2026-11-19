@@ -1,46 +1,76 @@
 # Roadmap
 
-Revisión del 18 de noviembre de 2026. Producto en el [PRD](PRD.md), diseño en el [Design System](DESIGN_SYSTEM.md) y técnica en la [Arquitectura](ARCHITECTURE.md).
+Prioriza la evolución del producto y define cómo comprobar cada entrega.
 
-## Estado
+[Producto](PRD.md) · [Arquitectura](ARCHITECTURE.md) · [Sistema de diseño](DESIGN_SYSTEM.md)
 
-| Área | Estado |
-|---|---|
-| Autenticación, RBAC y alcance por sede | Hecho |
-| Catálogos: empresas, sedes, departamentos, turnos, empleados, reglas | Hecho |
-| Solicitudes y avisos con saldo, festivos y PDF | Hecho |
-| Periodos por aniversario y recordatorios | Hecho |
-| Notificaciones dentro del sistema | Hecho |
-| Auditoría, calendario y dashboard | Hecho |
-| SDK, 14 pantallas del frontend y CI | Hecho |
-| Configuración por variables de entorno con schema | Hecho |
-| Correo con Resend | Pendiente: credenciales |
-| Hosting y proxy de producción | Pendiente: definir |
-| Pruebas de aceptación con RH | Pendiente |
-| Carga inicial de empleados | Bloqueado: método y archivo de RH |
+Revisión del 18 de noviembre de 2026.
 
-## Prioridades del backend
+## Estado del producto
 
-| Prioridad | Hallazgo | Criterio de aceptación |
-|---|---|---|
-| P1 | El JWT conserva permisos hasta vencer; el cambio de contraseña temporal solo se exige en el frontend | La API comprueba cuenta y sesión; con cambio pendiente solo permite perfil y contraseña. Pruebas con un JWT anterior a una baja, un reenvío de acceso y un cambio de permisos |
-| P1 | El login lee y escribe los intentos fallidos por separado; el límite por IP vive en memoria | Incremento y bloqueo atómicos; límite compartido si hay varias réplicas. Pruebas de concurrencia y de proxy confiable |
-| P1 | El restablecimiento genera códigos sin correo; el perfil puede cambiar el correo de recuperación | Entrega por correo, límite de intentos y verificación del correo nuevo |
-| P1 | Dos cambios simultáneos pueden solapar reglas de acumulación | Restricción en PostgreSQL con rangos disjuntos por año; el conflicto responde `409 RULE_OVERLAP` |
-| P2 | La auditoría excluye secretos solo en el primer nivel | Campos auditables por operación, tamaño de metadatos limitado y pruebas con campos anidados |
-| P2 | Los listados paginan con ordenamientos que pueden empatar | Clave primaria como desempate; medir con `EXPLAIN (ANALYZE, BUFFERS)` antes de crear índices |
+| Área | Situación en el repositorio |
+| --- | --- |
+| Acceso | JWT, renovación de sesión, RBAC y alcance por sede |
+| Organización | Empresas, sedes, departamentos, turnos y empleados |
+| Ausencias | Solicitudes, avisos, cálculo de saldo, calendario y PDF |
+| Periodos | Generación por aniversario y recordatorios |
+| Seguimiento | Auditoría, dashboard y notificaciones internas |
+| Clientes | SDK TypeScript e interfaz React por módulos |
+| Calidad | Pruebas por paquete y pipeline de integración continua |
 
-## Siguiente
+La aceptación operativa depende de la revisión de Recursos Humanos y de la preparación del entorno de producción.
 
-| Orden | Trabajo |
-|---|---|
-| 1 | Refactor del SDK |
-| 2 | Refactor del frontend |
-| 3 | Prioridades P1 del backend |
-| 4 | Resend, hosting y pruebas con RH |
+## Siguiente entrega
 
-## Entrega
+| Orden | Trabajo | Resultado verificable |
+| --- | --- | --- |
+| 1 | Consolidar el SDK | Recursos y tipos coherentes, renovación de sesión y errores cubiertos por pruebas |
+| 2 | Consolidar el frontend | Consumo consistente del SDK, formularios reutilizables y pruebas de flujos principales |
+| 3 | Reforzar seguridad e integridad | Cerrar los pendientes de la siguiente sección |
+| 4 | Preparar la puesta en operación | Entrega de correo, entorno de producción y aceptación con Recursos Humanos |
 
-- `main` recibe releases etiquetados; `develop` integra ramas `feature/*`, `fix/*` y `chore/*` por pull request.
-- Un cambio de backend lleva una prueba del contrato HTTP o de concurrencia, lint y la suite contra PostgreSQL 17.
-- Si cambia un contrato HTTP, el mismo cambio incluye el SDK y el frontend.
+## Seguridad e integridad
+
+### Prioridad alta
+
+| Pendiente | Criterio de cierre |
+| --- | --- |
+| Revocación y contraseña temporal | La API comprueba el estado de cuenta y sesión. Mientras esté pendiente el cambio de contraseña, permite las operaciones necesarias para completarlo |
+| Intentos de login concurrentes | El incremento y el bloqueo por cuenta son atómicos y tienen pruebas concurrentes |
+| Recuperación y cambio de correo | La recuperación cuenta con entrega y límite de intentos. El correo nuevo se verifica antes de usarse para recuperar acceso |
+| Reglas de acumulación concurrentes | PostgreSQL garantiza rangos de antigüedad disjuntos por año. El conflicto se traduce a un error de negocio |
+
+La validación de revocación debe cubrir un access token emitido antes de la baja, del reenvío de acceso y del cambio de permisos. El límite por IP deberá compartirse si el despliegue utiliza varias instancias.
+
+### Prioridad media
+
+| Pendiente | Criterio de cierre |
+| --- | --- |
+| Metadatos de auditoría | Cada evento declara campos auditables y límites de tamaño. Las pruebas incluyen entradas anidadas con secretos |
+| Paginación estable | Los ordenamientos tienen desempate por clave primaria y conservan el resultado entre páginas |
+| Rendimiento de listados | Las consultas por sede y fecha se miden antes de añadir índices |
+
+## Integraciones y puesta en operación
+
+| Trabajo | Dependencia | Criterio de cierre |
+| --- | --- | --- |
+| Correo con Resend | Integración, credenciales y remitente autorizado | Recuperación y notificaciones entregadas en el entorno de aceptación |
+| Entorno de producción | Hosting, dominio y proxy definidos | Despliegue documentado y acceso a la API verificado a través del proxy |
+| Carga inicial | Método de carga y datos de Recursos Humanos | Empleados, fechas de ingreso y saldos conciliados |
+| Aceptación de Recursos Humanos | Datos iniciales y entorno disponible | Flujos del PRD revisados y observaciones resueltas |
+
+El envío por correo requiere implementación. La elección de Resend está prevista en la planificación del proyecto.
+
+## Criterios de entrega
+
+- Cada paquete afectado pasa sus pruebas y las comprobaciones del pipeline.
+- Un cambio de contrato conserva la compatibilidad entre backend, SDK y frontend.
+- Los cambios de esquema incluyen migraciones y verificación sobre PostgreSQL.
+- Los cambios visuales revisan temas, navegación por teclado y tamaños de pantalla.
+- Las reglas, los estados de avance y sus documentos se actualizan en el mismo cambio.
+
+El flujo de integración usa pull requests hacia `develop` y releases etiquetados desde `main`. El historial y el seguimiento de cambios concretos se conservan en Git y en sus pull requests.
+
+## Referencias
+
+El roadmap organiza resultados, prioridades y dependencias según las guías de planificación de producto de Atlassian. El orden refleja la planificación existente del proyecto. [Guía de roadmaps](https://www.atlassian.com/agile/product-management/product-roadmaps)

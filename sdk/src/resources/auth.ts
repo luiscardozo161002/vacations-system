@@ -1,5 +1,7 @@
-import { HttpClient } from '../core/http-client';
+import { ApiResource, CallOptions } from '../core/api-resource';
+import type { HttpClient } from '../core/http-client';
 import type { AuthTokens } from '../core/token-storage';
+import type { AccountStatus } from '../types/common';
 
 export type LoginInput =
   | { email: string; username?: never; password: string }
@@ -33,7 +35,7 @@ export interface CurrentUser {
   user_id: number;
   username: string;
   email: string;
-  status: 'active' | 'inactive' | 'locked';
+  status: AccountStatus;
   last_login_at: string | null;
   review_actions: ReviewAction[];
   must_change_password: boolean;
@@ -74,11 +76,13 @@ export interface PasswordResetRequestResult {
   devToken?: string;
 }
 
-export class AuthResource {
-  constructor(private readonly http: HttpClient) {}
+export class AuthResource extends ApiResource {
+  constructor(http: HttpClient) {
+    super(http, '/auth');
+  }
 
   async login(input: LoginInput): Promise<LoginResult> {
-    const result = await this.http.request<LoginResult>('/api/v1/auth/login', {
+    const result = await this.http.request<LoginResult>(`${this.path}/login`, {
       method: 'POST',
       body: input,
       auth: false,
@@ -92,7 +96,7 @@ export class AuthResource {
     this.http.storage.set(null);
 
     if (refreshToken) {
-      await this.http.request<void>('/api/v1/auth/logout', { method: 'POST', body: { refreshToken }, auth: false });
+      await this.http.request<void>(`${this.path}/logout`, { method: 'POST', body: { refreshToken }, auth: false });
     }
   }
 
@@ -104,22 +108,22 @@ export class AuthResource {
     return this.http.storage.get() !== null;
   }
 
-  me(options: { signal?: AbortSignal } = {}): Promise<CurrentUser> {
-    return this.http.request<CurrentUser>('/api/v1/auth/me', { method: 'GET', signal: options.signal });
+  me(options: CallOptions = {}): Promise<CurrentUser> {
+    return this.http.request<CurrentUser>(`${this.path}/me`, { signal: options.signal });
   }
 
   updateMe(input: UpdateMeInput): Promise<CurrentUser> {
-    return this.http.request<CurrentUser>('/api/v1/auth/me', { method: 'PATCH', body: input });
+    return this.http.request<CurrentUser>(`${this.path}/me`, { method: 'PATCH', body: input });
   }
 
   async changePassword(input: ChangePasswordInput): Promise<SessionTokens> {
-    const result = await this.http.request<SessionTokens>('/api/v1/auth/me/password', { method: 'POST', body: input });
+    const result = await this.http.request<SessionTokens>(`${this.path}/me/password`, { method: 'POST', body: input });
     this.saveTokens(result);
     return result;
   }
 
   requestPasswordReset(email: string): Promise<PasswordResetRequestResult> {
-    return this.http.request<PasswordResetRequestResult>('/api/v1/auth/password-reset/request', {
+    return this.http.request<PasswordResetRequestResult>(`${this.path}/password-reset/request`, {
       method: 'POST',
       body: { email },
       auth: false,
@@ -127,7 +131,7 @@ export class AuthResource {
   }
 
   confirmPasswordReset(input: PasswordResetConfirmInput): Promise<{ message: string }> {
-    return this.http.request<{ message: string }>('/api/v1/auth/password-reset/confirm', {
+    return this.http.request<{ message: string }>(`${this.path}/password-reset/confirm`, {
       method: 'POST',
       body: input,
       auth: false,

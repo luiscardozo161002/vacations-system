@@ -1,5 +1,5 @@
-import { HttpClient } from '../core/http-client';
-import type { CallOptions } from '../core/crud-resource';
+import { ApiResource, CallOptions } from '../core/api-resource';
+import type { HttpClient } from '../core/http-client';
 import type { Notice, NoticeKind, NoticeStatus } from './notices';
 import type { VacationEntitlement } from './vacation-entitlements';
 
@@ -57,14 +57,16 @@ export interface MySummary {
   notices: Notice[];
 }
 
-export class DashboardResource {
-  constructor(private readonly http: HttpClient) {}
+export class DashboardResource extends ApiResource {
+  constructor(http: HttpClient) {
+    super(http, '/dashboard');
+  }
 
   summary(options: CallOptions = {}): Promise<TeamSummary> {
-    return this.http.request<TeamSummary>('/api/v1/dashboard/summary', { method: 'GET', signal: options.signal });
+    return this.http.request<TeamSummary>(`${this.path}/summary`, { signal: options.signal });
   }
 
   me(options: CallOptions = {}): Promise<MySummary> {
-    return this.http.request<MySummary>('/api/v1/dashboard/me', { method: 'GET', signal: options.signal });
+    return this.http.request<MySummary>(`${this.path}/me`, { signal: options.signal });
   }
 }

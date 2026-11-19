@@ -1,6 +1,7 @@
-import { HttpClient } from '../core/http-client';
-import { CallOptions, toQuery } from '../core/crud-resource';
-import type { DaysAndHours, ListParams, OneOrMany, Paginated } from '../types/common';
+import type { CallOptions } from '../core/api-resource';
+import { ReadResource } from '../core/crud-resource';
+import type { HttpClient } from '../core/http-client';
+import type { DaysAndHours, ListParams, OneOrMany } from '../types/common';
 
 export type NoticeKind = 'request' | 'notice';
 
@@ -74,44 +75,36 @@ export interface NoticePreview {
   error: { code: string; message: string } | null;
 }
 
-const PATH = '/api/v1/notices';
-
-export class NoticesResource {
-  constructor(private readonly http: HttpClient) {}
-
-  list(params?: ListNoticesParams, options: CallOptions = {}): Promise<Paginated<Notice>> {
-    return this.http.request<Paginated<Notice>>(PATH, { method: 'GET', query: toQuery(params), signal: options.signal });
-  }
-
-  get(noticeId: number, options: CallOptions = {}): Promise<Notice> {
-    return this.http.request<Notice>(`${PATH}/${noticeId}`, { method: 'GET', signal: options.signal });
-  }
-
-  preview(input: PreviewNoticeInput, options: CallOptions = {}): Promise<NoticePreview> {
-    return this.http.request<NoticePreview>(`${PATH}/preview`, { method: 'POST', body: input, signal: options.signal });
+export class NoticesResource extends ReadResource<Notice, ListNoticesParams> {
+  constructor(http: HttpClient) {
+    super(http, '/notices');
   }
 
   create(input: CreateNoticeInput): Promise<Notice> {
-    return this.http.request<Notice>(PATH, { method: 'POST', body: input });
+    return this.http.request<Notice>(this.path, { method: 'POST', body: input });
   }
 
   update(noticeId: number, input: UpdateNoticeInput): Promise<Notice> {
-    return this.http.request<Notice>(`${PATH}/${noticeId}`, { method: 'PATCH', body: input });
+    return this.http.request<Notice>(`${this.path}/${noticeId}`, { method: 'PATCH', body: input });
+  }
+
+  preview(input: PreviewNoticeInput, options: CallOptions = {}): Promise<NoticePreview> {
+    return this.http.request<NoticePreview>(`${this.path}/preview`, { method: 'POST', body: input, signal: options.signal });
   }
 
   pdf(noticeId: number): Promise<Blob> {
-    return this.http.requestBlob(`${PATH}/${noticeId}/pdf`);
+    return this.http.requestBlob(`${this.path}/${noticeId}/pdf`);
   }
 
   approve(noticeId: number): Promise<Notice> {
-    return this.http.request<Notice>(`${PATH}/${noticeId}/approve`, { method: 'POST' });
+    return this.http.request<Notice>(`${this.path}/${noticeId}/approve`, { method: 'POST' });
   }
 
   reject(noticeId: number): Promise<Notice> {
-    return this.http.request<Notice>(`${PATH}/${noticeId}/reject`, { method: 'POST' });
+    return this.http.request<Notice>(`${this.path}/${noticeId}/reject`, { method: 'POST' });
   }
 
   cancel(noticeId: number): Promise<Notice> {
-    return this.http.request<Notice>(`${PATH}/${noticeId}/cancel`, { method: 'POST' });
+    return this.http.request<Notice>(`${this.path}/${noticeId}/cancel`, { method: 'POST' });
   }
 }

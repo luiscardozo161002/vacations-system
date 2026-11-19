@@ -27,6 +27,6 @@ export type UpdateReasonInput = Partial<CreateReasonInput>;
 
 export class ReasonsResource extends CrudResource<Reason, ListReasonsParams, CreateReasonInput, UpdateReasonInput> {
   constructor(http: HttpClient) {
-    super(http, '/api/v1/reasons');
+    super(http, '/reasons');
   }
 }

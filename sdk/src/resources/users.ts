@@ -1,9 +1,9 @@
 import { HttpClient } from '../core/http-client';
 import { CrudResource } from '../core/crud-resource';
 import type { ReviewAction, UserBranch } from './auth';
-import type { ListParams, OneOrMany } from '../types/common';
+import type { AccountStatus, ListParams, OneOrMany } from '../types/common';
 
-export type UserStatus = 'active' | 'inactive' | 'locked';
+export type UserStatus = AccountStatus;
 
 export interface User {
   user_id: number;
@@ -11,9 +11,11 @@ export interface User {
   role_id: number;
   username: string;
   email: string;
-  status: UserStatus;
+  status: AccountStatus;
   review_actions: ReviewAction[];
   mfa_enabled: boolean;
+  must_change_password: boolean;
+  temporary_password_expires_at: string | null;
   failed_login_attempts: number;
   locked_until: string | null;
   last_login_at: string | null;
@@ -27,7 +29,7 @@ export interface User {
 
 export interface ListUsersParams extends ListParams {
   role_id?: OneOrMany<number>;
-  status?: OneOrMany<UserStatus>;
+  status?: OneOrMany<AccountStatus>;
   employee_id?: number;
 }
 
@@ -37,7 +39,7 @@ export interface CreateUserInput {
   username: string;
   email: string;
   password: string;
-  status?: UserStatus;
+  status?: AccountStatus;
   review_actions?: ReviewAction[];
 }
 
@@ -47,11 +49,11 @@ export type AssignedBranch = Omit<UserBranch, 'company_name'>;
 
 export class UsersResource extends CrudResource<User, ListUsersParams, CreateUserInput, UpdateUserInput> {
   constructor(http: HttpClient) {
-    super(http, '/api/v1/users');
+    super(http, '/users');
   }
 
   branches(userId: number): Promise<AssignedBranch[]> {
-    return this.http.request<AssignedBranch[]>(`${this.path}/${userId}/branches`, { method: 'GET' });
+    return this.http.request<AssignedBranch[]>(`${this.path}/${userId}/branches`);
   }
 
   replaceBranches(userId: number, branchIds: number[]): Promise<AssignedBranch[]> {

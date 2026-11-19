@@ -1,52 +1,100 @@
-# Design System
+# Sistema de diseño
 
-La fuente de diseño es el prototipo `C:\Develop\vacations-design-system`: 14 pantallas y 3 roles.
+Define los estilos, componentes y patrones de interacción compartidos por el frontend.
 
-```bash
-npx serve C:/Develop/vacations-design-system -l 4600
-```
+[Producto](PRD.md) · [Arquitectura](ARCHITECTURE.md) · [Roadmap](ROADMAP.md)
 
-## Qué se reutiliza
+## Referencias del proyecto
 
-| Prototipo | Frontend | Regla |
-|---|---|---|
-| `styles.css` | [frontend/src/styles.css](../frontend/src/styles.css) | Copia idéntica, no se edita |
-| `icons.js` | [frontend/src/components/Icon.tsx](../frontend/src/components/Icon.tsx) | Mismo mapa: `<Icon name="plus" />` |
-| Markup de `app.js` (`renderEmpleados`, `openDrawer`, `openDialog`, `paginationFooter`…) | Componentes React | Mismas clases y estructura |
-| `applyTheme`, `applyButtonColor`, `applyWindowAlpha` y las claves `vm_*` | [frontend/src/lib/appearance.ts](../frontend/src/lib/appearance.ts) | Mismos presets y fórmulas; tema claro por defecto |
+El prototipo de Vacation Manager guía los cambios visuales. La implementación versionada se consulta en los estilos, componentes y preferencias del frontend.
 
-## Reglas
+| Recurso | Referencia |
+| --- | --- |
+| Tokens, temas y clases visuales | [styles.css](../frontend/src/styles.css) |
+| Componentes React | [components](../frontend/src/components) |
+| Tema y preferencias | [appearance.ts](../frontend/src/lib/appearance.ts) |
+| Menú y nombres de módulos | [navigation.ts](../frontend/src/app/navigation.ts) |
 
-1. **Una fuente de verdad.** Todo cambio de diseño se hace primero en el prototipo y luego se copia el CSS:
-   ```bash
-   cp C:/Develop/vacations-design-system/styles.css frontend/src/styles.css
-   ```
-2. **Sin CSS por pantalla.** Si falta algo, se agrega al prototipo.
-3. **Una pantalla nueva** copia el markup de su función `render…` y lo pasa a JSX, cambiando los datos falsos de `data.js` por llamadas al SDK.
-4. **Estados** con las clases de `statusBadge`:
+Los cambios de diseño se preparan en el prototipo y se trasladan al frontend junto con sus componentes. Se reutilizan los tokens y las clases compartidas al construir pantallas.
 
-| Estado | Clase |
-|---|---|
-| `active`, `approved` | `badge-success` |
-| `pending` | `badge-warning` |
-| `rejected` | `badge-danger` |
-| `inactive`, `cancelled` | `badge-neutral` |
+## Fundamentos visuales
 
-## Componentes del kit
+### Color
 
-Están en [frontend/src/components](../frontend/src/components) y reproducen una función de `app.js`.
+Los tokens expresan la función de cada color. El tema oscuro cambia sus valores mediante `data-theme="dark"`.
 
-| Componente | Prototipo | Uso |
-|---|---|---|
-| `Drawer` | `openDrawer` | Formularios laterales; con `onSubmit` es un `<form>` |
-| `Dialog`, `ConfirmDialog` | `openDialog` | Confirmaciones, en lugar de `window.confirm` |
-| `ToastProvider`, `useToast()` | `showToast` | Avisos de 3.2 s abajo a la derecha |
-| `DataTable` | `table-wrap`, `paginationFooter` | Tabla con estado vacío, carga y paginación |
-| `EmptyState` | `emptyState` | Listas sin resultados |
-| `StatusBadge` | `statusBadge` | Estado con su color |
-| `SearchSelect` | `searchSelect` | Combobox con `datalist` |
-| `StatCard` | `statCard` | Indicadores del dashboard |
-| `Icon` | `iconSvg` | Iconos |
-| `FormField`, `TextField`, `SelectField`, `SearchInput` | Formularios | Campos con etiqueta y ayuda; la búsqueda espera 300 ms |
+| Uso | Token | Tema claro |
+| --- | --- | --- |
+| Fondo | `--bg` | `#ffffff` |
+| Fondo secundario | `--bg-subtle` | `#f8fafc` |
+| Superficie | `--surface-solid` | `#ffffff` |
+| Texto | `--text` | `#0f172a` |
+| Texto secundario | `--text-muted` | `#64748b` |
+| Borde | `--border` | `#e2e8f0` |
+| Acción principal | `--btn-primary-bg` | `#111111` |
 
-Drawers y diálogos se cierran con Escape o con clic fuera. Los diálogos de confirmación tienen un solo botón de acción.
+Los colores de éxito, advertencia, error y estado neutral tienen tokens propios para texto y fondo. Las preferencias de apariencia permiten cambiar el fondo exterior, el color del botón principal y la opacidad de la ventana.
+
+### Tipografía y forma
+
+La interfaz utiliza Inter con fuentes del sistema como alternativa. El texto base es de 14 px y tiene una altura de línea de 1.5. Los títulos usan peso 600.
+
+Los radios compartidos son de 8, 10 y 12 px, con un radio independiente para controles redondeados. Las sombras y las dimensiones de la navegación se definen en los mismos estilos. [Tokens visuales](../frontend/src/styles.css)
+
+## Componentes
+
+| Componente | Uso |
+| --- | --- |
+| `DataTable` | Tablas con carga, estado vacío y paginación |
+| `Drawer` | Formularios y detalle en un panel lateral |
+| `Dialog`, `ConfirmDialog` | Confirmaciones y acciones que necesitan contexto |
+| `FormField`, `TextField`, `SelectField` | Campos con etiqueta, ayuda y validación |
+| `SearchInput`, `SearchSelect` | Búsqueda y selección de registros |
+| `StatusBadge` | Estado con texto y tono semántico |
+| `ToastProvider` | Confirmación breve del resultado de una acción |
+| `EmptyState` | Mensaje para listas sin resultados |
+| `StatCard` | Indicadores resumidos |
+| `Icon` | Iconos del catálogo compartido |
+
+La implementación y las propiedades disponibles se consultan en el componente correspondiente. [Catálogo de componentes](../frontend/src/components)
+
+## Patrones de interacción
+
+### Listados y formularios
+
+- Los filtros muestran el criterio aplicado y la paginación conserva el contexto del listado.
+- La búsqueda por texto espera 300 ms antes de actualizar los resultados.
+- Las tablas distinguen carga y ausencia de resultados.
+- Los campos tienen una etiqueta visible y la ayuda se vincula al control.
+- Los formularios presentan los errores de la API junto al contexto de la operación.
+
+### Paneles y confirmaciones
+
+Los paneles y diálogos se cierran con el botón de cierre, Escape o un clic en el fondo. El foco permanece dentro del panel y vuelve al control de origen al cerrarlo.
+
+Las confirmaciones muestran una acción con un verbo concreto, como «Aprobar», «Rechazar» o «Cancelar». La notificación breve comunica el resultado y se anuncia mediante una región de estado. [Overlay](../frontend/src/components/Overlay.tsx), [diálogos](../frontend/src/components/Dialog.tsx), [notificaciones](../frontend/src/components/ToastProvider.tsx)
+
+### Estados
+
+| Estado del dato | Etiqueta | Tono |
+| --- | --- | --- |
+| `active` | Activo | Éxito |
+| `approved` | Aprobada | Éxito |
+| `pending` | Pendiente | Advertencia |
+| `rejected` | Rechazada | Error |
+| `locked` | Bloqueado | Error |
+| `inactive` | Inactivo | Neutral |
+| `cancelled` | Cancelada | Neutral |
+| `success` / `failed` | Exitoso / Fallido | Éxito / Error |
+
+Cada estado se comunica con texto además de color. [StatusBadge](../frontend/src/components/StatusBadge.tsx)
+
+## Accesibilidad y adaptación
+
+Al modificar una pantalla, comprueba la navegación por teclado, las etiquetas de los controles y la recuperación del foco. Los diálogos deben conservar su título y sus atributos de modalidad.
+
+Revisa los temas claro y oscuro, los estados de carga, vacío y error, y los anchos de escritorio y móvil. Las reglas adaptables viven en el CSS compartido. Las pruebas de formularios y diálogos verifican parte de estas interacciones. [Pruebas de componentes](../frontend/src/components/Dialog.test.tsx)
+
+## Referencias
+
+La organización en fundamentos, componentes y patrones toma como referencia GOV.UK Design System. Los valores visuales y el comportamiento descritos corresponden a este proyecto. [GOV.UK Design System](https://design-system.service.gov.uk/)

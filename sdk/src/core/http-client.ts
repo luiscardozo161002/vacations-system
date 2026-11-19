@@ -1,34 +1,38 @@
 import { SdkHttpError } from './api-error';
 import { AuthTokens, TokenStorage, memoryStorage } from './token-storage';
 
+const DEFAULT_API_PREFIX = '/api/v1';
+const REFRESH_PATH = '/auth/refresh';
+const UNAUTHORIZED = 401;
+const FORBIDDEN = 403;
+
+type QueryScalar = string | number | boolean;
+export type QueryValue = QueryScalar | QueryScalar[] | undefined | null;
+
 export interface SdkClientOptions {
   baseUrl: string;
+  apiPrefix?: string;
   storage?: TokenStorage;
   onSessionExpired?: () => void;
 }
 
-type QueryScalar = string | number | boolean;
-
-export type QueryValue = QueryScalar | QueryScalar[] | undefined | null;
-
 export interface RequestOptions {
   method?: string;
   body?: unknown;
-  query?: Record<string, QueryValue>;
+  query?: object;
   signal?: AbortSignal;
   auth?: boolean;
 }
 
-const buildQueryString = (query?: Record<string, QueryValue>): string => {
-  if (!query) return '';
-
+const buildQueryString = (query: object = {}): string => {
   const params = new URLSearchParams();
   for (const [key, value] of Object.entries(query)) {
-    if (value !== undefined && value !== null) params.set(key, Array.isArray(value) ? value.join(',') : String(value));
+    if (value === undefined || value === null) continue;
+    params.set(key, Array.isArray(value) ? value.join(',') : String(value));
   }
 
-  const qs = params.toString();
-  return qs ? `?${qs}` : '';
+  const queryString = params.toString();
+  return queryString ? `?${queryString}` : '';
 };
 
 const parseResponse = async <T>(response: Response): Promise<T> => {
@@ -39,26 +43,23 @@ const parseResponse = async <T>(response: Response): Promise<T> => {
     try {
       body = JSON.parse(raw);
     } catch {
-      if (response.ok) {
-        throw new Error('La API devolvio una respuesta JSON invalida');
-      }
+      if (response.ok) throw new Error('La API devolvió una respuesta JSON inválida');
     }
   }
 
-  if (!response.ok) {
-    throw new SdkHttpError(response.status, body);
-  }
+  if (!response.ok) throw new SdkHttpError(response.status, body);
 
   return body as T;
 };
 
-
 export class HttpClient {
   readonly storage: TokenStorage;
-  private refreshing?: Promise<boolean>;
+  private readonly apiUrl: string;
+  private refreshing?: { refreshToken: string; promise: Promise<boolean> };
 
   constructor(private readonly options: SdkClientOptions) {
     this.storage = options.storage ?? memoryStorage();
+    this.apiUrl = `${options.baseUrl}${options.apiPrefix ?? DEFAULT_API_PREFIX}`;
   }
 
   async request<T>(path: string, options: RequestOptions = {}): Promise<T> {
@@ -71,51 +72,55 @@ export class HttpClient {
     return response.blob();
   }
 
+  refreshSession(): Promise<boolean> {
+    const refreshToken = this.storage.get()?.refreshToken;
+    if (!refreshToken) return Promise.resolve(false);
+    if (this.refreshing?.refreshToken === refreshToken) {
+      return this.refreshing.promise;
+    }
+
+    const promise = this.renewTokens(refreshToken).finally(() => {
+      if (this.refreshing?.promise === promise) this.refreshing = undefined;
+    });
+    this.refreshing = { refreshToken, promise };
+    return promise;
+  }
+
   private async sendWithRefresh(path: string, options: RequestOptions): Promise<Response> {
     const response = await this.send(path, options);
-    if (response.status === 401 && options.auth !== false && (await this.refreshSession())) {
+    if (response.status === UNAUTHORIZED && options.auth !== false && (await this.refreshSession())) {
       return this.send(path, options);
     }
     return response;
   }
 
-  refreshSession(): Promise<boolean> {
-    if (!this.refreshing) {
-      this.refreshing = this.renewTokens().finally(() => {
-        this.refreshing = undefined;
-      });
-    }
-    return this.refreshing;
-  }
-
   private send(path: string, options: RequestOptions): Promise<Response> {
     const token = options.auth === false ? undefined : this.storage.get()?.accessToken;
+    const headers: Record<string, string> = {};
+    if (options.body !== undefined) headers['Content-Type'] = 'application/json';
+    if (token) headers.Authorization = `Bearer ${token}`;
 
-    return fetch(`${this.options.baseUrl}${path}${buildQueryString(options.query)}`, {
+    return fetch(`${this.apiUrl}${path}${buildQueryString(options.query)}`, {
       method: options.method ?? 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
+      headers,
       body: options.body === undefined ? undefined : JSON.stringify(options.body),
       signal: options.signal,
     });
   }
 
-  private async renewTokens(): Promise<boolean> {
-    const refreshToken = this.storage.get()?.refreshToken;
-    if (!refreshToken) return false;
-
+  private async renewTokens(refreshToken: string): Promise<boolean> {
     try {
-      const tokens = await this.request<AuthTokens>('/api/v1/auth/refresh', {
+      const tokens = await this.request<AuthTokens>(REFRESH_PATH, {
         method: 'POST',
         body: { refreshToken },
         auth: false,
       });
+      if (this.storage.get()?.refreshToken !== refreshToken) return false;
       this.storage.set({ accessToken: tokens.accessToken, refreshToken: tokens.refreshToken });
       return true;
     } catch (err) {
-      if (err instanceof SdkHttpError && (err.status === 401 || err.status === 403)) {
+      if (this.storage.get()?.refreshToken !== refreshToken) return false;
+      if (err instanceof SdkHttpError && (err.status === UNAUTHORIZED || err.status === FORBIDDEN)) {
         this.storage.set(null);
         this.options.onSessionExpired?.();
         return false;

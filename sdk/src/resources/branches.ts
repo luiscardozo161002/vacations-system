@@ -29,6 +29,6 @@ export type UpdateBranchInput = Partial<CreateBranchInput>;
 
 export class BranchesResource extends CrudResource<Branch, ListBranchesParams, CreateBranchInput, UpdateBranchInput> {
   constructor(http: HttpClient) {
-    super(http, '/api/v1/branches');
+    super(http, '/branches');
   }
 }

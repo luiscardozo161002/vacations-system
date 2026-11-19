@@ -5,7 +5,6 @@ interface ApiErrorBody {
   };
 }
 
-
 export class SdkHttpError extends Error {
   public readonly code: string;
 
@@ -14,7 +13,7 @@ export class SdkHttpError extends Error {
     public readonly body: unknown,
   ) {
     const apiError = (body as ApiErrorBody | undefined)?.error;
-    super(apiError?.message ?? `La peticion fallo con estado ${status}`);
+    super(apiError?.message ?? `La petición falló con estado ${status}`);
     this.name = 'SdkHttpError';
     this.code = apiError?.code ?? 'UNKNOWN_ERROR';
   }

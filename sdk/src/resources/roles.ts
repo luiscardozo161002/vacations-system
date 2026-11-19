@@ -23,6 +23,6 @@ export type UpdateRoleInput = Partial<CreateRoleInput>;
 
 export class RolesResource extends CrudResource<Role, ListRolesParams, CreateRoleInput, UpdateRoleInput> {
   constructor(http: HttpClient) {
-    super(http, '/api/v1/roles');
+    super(http, '/roles');
   }
 }

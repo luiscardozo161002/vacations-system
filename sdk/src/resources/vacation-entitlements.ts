@@ -59,7 +59,7 @@ export class VacationEntitlementsResource extends CrudResource<
   UpdateVacationEntitlementInput
 > {
   constructor(http: HttpClient) {
-    super(http, '/api/v1/vacation-entitlements');
+    super(http, '/vacation-entitlements');
   }
 
   generate(date?: string): Promise<RolloverSummary> {

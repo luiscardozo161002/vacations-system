@@ -14,7 +14,15 @@ const setup = (handler: Parameters<typeof mockFetch>[0]) => {
   const mock = mockFetch(handler);
   restore = mock.restore;
   const storage = memoryStorage();
-  return { sdk: new VacationsSdk({ baseUrl, storage }), storage, calls: mock.calls };
+  let expired = 0;
+  const sdk = new VacationsSdk({ baseUrl, storage, onSessionExpired: () => { expired += 1; } });
+  return { sdk, storage, calls: mock.calls, expiredCount: () => expired };
+};
+
+const deferredResponse = () => {
+  let resolve!: (response: Response) => void;
+  const response = new Promise<Response>((finish) => { resolve = finish; });
+  return { response, resolve };
 };
 
 describe('sdk.auth', () => {
@@ -72,5 +80,69 @@ describe('sdk.auth', () => {
 
     assert.equal(await sdk.auth.refresh(), false);
     assert.equal(calls.length, 0);
+  });
+
+  it('una renovación pendiente conserva el logout aunque termine correctamente', async () => {
+    const pending = deferredResponse();
+    const { sdk, storage, expiredCount } = setup((call) =>
+      call.url.endsWith('/auth/refresh') ? pending.response : new Response(null, { status: 204 }),
+    );
+    storage.set({ accessToken: 'a1', refreshToken: 'r1' });
+
+    const refresh = sdk.auth.refresh();
+    await sdk.auth.logout();
+    pending.resolve(json(200, { accessToken: 'a2', refreshToken: 'r2' }));
+
+    assert.equal(await refresh, false);
+    assert.equal(storage.get(), null);
+    assert.equal(expiredCount(), 0);
+  });
+
+  for (const status of [200, 401, 403, 500]) {
+    it(`una renovación anterior con estado ${status} conserva el login posterior`, async () => {
+      const pending = deferredResponse();
+      const newTokens = { accessToken: 'new-account', refreshToken: 'new-refresh' };
+      const { sdk, storage, expiredCount } = setup((call) =>
+        call.url.endsWith('/auth/refresh') ? pending.response : json(200, newTokens),
+      );
+      storage.set({ accessToken: 'old-account', refreshToken: 'old-refresh' });
+
+      const refresh = sdk.auth.refresh();
+      await sdk.auth.login({ username: 'new-account', password: 'test-only' });
+      pending.resolve(json(status, status === 200
+        ? { accessToken: 'old-renewed', refreshToken: 'old-rotated' }
+        : { error: { code: 'REFRESH_FAILED' } }));
+
+      assert.equal(await refresh, false);
+      assert.deepEqual(storage.get(), newTokens);
+      assert.equal(expiredCount(), 0);
+    });
+  }
+
+  it('la sesión nueva puede renovar mientras finaliza la anterior y comparte su propia petición', async () => {
+    const oldPending = deferredResponse();
+    const newPending = deferredResponse();
+    const newTokens = { accessToken: 'new-account', refreshToken: 'new-refresh' };
+    const { sdk, storage, calls } = setup((call) => {
+      if (!call.url.endsWith('/auth/refresh')) return json(200, newTokens);
+      const body = call.body as { refreshToken: string };
+      return body.refreshToken === 'old-refresh' ? oldPending.response : newPending.response;
+    });
+    storage.set({ accessToken: 'old-account', refreshToken: 'old-refresh' });
+
+    const oldRefresh = sdk.auth.refresh();
+    await sdk.auth.login({ username: 'new-account', password: 'test-only' });
+    const newRefresh = sdk.auth.refresh();
+    assert.equal(sdk.auth.refresh(), newRefresh);
+    assert.equal(calls.filter((call) => call.url.endsWith('/auth/refresh')).length, 2);
+
+    oldPending.resolve(json(401, { error: { code: 'INVALID_REFRESH_TOKEN' } }));
+    assert.equal(await oldRefresh, false);
+    assert.equal(sdk.auth.refresh(), newRefresh);
+
+    const renewed = { accessToken: 'new-renewed', refreshToken: 'new-rotated' };
+    newPending.resolve(json(200, renewed));
+    assert.equal(await newRefresh, true);
+    assert.deepEqual(storage.get(), renewed);
   });
 });

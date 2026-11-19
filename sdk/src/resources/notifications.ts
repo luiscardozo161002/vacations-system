@@ -1,5 +1,5 @@
-import { HttpClient } from '../core/http-client';
-import type { CallOptions } from '../core/crud-resource';
+import { ApiResource, CallOptions } from '../core/api-resource';
+import type { HttpClient } from '../core/http-client';
 import type { Notice } from './notices';
 
 export interface AppNotification {
@@ -21,16 +21,16 @@ export interface MyNotifications {
   };
 }
 
-const PATH = '/api/v1/me/notifications';
-
-export class NotificationsResource {
-  constructor(private readonly http: HttpClient) {}
+export class NotificationsResource extends ApiResource {
+  constructor(http: HttpClient) {
+    super(http, '/me/notifications');
+  }
 
   list(options: CallOptions = {}): Promise<MyNotifications> {
-    return this.http.request<MyNotifications>(PATH, { method: 'GET', signal: options.signal });
+    return this.http.request<MyNotifications>(this.path, { signal: options.signal });
   }
 
   markAllRead(): Promise<MyNotifications> {
-    return this.http.request<MyNotifications>(`${PATH}/read`, { method: 'POST' });
+    return this.http.request<MyNotifications>(`${this.path}/read`, { method: 'POST' });
   }
 }

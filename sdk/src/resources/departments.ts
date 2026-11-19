@@ -1,7 +1,8 @@
 import { HttpClient } from '../core/http-client';
 import { CrudResource } from '../core/crud-resource';
+import type { ListParams, RecordStatus } from '../types/common';
 
-export type DepartmentStatus = 'active' | 'inactive';
+export type DepartmentStatus = RecordStatus;
 
 export interface Department {
   department_id: number;
@@ -10,7 +11,7 @@ export interface Department {
   department_name: string;
   manager_employee_id: number | null;
   calendar_shared: boolean;
-  status: DepartmentStatus;
+  status: RecordStatus;
   created_at: string;
   updated_at: string;
   manager_name: string | null;
@@ -19,12 +20,9 @@ export interface Department {
   branch_name: string | null;
 }
 
-export interface ListDepartmentsParams {
+export interface ListDepartmentsParams extends ListParams {
   branch_id?: number;
-  status?: DepartmentStatus;
-  sort?: string;
-  page?: number;
-  pageSize?: number;
+  status?: RecordStatus;
 }
 
 export interface CreateDepartmentInput {
@@ -33,14 +31,13 @@ export interface CreateDepartmentInput {
   department_name: string;
   manager_employee_id?: number | null;
   calendar_shared?: boolean;
-  status?: DepartmentStatus;
+  status?: RecordStatus;
 }
 
 export type UpdateDepartmentInput = Partial<CreateDepartmentInput>;
 
-
 export class DepartmentsResource extends CrudResource<Department, ListDepartmentsParams, CreateDepartmentInput, UpdateDepartmentInput> {
   constructor(http: HttpClient) {
-    super(http, '/api/v1/departments');
+    super(http, '/departments');
   }
 }

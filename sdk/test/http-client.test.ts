@@ -29,7 +29,7 @@ describe('transporte', () => {
   it('arma la URL con el query string y omite los valores vacíos', async () => {
     const { http, calls } = setup(() => json(200, {}));
 
-    await http.request('/api/v1/employees', { query: { page: 2, status: 'active', search: undefined, sort: null } });
+    await http.request('/employees', { query: { page: 2, status: 'active', search: undefined, sort: null } });
 
     assert.equal(calls[0].url, `${baseUrl}/api/v1/employees?page=2&status=active`);
   });
@@ -37,7 +37,7 @@ describe('transporte', () => {
   it('manda las listas de valores separadas por comas', async () => {
     const { http, calls } = setup(() => json(200, {}));
 
-    await http.request('/api/v1/notices', { query: { status: ['pending', 'approved'], department_id: [1, 2] } });
+    await http.request('/notices', { query: { status: ['pending', 'approved'], department_id: [1, 2] } });
 
     assert.equal(calls[0].url, `${baseUrl}/api/v1/notices?status=pending%2Capproved&department_id=1%2C2`);
   });
@@ -45,7 +45,7 @@ describe('transporte', () => {
   it('manda el método, el body en JSON y el token', async () => {
     const { http, calls } = setup(() => json(201, { id: 1 }));
 
-    const result = await http.request<{ id: number }>('/api/v1/employees', { method: 'POST', body: { name: 'Ana' } });
+    const result = await http.request<{ id: number }>('/employees', { method: 'POST', body: { name: 'Ana' } });
 
     assert.deepEqual(result, { id: 1 });
     assert.equal(calls[0].method, 'POST');
@@ -54,10 +54,30 @@ describe('transporte', () => {
     assert.equal(calls[0].headers.Authorization, 'Bearer a1');
   });
 
+  it('usa el prefijo configurado en lugar del de la API por defecto', async () => {
+    const mock = mockFetch(() => json(200, {}));
+    restore = mock.restore;
+    const http = new HttpClient({ baseUrl, apiPrefix: '/api/v2' });
+
+    await http.request('/employees');
+
+    assert.equal(mock.calls[0].url, `${baseUrl}/api/v2/employees`);
+  });
+
+  it('solo manda Content-Type cuando hay body', async () => {
+    const { http, calls } = setup(() => json(200, {}));
+
+    await http.request('/employees');
+    await http.request('/employees', { method: 'POST', body: {} });
+
+    assert.equal(calls[0].headers['Content-Type'], undefined);
+    assert.equal(calls[1].headers['Content-Type'], 'application/json');
+  });
+
   it('no manda token en las rutas públicas', async () => {
     const { http, calls } = setup(() => json(200, {}));
 
-    await http.request('/api/v1/auth/login', { method: 'POST', body: {}, auth: false });
+    await http.request('/auth/login', { method: 'POST', body: {}, auth: false });
 
     assert.equal(calls[0].headers.Authorization, undefined);
   });
@@ -65,13 +85,13 @@ describe('transporte', () => {
   it('devuelve undefined cuando la respuesta viene vacía', async () => {
     const { http } = setup(() => new Response(null, { status: 204 }));
 
-    assert.equal(await http.request('/api/v1/employees/1', { method: 'DELETE' }), undefined);
+    assert.equal(await http.request('/employees/1', { method: 'DELETE' }), undefined);
   });
 
   it('falla si una respuesta exitosa no es JSON', async () => {
     const { http } = setup(() => new Response('<html>', { status: 200 }));
 
-    await assert.rejects(http.request('/api/v1/health'), /JSON invalida/);
+    await assert.rejects(http.request('/health'), /JSON inválida/);
   });
 });
 
@@ -79,7 +99,7 @@ describe('errores', () => {
   it('traduce el cuerpo de error de la API a SdkHttpError', async () => {
     const { http } = setup(() => json(409, { error: { code: 'DUPLICATE', message: 'Ese correo ya esta en uso' } }));
 
-    await assert.rejects(http.request('/api/v1/users', { method: 'POST' }), (err: unknown) => {
+    await assert.rejects(http.request('/users', { method: 'POST' }), (err: unknown) => {
       assert.ok(err instanceof SdkHttpError);
       assert.equal(err.status, 409);
       assert.equal(err.code, 'DUPLICATE');
@@ -91,7 +111,7 @@ describe('errores', () => {
   it('usa un código genérico cuando el error no trae cuerpo', async () => {
     const { http } = setup(() => new Response('', { status: 502 }));
 
-    await assert.rejects(http.request('/api/v1/health'), (err: unknown) => {
+    await assert.rejects(http.request('/health'), (err: unknown) => {
       assert.ok(err instanceof SdkHttpError);
       assert.equal(err.code, 'UNKNOWN_ERROR');
       assert.match(err.message, /502/);
@@ -104,7 +124,7 @@ describe('archivos', () => {
   it('requestBlob devuelve el archivo tal cual', async () => {
     const { http } = setup(() => new Response('%PDF-1.7', { status: 200, headers: { 'Content-Type': 'application/pdf' } }));
 
-    const blob = await http.requestBlob('/api/v1/notices/1/pdf');
+    const blob = await http.requestBlob('/notices/1/pdf');
 
     assert.equal(blob.type, 'application/pdf');
     assert.equal(await blob.text(), '%PDF-1.7');
@@ -113,7 +133,7 @@ describe('archivos', () => {
   it('requestBlob traduce los errores igual que request', async () => {
     const { http } = setup(() => json(409, { error: { code: 'NOTICE_NOT_APPROVED', message: 'Solo hay PDF de avisos aprobados' } }));
 
-    await assert.rejects(http.requestBlob('/api/v1/notices/1/pdf'), (err: unknown) => {
+    await assert.rejects(http.requestBlob('/notices/1/pdf'), (err: unknown) => {
       assert.ok(err instanceof SdkHttpError);
       assert.equal(err.code, 'NOTICE_NOT_APPROVED');
       return true;
@@ -128,7 +148,7 @@ describe('archivos', () => {
       return attempts === 1 ? json(401, {}) : new Response('%PDF', { status: 200 });
     });
 
-    assert.equal(await (await http.requestBlob('/api/v1/notices/1/pdf')).text(), '%PDF');
+    assert.equal(await (await http.requestBlob('/notices/1/pdf')).text(), '%PDF');
     assert.equal(attempts, 2);
   });
 });
@@ -142,7 +162,7 @@ describe('renovación de sesión', () => {
   it('en un 401 renueva el token y reintenta la petición una vez', async () => {
     const { http, storage, calls } = setup(expiredThenOk);
 
-    const result = await http.request<{ ok: boolean }>('/api/v1/employees');
+    const result = await http.request<{ ok: boolean }>('/employees');
 
     assert.deepEqual(result, { ok: true });
     assert.deepEqual(
@@ -157,9 +177,9 @@ describe('renovación de sesión', () => {
     const { http, calls } = setup(expiredThenOk);
 
     const results = await Promise.all([
-      http.request('/api/v1/employees'),
-      http.request('/api/v1/departments'),
-      http.request('/api/v1/shifts'),
+      http.request('/employees'),
+      http.request('/departments'),
+      http.request('/shifts'),
     ]);
 
     assert.equal(results.length, 3);
@@ -169,7 +189,7 @@ describe('renovación de sesión', () => {
   it('si el refresh se rechaza, borra la sesión, avisa y devuelve el 401', async () => {
     const { http, storage, calls, expiredCount } = setup(() => json(401, { error: { code: 'INVALID_REFRESH_TOKEN' } }));
 
-    await assert.rejects(http.request('/api/v1/employees'), (err: unknown) => err instanceof SdkHttpError && err.status === 401);
+    await assert.rejects(http.request('/employees'), (err: unknown) => err instanceof SdkHttpError && err.status === 401);
 
     assert.equal(storage.get(), null);
     assert.equal(expiredCount(), 1);
@@ -179,7 +199,7 @@ describe('renovación de sesión', () => {
   it('sin refresh token no intenta renovar', async () => {
     const { http, calls, expiredCount } = setup(() => json(401, {}), { accessToken: 'a1', refreshToken: '' });
 
-    await assert.rejects(http.request('/api/v1/employees'), (err: unknown) => err instanceof SdkHttpError && err.status === 401);
+    await assert.rejects(http.request('/employees'), (err: unknown) => err instanceof SdkHttpError && err.status === 401);
 
     assert.equal(calls.length, 1);
     assert.equal(expiredCount(), 0);
@@ -188,7 +208,7 @@ describe('renovación de sesión', () => {
   it('un 401 en una ruta pública no intenta renovar', async () => {
     const { http, calls } = setup(() => json(401, { error: { code: 'INVALID_CREDENTIALS' } }));
 
-    await assert.rejects(http.request('/api/v1/auth/login', { method: 'POST', body: {}, auth: false }));
+    await assert.rejects(http.request('/auth/login', { method: 'POST', body: {}, auth: false }));
 
     assert.equal(calls.length, 1);
   });
@@ -198,7 +218,7 @@ describe('renovación de sesión', () => {
       call.url.endsWith(REFRESH_PATH) ? json(500, { error: { code: 'INTERNAL' } }) : json(401, {}),
     );
 
-    await assert.rejects(http.request('/api/v1/employees'), (err: unknown) => err instanceof SdkHttpError && err.status === 500);
+    await assert.rejects(http.request('/employees'), (err: unknown) => err instanceof SdkHttpError && err.status === 500);
 
     assert.deepEqual(storage.get(), { accessToken: 'a1', refreshToken: 'r1' });
     assert.equal(expiredCount(), 0);

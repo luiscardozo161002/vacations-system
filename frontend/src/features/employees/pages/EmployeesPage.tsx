@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import type { Employee, EmployeeStatus } from '@vacations/sdk';
+import type { Employee, RecordStatus } from '@vacations/sdk';
 import { sdk } from '../../../lib/sdk';
 import { getErrorMessage } from '../../../lib/get-error-message';
 import { refreshData } from '../../../lib/query-client';
@@ -39,7 +39,7 @@ export function EmployeesPage() {
       pageSize: PAGE_SIZE,
       search: filters.q || undefined,
       department_id: filters.departamento ? Number(filters.departamento) : undefined,
-      status: filters.estado ? (filters.estado as EmployeeStatus) : undefined,
+      status: filters.estado ? (filters.estado as RecordStatus) : undefined,
     }),
     [page, filters.q, filters.departamento, filters.estado],
   );

@@ -138,7 +138,8 @@ const page = await sdk.employees.list({ status: ['active'], page: 1 });
 | Tema | Detalle |
 |---|---|
 | Recursos | `auth`, `health`, `companies`, `branches`, `departments`, `employees`, `shifts`, `notices`, `reasons`, `vacationEntitlements`, `accrualRules`, `users`, `roles`, `permissions`, `rolePermissions`, `auditLog`, `calendar`, `dashboard`, `notifications` |
-| CRUD | Los catálogos heredan de `CrudResource`: `list`, `get`, `create`, `update`, `remove` |
+| Opciones | `baseUrl` obligatoria; `apiPrefix` (por defecto `/api/v1`), `storage` y `onSessionExpired` opcionales |
+| Clases base | `ApiResource` (cliente y ruta), `ReadResource` (`list`, `get`) y `CrudResource` (más `create`, `update`, `remove`) |
 | Sesión | En un `401` renueva con el refresh token y reintenta una vez; si falla, borra los tokens y llama `onSessionExpired` |
 | Tokens | En memoria por defecto; `storage` con `get()` y `set()` los guarda en otro lugar |
 

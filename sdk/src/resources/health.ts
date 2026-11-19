@@ -1,4 +1,5 @@
-import { HttpClient } from '../core/http-client';
+import { ApiResource } from '../core/api-resource';
+import type { HttpClient } from '../core/http-client';
 
 export interface HealthStatus {
   status: 'ok' | 'error';
@@ -6,11 +7,13 @@ export interface HealthStatus {
   timestamp: string;
 }
 
-
-export class HealthResource {
-  constructor(private readonly http: HttpClient) {}
+export class HealthResource extends ApiResource {
+  constructor(http: HttpClient) {
+    super(http, '/health');
+  }
 
   check(): Promise<HealthStatus> {
-    return this.http.request<HealthStatus>('/api/v1/health', { method: 'GET' });
+    return this.http.request<HealthStatus>(this.path);
   }
 }
+

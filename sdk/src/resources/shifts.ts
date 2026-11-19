@@ -1,7 +1,8 @@
 import { HttpClient } from '../core/http-client';
 import { CrudResource } from '../core/crud-resource';
+import type { ListParams, RecordStatus } from '../types/common';
 
-export type ShiftStatus = 'active' | 'inactive';
+export type ShiftStatus = RecordStatus;
 
 export type DayOfWeek = 1 | 2 | 3 | 4 | 5 | 6 | 7;
 
@@ -17,37 +18,29 @@ export interface Shift {
   code: string;
   shift_name: string;
   number_days: number;
-  status: ShiftStatus;
+  status: RecordStatus;
   created_at: string;
   updated_at: string;
   schedule: ShiftScheduleDay[];
   active_employees: number;
 }
 
-export interface ListShiftsParams {
-  status?: ShiftStatus;
-  sort?: string;
-  page?: number;
-  pageSize?: number;
+export interface ListShiftsParams extends ListParams {
+  status?: RecordStatus;
 }
 
 export interface CreateShiftInput {
   code: string;
   shift_name: string;
   number_days: number;
-  status?: ShiftStatus;
+  status?: RecordStatus;
 }
 
-export interface UpdateShiftInput {
-  code?: string;
-  shift_name?: string;
-  number_days?: number;
-  status?: ShiftStatus;
-}
+export type UpdateShiftInput = Partial<CreateShiftInput>;
 
 export class ShiftsResource extends CrudResource<Shift, ListShiftsParams, CreateShiftInput, UpdateShiftInput> {
   constructor(http: HttpClient) {
-    super(http, '/api/v1/shifts');
+    super(http, '/shifts');
   }
 
   replaceSchedule(shiftId: number, days: ShiftScheduleDay[]): Promise<Shift> {

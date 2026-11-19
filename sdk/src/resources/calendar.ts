@@ -1,5 +1,5 @@
-import { HttpClient } from '../core/http-client';
-import type { CallOptions } from '../core/crud-resource';
+import { ApiResource, CallOptions } from '../core/api-resource';
+import type { HttpClient } from '../core/http-client';
 import type { NoticeKind, NoticeStatus } from './notices';
 
 export interface Holiday {
@@ -32,10 +32,12 @@ export interface Calendar extends CalendarRange {
   absences: CalendarAbsence[];
 }
 
-export class CalendarResource {
-  constructor(private readonly http: HttpClient) {}
+export class CalendarResource extends ApiResource {
+  constructor(http: HttpClient) {
+    super(http, '/calendar');
+  }
 
   get(range: CalendarRange, options: CallOptions = {}): Promise<Calendar> {
-    return this.http.request<Calendar>('/api/v1/calendar', { method: 'GET', query: { ...range }, signal: options.signal });
+    return this.http.request<Calendar>(this.path, { query: range, signal: options.signal });
   }
 }

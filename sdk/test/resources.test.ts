@@ -1,6 +1,6 @@
 import { afterEach, describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { VacationsSdk } from '../src';
+import { VacationsSdk, type DepartmentStatus, type EmployeeStatus, type QueryValue, type ShiftStatus, type UserStatus } from '../src';
 import { json, mockFetch } from './mock-fetch';
 
 const baseUrl = 'http://api.test';
@@ -91,6 +91,31 @@ describe('sdk.notices', () => {
       'GET /api/v1/notices/7/pdf',
     ]);
     assert.deepEqual(calls[1].body, request);
+  });
+});
+
+describe('recursos base', () => {
+  it('auditoría y salud usan su ruta y los avisos solo exponen las operaciones soportadas', async () => {
+    const { sdk, calls } = setup();
+
+    await sdk.auditLog.get(3);
+    await sdk.health.check();
+    await sdk.notices.get(7);
+    assert.equal('remove' in sdk.notices, false);
+
+    assert.deepEqual(sent(calls), [
+      'GET /api/v1/auth-audit-log/3',
+      'GET /api/v1/health',
+      'GET /api/v1/notices/7',
+    ]);
+  });
+
+  it('conserva los tipos públicos de estado y parámetros', () => {
+    const values: [EmployeeStatus, DepartmentStatus, ShiftStatus, UserStatus, QueryValue] = [
+      'active', 'inactive', 'active', 'locked', [1, 2],
+    ];
+
+    assert.deepEqual(values, ['active', 'inactive', 'active', 'locked', [1, 2]]);
   });
 });
 

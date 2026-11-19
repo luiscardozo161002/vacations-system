@@ -1,6 +1,6 @@
-import { HttpClient } from '../core/http-client';
-import { CallOptions, toQuery } from '../core/crud-resource';
-import type { ListParams, OneOrMany, Paginated } from '../types/common';
+import { ReadResource } from '../core/crud-resource';
+import type { HttpClient } from '../core/http-client';
+import type { ListParams, OneOrMany } from '../types/common';
 
 export interface AuditLogEntry {
   log_id: number;
@@ -26,20 +26,8 @@ export interface ListAuditLogParams extends ListParams {
   search?: string;
 }
 
-const PATH = '/api/v1/auth-audit-log';
-
-export class AuditLogResource {
-  constructor(private readonly http: HttpClient) {}
-
-  list(params?: ListAuditLogParams, options: CallOptions = {}): Promise<Paginated<AuditLogEntry>> {
-    return this.http.request<Paginated<AuditLogEntry>>(PATH, {
-      method: 'GET',
-      query: toQuery(params),
-      signal: options.signal,
-    });
-  }
-
-  get(logId: number, options: CallOptions = {}): Promise<AuditLogEntry> {
-    return this.http.request<AuditLogEntry>(`${PATH}/${logId}`, { method: 'GET', signal: options.signal });
+export class AuditLogResource extends ReadResource<AuditLogEntry, ListAuditLogParams> {
+  constructor(http: HttpClient) {
+    super(http, '/auth-audit-log');
   }
 }

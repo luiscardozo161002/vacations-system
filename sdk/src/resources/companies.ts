@@ -33,6 +33,6 @@ export type UpdateCompanyInput = Partial<CreateCompanyInput>;
 
 export class CompaniesResource extends CrudResource<Company, ListCompaniesParams, CreateCompanyInput, UpdateCompanyInput> {
   constructor(http: HttpClient) {
-    super(http, '/api/v1/companies');
+    super(http, '/companies');
   }
 }

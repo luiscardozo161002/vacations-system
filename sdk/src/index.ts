@@ -1,48 +1,33 @@
 import { HttpClient, SdkClientOptions } from './core/http-client';
-import { AuthResource } from './resources/auth';
-import { HealthResource } from './resources/health';
-import { EmployeesResource } from './resources/employees';
-import { DepartmentsResource } from './resources/departments';
-import { ShiftsResource } from './resources/shifts';
-import { CompaniesResource } from './resources/companies';
-import { BranchesResource } from './resources/branches';
-import { ReasonsResource } from './resources/reasons';
-import { NoticesResource } from './resources/notices';
-import { VacationEntitlementsResource } from './resources/vacation-entitlements';
-import { AccrualRulesResource } from './resources/accrual-rules';
-import { UsersResource } from './resources/users';
-import { RolesResource } from './resources/roles';
-import { PermissionsResource } from './resources/permissions';
-import { RolePermissionsResource } from './resources/role-permissions';
-import { AuditLogResource } from './resources/audit-log';
-import { CalendarResource } from './resources/calendar';
-import { DashboardResource } from './resources/dashboard';
-import { NotificationsResource } from './resources/notifications';
+import {
+  AccrualRulesResource,
+  AuditLogResource,
+  AuthResource,
+  BranchesResource,
+  CalendarResource,
+  CompaniesResource,
+  DashboardResource,
+  DepartmentsResource,
+  EmployeesResource,
+  HealthResource,
+  NoticesResource,
+  NotificationsResource,
+  PermissionsResource,
+  ReasonsResource,
+  RolePermissionsResource,
+  RolesResource,
+  ShiftsResource,
+  UsersResource,
+  VacationEntitlementsResource,
+} from './resources';
 
 export * from './core/http-client';
 export * from './core/api-error';
-export * from './core/token-storage';
+export * from './core/api-resource';
 export * from './core/crud-resource';
+export * from './core/token-storage';
 export * from './types/common';
-export * from './resources/auth';
-export * from './resources/health';
-export * from './resources/employees';
-export * from './resources/departments';
-export * from './resources/shifts';
-export * from './resources/companies';
-export * from './resources/branches';
-export * from './resources/reasons';
-export * from './resources/notices';
-export * from './resources/vacation-entitlements';
-export * from './resources/accrual-rules';
-export * from './resources/users';
-export * from './resources/roles';
-export * from './resources/permissions';
-export * from './resources/role-permissions';
-export * from './resources/audit-log';
-export * from './resources/calendar';
-export * from './resources/dashboard';
-export * from './resources/notifications';
+export * from './resources';
 
 export class VacationsSdk {
   readonly auth: AuthResource;

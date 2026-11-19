@@ -1,8 +1,8 @@
 import { HttpClient } from '../core/http-client';
-import { CrudResource, toQuery } from '../core/crud-resource';
-import type { OneOrMany } from '../types/common';
+import { CrudResource } from '../core/crud-resource';
+import type { AccountStatus, ListParams, OneOrMany, RecordStatus } from '../types/common';
 
-export type EmployeeStatus = 'active' | 'inactive';
+export type EmployeeStatus = RecordStatus;
 
 export interface Employee {
   employee_id: number;
@@ -12,7 +12,7 @@ export interface Employee {
   employee_number: string;
   employee_name: string;
   start_date: string;
-  status: EmployeeStatus;
+  status: RecordStatus;
   created_at: string;
   updated_at: string;
   account?: EmployeeAccount | null;
@@ -22,7 +22,7 @@ export interface EmployeeAccount {
   user_id: number;
   username: string;
   email: string;
-  status: 'active' | 'inactive' | 'locked';
+  status: AccountStatus;
   must_change_password: boolean;
   temporary_password_expires_at: string | null;
   last_login_at: string | null;
@@ -38,19 +38,16 @@ export interface CreatedEmployee extends Employee {
   temporary_password?: string;
 }
 
-export interface ListEmployeesParams {
+export interface ListEmployeesParams extends ListParams {
   search?: string;
   company_id?: number;
   department_id?: OneOrMany<number>;
-  status?: OneOrMany<EmployeeStatus>;
+  status?: OneOrMany<RecordStatus>;
   hired_from?: string;
   hired_to?: string;
-  sort?: string;
-  page?: number;
-  pageSize?: number;
 }
 
-export type ExportEmployeesParams = Omit<ListEmployeesParams, 'sort' | 'page' | 'pageSize'>;
+export type ExportEmployeesParams = Omit<ListEmployeesParams, keyof ListParams>;
 
 export interface CreateEmployeeInput {
   department_id: number;
@@ -59,23 +56,15 @@ export interface CreateEmployeeInput {
   employee_number: string;
   employee_name: string;
   start_date: string;
-  status?: EmployeeStatus;
+  status?: RecordStatus;
   email?: string;
 }
 
-export interface UpdateEmployeeInput {
-  department_id?: number;
-  shift_id?: number;
-  folio?: string;
-  employee_number?: string;
-  employee_name?: string;
-  start_date?: string;
-  status?: EmployeeStatus;
-}
+export type UpdateEmployeeInput = Partial<Omit<CreateEmployeeInput, 'email'>>;
 
 export class EmployeesResource extends CrudResource<Employee, ListEmployeesParams, CreateEmployeeInput, UpdateEmployeeInput> {
   constructor(http: HttpClient) {
-    super(http, '/api/v1/employees');
+    super(http, '/employees');
   }
 
   override create(input: CreateEmployeeInput): Promise<CreatedEmployee> {
@@ -83,7 +72,7 @@ export class EmployeesResource extends CrudResource<Employee, ListEmployeesParam
   }
 
   exportCsv(params?: ExportEmployeesParams): Promise<Blob> {
-    return this.http.requestBlob(`${this.path}/export`, { query: toQuery(params) });
+    return this.http.requestBlob(`${this.path}/export`, { query: params });
   }
 
   grantAccess(id: number, email?: string): Promise<EmployeeAccess> {

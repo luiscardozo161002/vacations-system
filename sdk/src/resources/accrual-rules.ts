@@ -34,6 +34,6 @@ export class AccrualRulesResource extends CrudResource<
   UpdateAccrualRuleInput
 > {
   constructor(http: HttpClient) {
-    super(http, '/api/v1/vacation-accrual-rules');
+    super(http, '/vacation-accrual-rules');
   }
 }

@@ -28,6 +28,6 @@ export class PermissionsResource extends CrudResource<
   UpdatePermissionInput
 > {
   constructor(http: HttpClient) {
-    super(http, '/api/v1/permissions');
+    super(http, '/permissions');
   }
 }

@@ -1,216 +1,148 @@
-# Product Requirements Document
+# Requisitos del producto
 
-## Producto
+Define el propósito, los usuarios, las capacidades y las reglas de negocio del Sistema de Vacaciones.
 
-Sistema de vacaciones y avisos de ausencia para el área de RH de tres empresas del grupo, con sedes en varios estados.
+[Arquitectura](ARCHITECTURE.md) · [Sistema de diseño](DESIGN_SYSTEM.md) · [Roadmap](ROADMAP.md)
 
-## Problema
+## Objetivo
 
-| Antes | Con el sistema |
-|---|---|
-| Cálculo manual de vacaciones | Saldo calculado por antigüedad con el Art. 76 LFT (reforma 2023) |
-| Sin rastro de quién aprobó | Auditoría de cada acción |
-| Sin fuente única de datos | Antigüedad, saldo y motivos en un solo lugar |
+Centralizar la gestión de vacaciones y avisos de ausencia de Recursos Humanos para las empresas del grupo. El sistema debe calcular el consumo según el turno y la antigüedad, mantener el saldo del periodo y registrar quién realiza cada acción.
 
-## Roles
+El producto atiende tres necesidades operativas.
 
-| Rol | Código | Alcance |
-|---|---|---|
-| Superusuario | `SUPERUSER` | Todas las empresas y sedes |
-| Usuario (RH) | `USER` | Solo sus sedes |
-| Empleado | `EMPLOYEE` | Solo sus datos |
+- Consultar datos del empleado, antigüedad y saldo desde un mismo lugar.
+- Resolver solicitudes con trazabilidad de la decisión.
+- Mantener visibles las ausencias de cada sede y los documentos aprobados.
 
-Un rol puede tener muchos usuarios.
+## Usuarios y alcance
 
-## Organización
+| Usuario | Código | Alcance |
+| --- | --- | --- |
+| Superusuario | `SUPERUSER` | Empresas, sedes y administración del sistema |
+| Recursos Humanos | `USER` | Empleados y operaciones de sus sedes asignadas |
+| Empleado | `EMPLOYEE` | Datos, solicitudes, avisos y saldo propios |
 
-| Empresa | Código | RFC | Sedes |
-|---|---|---|---|
-| Juárez de Oriente S.A. de C.V. | JOR | JOR070518U13 | `JOR_CAMP`, `JOR_PUEB`, `JOR_HGO` |
-| Transportes Hidro Hidalguenses S.A. de C.V. | THH | THH981218DS0 | `THH_AGS`, `THH_HGO`, `THH_PUE` |
-| Unidad Médica Integral Hidalguense, C.J. S.A. de C.V. | UMJ | UMI1007285C1 | `UMJ_HGO` |
+La organización se estructura por empresa, sede, departamento y empleado. La operación inicial contempla JOR, THH y UMJ. Un usuario de Recursos Humanos puede atender varias sedes.
 
-- Cada empresa guarda razón social, RFC, logo, teléfono y dirección fiscal. Las sedes no llevan dirección.
-- Cada departamento pertenece a una sede.
-- Un Usuario de RH ve solo las sedes que tiene asignadas.
-- El número de socio es el número de empleado.
+Cada empresa registra sus datos fiscales y de contacto. Cada empleado tiene un número de socio o empleado, fecha de ingreso, departamento y turno. Las asignaciones de sede determinan el acceso de Recursos Humanos.
 
-## Permisos por rol
+## Capacidades
 
-**V** ver, **C** crear, **E** editar, **B** borrar o desactivar, **★** acción especial.
+| Área | Resultado esperado |
+| --- | --- |
+| Organización y empleados | Gestionar empresas, sedes, departamentos, turnos y empleados |
+| Solicitudes y avisos | Capturar ausencias, previsualizar el consumo y resolver solicitudes |
+| Saldos y reglas | Consultar días y horas disponibles y administrar reglas por antigüedad |
+| Calendario y dashboard | Consultar ausencias, pendientes e indicadores según el alcance |
+| Documentos | Descargar el aviso aprobado en PDF y exportar empleados a CSV |
+| Administración | Gestionar usuarios, permisos y eventos de auditoría |
+| Cuenta y apariencia | Cambiar datos de perfil, contraseña y preferencias visuales |
 
-| Módulo | Superusuario | Usuario (RH) | Empleado |
-|---|---|---|---|
-| Dashboard | ★ | ★ | ★ su resumen |
-| Empleados | V C E B | V C E B de sus sedes | — |
-| Solicitudes | V C E B | V E | V C las suyas |
-| Aprobaciones | ★ | ★ según sus estados | — |
-| Avisos | V C E | V C E | V los suyos |
-| Calendario | V | V | V suyo y de su departamento |
-| Días | V E | V E | V los suyos |
-| Departamentos | V E | V E | — |
-| Empresas | V | V | — |
-| Turnos | V C E | V E | — |
-| Reglas | V E | V E | — |
-| Usuarios | V C E B | — | — |
-| Roles y permisos | V E | — | — |
-| Auditoría | V | — | — |
-| Configuración | ✓ | ✓ | ✓ |
+### Permisos iniciales
 
-El Superusuario da de alta usuarios, asigna sedes y define qué acciones de revisión (aprobar, rechazar, cancelar) puede hacer cada Usuario de RH. Las tres vienen activadas.
+El Superusuario administra los permisos por rol y las acciones de revisión de cada usuario de Recursos Humanos.
+
+| Operación | Recursos Humanos | Empleado |
+| --- | --- | --- |
+| Empleados | Crear, consultar, editar y dar de baja en sus sedes | Consultar su perfil |
+| Solicitudes | Consultar, editar y resolver según acciones permitidas | Crear, consultar y cancelar las pendientes propias |
+| Avisos | Registrar, consultar y editar dentro de las reglas del flujo | Consultar los propios |
+| Saldo | Consultar y ajustar en sus sedes | Consultar el propio |
+| Departamentos | Consultar y editar en sus sedes | Consultar el calendario compartido |
+| Empresas | Consultar las correspondientes a sus sedes | Acceso mediante sus documentos |
+| Turnos y reglas | Consultar y editar | Uso al calcular sus ausencias |
+| Usuarios, permisos y auditoría | Administración del Superusuario | Acceso a su cuenta |
 
 ## Reglas de negocio
 
 ### Solicitudes y avisos
 
-Viven en la tabla `notices`; las distingue quién las crea.
+Una solicitud la crea el empleado para sí mismo y nace pendiente. Un aviso lo registra Recursos Humanos para un empleado de su alcance y nace aprobado.
 
-| | Solicitud | Aviso |
-|---|---|---|
-| Crea | El empleado, para sí | RH, para un empleado de sus sedes |
-| Estado inicial | `pending` | `approved` |
-| Resuelve | RH de la sede, un solo nivel | Nace aprobado |
-| Pantalla del empleado | Solicitudes | Avisos |
+| Estado actual | Acción permitida | Resultado |
+| --- | --- | --- |
+| Pendiente | Aprobar por un revisor autorizado | Aprobada y descuento del saldo cuando corresponde |
+| Pendiente | Rechazar por un revisor autorizado | Rechazada |
+| Pendiente | Cancelar por el empleado propietario o un revisor autorizado | Cancelada |
+| Aprobada | Cancelar por un revisor antes del inicio de la ausencia | Cancelada y devolución del consumo |
+| Rechazada o cancelada | Consultar | Conserva el historial |
 
-| Transición | Condición |
-|---|---|
-| `pending` → `approved`, `rejected` o `cancelled` | RH dentro de sus sedes y con la acción permitida; el Empleado solo cancela las suyas |
-| `approved` → `cancelled` | Solo si la ausencia no empezó; devuelve el saldo |
-| Cualquier otra | `409` |
+Recursos Humanos captura al empleado, motivo, fechas u horas y observaciones. La previsualización muestra el consumo y el saldo resultante. Las fechas y el motivo se editan mientras la ausencia está pendiente.
 
-- **Motivos:** Permiso Personal, Castigo, Onomástico, Comisión De Trabajo, Tiempo Por Tiempo, Natalicio, Deceso y Vacaciones. Todos requieren aprobación cuando son solicitud.
-- **Descuento:** solo Vacaciones. Se descuenta al aprobar, o al registrar si es aviso.
-- **Captura:** RH busca al empleado por número o nombre y captura fechas u horas. Antes de guardar ve lo que se usa y lo que queda.
+Los motivos iniciales son Permiso Personal, Castigo, Onomástico, Comisión De Trabajo, Tiempo Por Tiempo, Natalicio, Deceso y Vacaciones. El motivo determina si la ausencia afecta el saldo.
 
 ### Saldo y periodo
 
-Va de aniversario a aniversario según la fecha de ingreso. Días por antigüedad (Art. 76 LFT):
+El periodo va de aniversario a aniversario según la fecha de ingreso. Las reglas iniciales de antigüedad del proyecto se basan en el artículo 76 de la LFT.
 
-| Años | 1 | 2 | 3 | 4 | 5 | 6–10 | 11–15 | 16–20 | 21–25 | 26–30 | 31–35 |
-|---|---|---|---|---|---|---|---|---|---|---|---|
-| Días | 12 | 14 | 16 | 18 | 20 | 22 | 24 | 26 | 28 | 30 | 32 |
+| Antigüedad cumplida | Días del periodo |
+| --- | --- |
+| 1 año | 12 |
+| 2 años | 14 |
+| 3 años | 16 |
+| 4 años | 18 |
+| 5 años | 20 |
+| 6 a 10 años | 22 |
+| 11 a 15 años | 24 |
+| 16 a 20 años | 26 |
+| 21 a 25 años | 28 |
+| 26 a 30 años | 30 |
+| 31 a 35 años | 32 |
 
-| Regla | Detalle |
-|---|---|
-| Menos de 1 año | Sin saldo; no puede pedir Vacaciones |
-| Sin acumulación | Al cumplir años, lo no usado se elimina y se abre el nuevo periodo |
-| Pendientes al cerrar | Las solicitudes de Vacaciones pendientes del periodo que cierra se cancelan |
-| Recordatorio | Una semana antes del aniversario, con los días restantes |
-| Fechas | La solicitud cae completa dentro del periodo abierto |
-| Saldo insuficiente | `422` |
-| Arranque | RH captura los días que cada empleado ya usó en su periodo vigente |
+- El derecho a solicitar vacaciones requiere al menos un año de antigüedad y un periodo vigente.
+- La ausencia debe quedar completa dentro del periodo abierto y disponer de saldo suficiente.
+- Las solicitudes pendientes reservan una intención. El descuento ocurre al aprobarlas.
+- Los avisos de vacaciones registrados por Recursos Humanos descuentan al guardarse.
+- Al vencer el periodo, el remanente deja de estar disponible y se cancelan las solicitudes de vacaciones pendientes del periodo anterior.
+- Al abrir el siguiente periodo, se asignan los días de la regla correspondiente.
+- La puesta en operación requiere conciliar con Recursos Humanos los días ya utilizados.
 
-**Ejemplo.** Ingreso el 3 de julio de 2022:
+Por ejemplo, un ingreso el 3 de julio de 2022 abre su periodo de cuatro años del 3 de julio de 2026 al 2 de julio de 2027 con 18 días. Una ausencia que cruce el aniversario requiere solicitudes para los periodos correspondientes.
 
-| Fecha | Qué pasa |
-|---|---|
-| 3 jul 2026 | Cumple 4 años; periodo del 3 jul 2026 al 2 jul 2027 con 18 días |
-| 26 jun 2027 | Recordatorio con los días restantes |
-| 3 jul 2027 | Se borra lo no usado y abre el periodo de 5 años con 20 días |
-| 29 jun – 7 jul 2027 | Se rechaza por cruzar el aniversario; la parte desde el 3 jul va como otra solicitud |
+### Jornada y festivos
 
-### Días y horas
+El cálculo usa el horario del turno. Un día completo equivale a una jornada y las fracciones de jornada se expresan en horas. Las horas fuera del turno, los descansos y los festivos configurados se excluyen del consumo.
 
-| Regla | Detalle |
-|---|---|
-| Días hábiles | Solo los laborables del turno; no se descuentan descansos del turno ni festivos |
-| Un día | Equivale a la jornada del turno; en Oficinas (lun–vie, 07:00 a 16:00) son 9 horas |
-| Por horas | Permitido: de 13:00 a 16:00 en Oficinas descuenta 3 horas |
-| Ejemplo de RH | Del 16 oct al 19 dic 2025 con turno lun–sáb son 55 días: sin domingos ni el 17 de noviembre |
+El calendario inicial contempla los descansos anuales del artículo 74 de la LFT y la fecha de transmisión del Poder Ejecutivo Federal cada seis años a partir de 2024. Una petición compuesta únicamente por descansos o festivos se rechaza.
 
-### Festivos
+### Calendario compartido
 
-Obligatorios del Art. 74 LFT, calculados por año:
+Recursos Humanos ve las ausencias de sus sedes. El empleado ve las propias y las de su departamento cuando está habilitada la opción de compartir calendario. Esta opción comienza activada y Recursos Humanos puede modificarla.
 
-- 1 de enero, primer lunes de febrero, tercer lunes de marzo, 1 de mayo, 16 de septiembre, tercer lunes de noviembre y 25 de diciembre.
-- 1 de octubre cada seis años por el cambio del Poder Ejecutivo Federal (siguiente: 2030).
+### Cuentas y acceso
 
-Se muestran en el calendario y no se descuentan. Si todos los días pedidos son festivos se rechaza, para cualquier rol.
+Dar de alta un empleado con correo crea su cuenta. La contraseña temporal vence según la vigencia configurada y el empleado debe cambiarla al ingresar. Una temporal vencida impide iniciar sesión y requiere que Recursos Humanos reenvíe el acceso.
 
-### Calendario
+Cambiar o restablecer la contraseña invalida las sesiones de renovación anteriores. Las cuentas inactivas rechazan la recuperación. Mientras la entrega por correo esté pendiente, Recursos Humanos recibe la temporal para entregarla al empleado.
 
-| Rol | Ve |
-|---|---|
-| Empleado | Sus ausencias y las de su departamento, si este las comparte |
-| RH | Todo lo de sus sedes |
+### Notificaciones y documentos
 
-Cada departamento tiene la opción de compartir ausencias; viene activada y RH la puede apagar.
+El empleado recibe avisos dentro del sistema cuando se resuelve una ausencia, cuando Recursos Humanos registra un aviso y cuando abre o está próximo a vencer su periodo. Recursos Humanos consulta las solicitudes pendientes de sus sedes.
 
-### Aviso de ausencia (PDF)
+La entrega por correo es una capacidad pendiente. Su alcance y dependencias están en el [roadmap](ROADMAP.md#integraciones-y-puesta-en-operación).
 
-Se descarga una vez aprobado, por el empleado y por RH.
+El PDF aprobado utiliza tamaño carta con dos copias. Incluye datos de la empresa y del empleado, motivo, periodo de ausencia, consumo, saldo disponible, observaciones y espacios para firmas. El empleado y Recursos Humanos pueden descargarlo dentro de su alcance.
 
-| Parte | Contenido |
-|---|---|
-| Hoja | Carta, dos copias iguales separadas por línea punteada |
-| Encabezado | Logo, razón social, dirección fiscal, RFC, teléfono y fax de la empresa; "AVISO DE AUSENCIA" con `NO.` igual al id y la fecha de solicitud |
-| Empleado | No. Trab., Nombre, Departamento y Encargado ("RECURSOS HUMANOS") |
-| Motivo | Un renglón de días y otro de horas, solo los que apliquen |
-| Leyenda | Días y horas restantes del periodo |
-| Obs. | Observaciones, si hay |
-| Firmas | Recursos Humanos, Enc. Departamento e Interesado |
+## Criterios de aceptación
 
-Hasta que haya teléfono por empresa se usa el mismo para las tres (`PDF_DEFAULT_PHONE`).
+- Cada rol consulta y modifica únicamente los registros permitidos por sus permisos y alcance.
+- La previsualización, el descuento y la devolución producen saldos consistentes para días y horas.
+- Dos aprobaciones concurrentes conservan la integridad del estado y del saldo.
+- Las acciones auditadas conservan usuario, resultado y contexto de la petición.
+- El PDF corresponde a una ausencia aprobada y a la empresa del empleado.
+- Recursos Humanos valida los flujos de alta, solicitud, aprobación, cancelación y cierre de periodo antes de la puesta en operación.
 
-### Notificaciones
+## Indicadores de éxito
 
-Llegan dentro del sistema y por correo con Resend.
+| Indicador | Medición |
+| --- | --- |
+| Tiempo de resolución | Tiempo entre la solicitud y su aprobación o rechazo |
+| Trazabilidad | Proporción de resoluciones con responsable y fecha |
+| Exactitud del saldo | Discrepancias detectadas al conciliar con Recursos Humanos |
+| Adopción | Proporción de empleados activos que usan el sistema |
 
-| Para | Evento |
-|---|---|
-| Empleado | Aprobaron, rechazaron o cancelaron su solicitud |
-| Empleado | RH le registró un aviso |
-| Empleado | Recordatorio una semana antes del aniversario |
-| Empleado | Se abrió su nuevo periodo |
-| RH de la sede | Llegó una solicitud nueva |
+Las metas y la línea base se definirán con Recursos Humanos durante la aceptación.
 
-### Cuentas de empleados
+## Referencias
 
-| Paso | Regla |
-|---|---|
-| Alta | RH da de alta al empleado con correo y el sistema crea su cuenta |
-| Contraseña temporal | Válida 1 mes; si no se cambia, se elimina y no puede entrar |
-| Reactivación | El empleado acude a RH, que reenvía el acceso |
-| Sin Resend | La API devuelve la temporal a RH para entregarla en mano |
-
-### Convenciones de la API
-
-Todo listado soporta paginación (`page`, `pageSize`), orden (`sort=campo` o `sort=-campo`) y filtros propios.
-
-## Pantallas
-
-| Pantalla | Quién | Qué hace |
-|---|---|---|
-| Dashboard | Todos | Indicadores, próximas ausencias, actividad y, para el Empleado, su saldo |
-| Empleados | RH | Búsqueda, perfil con saldo e historial, alta, baja, acceso y exportación CSV |
-| Solicitudes | Todos | Lista, cálculo en vivo, aprobar, rechazar o cancelar y descarga de PDF |
-| Avisos | RH, Empleado | RH registra avisos aprobados; el Empleado ve los suyos |
-| Calendario | Todos | Vista mensual con ausencias y festivos |
-| Días | Todos | Saldo del periodo, con días y horas disponibles |
-| Departamentos | RH | Tarjetas con responsable, empleados y calendario compartido |
-| Empresas | RH | Datos fiscales, sedes y empleados |
-| Turnos y horarios | RH | Editor por bloques de días |
-| Reglas de acumulación | RH | Antigüedad y días de la LFT; rechaza rangos cruzados |
-| Usuarios | Superusuario | Alta, sedes, acciones de revisión y desactivación |
-| Roles y permisos | Superusuario | Matriz de módulos contra roles |
-| Auditoría | Superusuario | Eventos con filtro por resultado y búsqueda |
-| Configuración | Todos | Apariencia y perfil |
-
-Menú por rol:
-
-| Rol | Módulos |
-|---|---|
-| Superusuario | Todos |
-| Usuario | Todos menos Usuarios, Roles y permisos, y Auditoría |
-| Empleado | Dashboard, Solicitudes, Calendario, Días, Avisos y Configuración |
-
-Entrar por URL a un módulo prohibido lleva al primer módulo permitido. La configuración del menú está en `frontend/src/app/navigation.ts`.
-
-## Métricas de éxito
-
-| Métrica | Medida |
-|---|---|
-| Tiempo de resolución | De solicitada a aprobada o rechazada |
-| Trazabilidad | % de solicitudes y avisos con quién aprobó y cuándo |
-| Cálculo de saldo | Reducción de discrepancias frente al método manual |
-| Adopción | % de empleados activos con al menos un aviso en el sistema |
+La estructura del PRD organiza objetivos, usuarios, capacidades y criterios de aceptación siguiendo la guía de requisitos de producto de Atlassian. Las reglas funcionales proceden de la especificación del proyecto. [Guía de PRD](https://www.atlassian.com/agile/product-management/requirements)
