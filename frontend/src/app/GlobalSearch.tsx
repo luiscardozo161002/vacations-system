@@ -3,8 +3,8 @@ import { useNavigate } from 'react-router';
 import type { Employee } from '@vacations/sdk';
 import { sdk } from '../api/sdk';
 import { useApiQuery } from '../hooks/use-api-query';
-import { Icon } from '../components/atoms/Icon';
 import { DropdownEmpty, DropdownItem, DropdownPanel } from '../components/molecules/DropdownPanel';
+import { SearchBox } from '../components/molecules/SearchBox';
 import { useDepartments } from '../features/departments/hooks/useDepartments';
 
 const RESULT_LIMIT = 6;
@@ -58,27 +58,22 @@ export function GlobalSearch() {
   };
 
   return (
-    <div
-      id="global-search-wrap"
-      ref={wrapRef}
-      className="relative hidden h-9 w-[380px] items-center gap-2 rounded-sm border border-line bg-subtle px-2.5 text-muted focus-within:border-fg focus-within:shadow-[0_0_0_3px_rgba(15,23,42,0.08)] wide:flex"
+    <SearchBox
+      wrapperId="global-search-wrap"
+      wrapperRef={wrapRef}
+      wrapperClassName="hidden w-[380px] wide:flex"
+      id="global-search-input"
+      aria-label="Buscar empleados"
+      placeholder="Buscar empleados por nombre o número..."
+      autoComplete="off"
+      value={query}
+      onChange={(e) => change(e.target.value)}
+      onFocus={() => setOpen(Boolean(text))}
+      onKeyDown={(e) => {
+        if (e.key === 'Escape') setOpen(false);
+        if (e.key === 'Enter' && results?.[0]) pick(results[0]);
+      }}
     >
-      <Icon name="search" />
-      <input
-        className="flex-1 border-none bg-transparent text-fg outline-none"
-        type="text"
-        id="global-search-input"
-        aria-label="Buscar empleados"
-        placeholder="Buscar empleados por nombre o número..."
-        autoComplete="off"
-        value={query}
-        onChange={(e) => change(e.target.value)}
-        onFocus={() => setOpen(Boolean(text))}
-        onKeyDown={(e) => {
-          if (e.key === 'Escape') setOpen(false);
-          if (e.key === 'Enter' && results?.[0]) pick(results[0]);
-        }}
-      />
       <DropdownPanel id="global-search-dropdown" className="w-full" hidden={!open}>
         {results === null ? (
           <DropdownEmpty>Buscando...</DropdownEmpty>
@@ -95,6 +90,6 @@ export function GlobalSearch() {
           <DropdownEmpty>Sin resultados para "{text}".</DropdownEmpty>
         )}
       </DropdownPanel>
-    </div>
+    </SearchBox>
   );
 }

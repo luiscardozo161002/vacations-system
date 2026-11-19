@@ -110,7 +110,7 @@ export function EmployeeProfile({ employee, departmentName, shiftName, onClose }
           <Avatar size="lg">{initials(employee.employee_name)}</Avatar>
           <div>
             <h2 style={{ fontSize: 16 }}>{employee.employee_name}</h2>
-            <p className="cell-sub">
+            <p className="text-[12.5px] text-muted">
               {employee.employee_number} · {employee.folio}
             </p>
           </div>
@@ -144,7 +144,7 @@ export function EmployeeProfile({ employee, departmentName, shiftName, onClose }
             hint="Aún no tiene cuenta. Se creará con una contraseña temporal válida por un mes."
           />
         ) : (
-          <p className="cell-sub">{data ? 'Sin cuenta en el sistema.' : 'Cargando...'}</p>
+          <p className="text-[12.5px] text-muted">{data ? 'Sin cuenta en el sistema.' : 'Cargando...'}</p>
         )}
         {canGrant && (
           <Button variant="secondary" size="sm" style={{ marginTop: 10 }} onClick={() => (account ? setConfirming(true) : grant())} disabled={working || (!account && !email.trim())}>
@@ -171,7 +171,7 @@ export function EmployeeProfile({ employee, departmentName, shiftName, onClose }
             </div>
           </>
         ) : (
-          <p className="cell-sub">{data ? 'Sin saldo registrado todavía.' : 'Cargando...'}</p>
+          <p className="text-[12.5px] text-muted">{data ? 'Sin saldo registrado todavía.' : 'Cargando...'}</p>
         )}
         <Divider />
         <CardTitle style={{ marginBottom: 10 }}>

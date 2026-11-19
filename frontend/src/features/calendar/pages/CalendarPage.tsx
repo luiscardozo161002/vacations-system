@@ -9,6 +9,7 @@ import { PageHeader } from '../../../components/molecules/PageHeader';
 import { Button } from '../../../components/atoms/Button';
 import { IconButton } from '../../../components/atoms/IconButton';
 import { Card, CardTitle } from '../../../components/molecules/Card';
+import { FieldError } from '../../../components/atoms/FieldText';
 
 const MONTH_NAMES = [
   'Enero',
@@ -85,7 +86,7 @@ export function CalendarPage() {
   return (
     <>
       <PageHeader title="Calendario de vacaciones" subtitle="Vista mensual de ausencias aprobadas y pendientes." />
-      {error && <p className="field-error" role="alert">{error}</p>}
+      {error && <FieldError>{error}</FieldError>}
       <Card>
         <div className="calendar-head">
           <CardTitle>

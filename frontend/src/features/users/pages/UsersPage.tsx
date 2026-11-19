@@ -21,6 +21,7 @@ import { UserForm } from '../components/UserForm';
 import { UserAssignment } from '../components/UserAssignment';
 import { IconButton } from '../../../components/atoms/IconButton';
 import { Button } from '../../../components/atoms/Button';
+import { RowActions } from '../../../components/molecules/Toolbar';
 
 const FILTERS = {};
 
@@ -69,15 +70,15 @@ export function UsersPage() {
   };
 
   const columns: Column<User>[] = [
-    { header: 'Nombre', render: (user) => user.employee_name ?? user.username, className: 'cell-main' },
-    { header: 'Correo', render: (user) => user.email, className: 'cell-sub' },
+    { header: 'Nombre', render: (user) => user.employee_name ?? user.username, className: 'font-medium' },
+    { header: 'Correo', render: (user) => user.email, className: 'text-[12.5px] text-muted' },
     { header: 'Rol', render: (user) => ROLE_LABELS[user.role_code ?? ''] ?? user.role_code },
-    { header: 'Sedes', render: branchesLabel, className: 'cell-sub' },
+    { header: 'Sedes', render: branchesLabel, className: 'text-[12.5px] text-muted' },
     { header: 'Estado', render: (user) => <StatusBadge status={user.status} /> },
     {
       header: '',
       render: (user) => (
-        <div className="row-actions">
+        <RowActions>
           {can('users:update') && (
             <IconButton title="Asignación" onClick={() => assignment.open(user)}>
               <Icon name="edit" />
@@ -88,7 +89,7 @@ export function UsersPage() {
               <Icon name={user.status === 'inactive' ? 'user-check' : 'user-x'} />
             </IconButton>
           )}
-        </div>
+        </RowActions>
       ),
     },
   ];

@@ -145,7 +145,7 @@ export function AbsenceDetail({ notice, user, can, onClose, onChanged }: Absence
             <Avatar size="lg">{initials(notice.employee_name ?? '')}</Avatar>
             <div>
               <h2 style={{ fontSize: 16 }}>{notice.employee_name}</h2>
-              <p className="cell-sub">{notice.department_name}</p>
+              <p className="text-[12.5px] text-muted">{notice.department_name}</p>
             </div>
           </div>
         )}
@@ -161,7 +161,7 @@ export function AbsenceDetail({ notice, user, can, onClose, onChanged }: Absence
         {notice.remarks && (
           <>
             <Divider />
-            <p className="cell-sub">{notice.remarks}</p>
+            <p className="text-[12.5px] text-muted">{notice.remarks}</p>
           </>
         )}
         {preview && (

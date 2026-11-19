@@ -8,6 +8,7 @@ import { useAuth } from '../auth-context';
 import { LoginCard } from '../../../components/templates/LoginCard';
 import { LinkButton } from '../../../components/atoms/LinkButton';
 import { Button } from '../../../components/atoms/Button';
+import { FieldError } from '../../../components/atoms/FieldText';
 
 export function ChangePasswordPage() {
   const { user, updateUser, logout } = useAuth();
@@ -76,7 +77,7 @@ export function ChangePasswordPage() {
           onChange={setConfirmPassword}
           required
         />
-        {error && <p className="field-error" role="alert">{error}</p>}
+        {error && <FieldError>{error}</FieldError>}
         <div className="mt-1 mb-5 flex items-center justify-between text-sm">
           <LinkButton onClick={logout}>Cerrar sesión</LinkButton>
         </div>

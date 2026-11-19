@@ -51,9 +51,9 @@ export function ShiftsPage() {
                   </span>
                 )}
               </CardHeader>
-              <p className="cell-sub">{formatBlocks(toBlocks(shift.schedule)) || 'Sin horario definido'}</p>
+              <p className="text-[12.5px] text-muted">{formatBlocks(toBlocks(shift.schedule)) || 'Sin horario definido'}</p>
               <Divider />
-              <p className="cell-sub">{shift.active_employees} empleados asignados</p>
+              <p className="text-[12.5px] text-muted">{shift.active_employees} empleados asignados</p>
             </Card>
           ))}
         </div>

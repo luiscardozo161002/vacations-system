@@ -5,9 +5,11 @@ import { getErrorMessage } from '../../../utils/get-error-message';
 import { useFormSubmit } from '../../../hooks/use-form-submit';
 import { todayIso } from '../../../utils/format';
 import { FormDrawer } from '../../../components/organisms/FormDrawer';
+import { Input, Textarea } from '../../../components/atoms/Input';
 import { SearchSelect } from '../../../components/molecules/SearchSelect';
 import { FormField, SelectField, TextField } from '../../../components/molecules/FormField';
 import { BreakdownBox } from './BreakdownBox';
+import { FieldHint } from '../../../components/atoms/FieldText';
 
 interface FixedEmployee {
   employee_id: number;
@@ -128,7 +130,7 @@ export function AbsenceForm({ title, submitLabel, reasons, employee, employees =
     >
       <FormField label="Empleado" htmlFor="af-employee">
         {employee ? (
-          <input id="af-employee" value={employee.employee_name} disabled />
+          <Input id="af-employee" value={employee.employee_name} disabled />
         ) : (
           <SearchSelect
             id="af-employee"
@@ -166,21 +168,21 @@ export function AbsenceForm({ title, submitLabel, reasons, employee, employees =
         required
       />
       <div style={{ display: 'flex', gap: 12 }}>
-        <FormField label="Hora de inicio" htmlFor="af-start-hour" style={{ flex: 1 }}>
-          <input id="af-start-hour" type="number" min={0} max={23} value={form.startHour} onChange={setField('startHour')} />
+        <FormField label="Hora de inicio" htmlFor="af-start-hour" className="flex-1">
+          <Input id="af-start-hour" type="number" min={0} max={23} value={form.startHour} onChange={setField('startHour')} />
         </FormField>
-        <FormField label="Hora de fin" htmlFor="af-end-hour" style={{ flex: 1 }}>
-          <input id="af-end-hour" type="number" min={0} max={23} value={form.endHour} onChange={setField('endHour')} />
+        <FormField label="Hora de fin" htmlFor="af-end-hour" className="flex-1">
+          <Input id="af-end-hour" type="number" min={0} max={23} value={form.endHour} onChange={setField('endHour')} />
         </FormField>
       </div>
-      <p className="field-hint">Deja el horario en 0–23 para un día completo.</p>
+      <FieldHint>Deja el horario en 0–23 para un día completo.</FieldHint>
       <BreakdownBox
         preview={input ? preview : null}
         verb={employee ? 'Vas a tomar' : 'Va a tomar'}
         placeholder="Selecciona empleado, motivo y fechas para ver el cálculo."
       />
       <FormField label="Comentarios" htmlFor="af-remarks">
-        <textarea id="af-remarks" rows={3} placeholder="Opcional" value={form.remarks} onChange={setField('remarks')} />
+        <Textarea id="af-remarks" rows={3} placeholder="Opcional" value={form.remarks} onChange={setField('remarks')} />
       </FormField>
     </FormDrawer>
   );

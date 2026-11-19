@@ -75,7 +75,7 @@ export function ProfileDrawer({ user, roleLabel, onClose }: ProfileDrawerProps) 
         <Avatar size="lg">{initials(displayName)}</Avatar>
         <div>
           <h2 style={{ fontSize: 16 }}>{displayName}</h2>
-          <p className="cell-sub">{roleLabel}</p>
+          <p className="text-[12.5px] text-muted">{roleLabel}</p>
         </div>
       </div>
       <TextField id="pf-name" label="Nombre de usuario" value={username} onChange={setUsername} maxLength={50} />
@@ -88,7 +88,7 @@ export function ProfileDrawer({ user, roleLabel, onClose }: ProfileDrawerProps) 
         maxLength={120}
       />
       <Divider />
-      <p className="cell-sub" style={{ marginBottom: 10 }}>
+      <p className="mb-2.5 text-[12.5px] text-muted">
         Deja la contraseña en blanco si no quieres cambiarla.
       </p>
       <TextField

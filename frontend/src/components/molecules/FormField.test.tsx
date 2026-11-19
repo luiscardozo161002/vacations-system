@@ -15,7 +15,8 @@ describe('TextField', () => {
     expect(input.type).toBe('email');
     expect(input.required).toBe(true);
     expect(onChange).toHaveBeenCalledWith('a@b.com');
-    expect(screen.getByText('Opcional').className).toBe('field-hint');
+    expect(input.getAttribute('aria-describedby')).toBe('t-email-hint');
+    expect(screen.getByText('Opcional').id).toBe('t-email-hint');
   });
 });
 

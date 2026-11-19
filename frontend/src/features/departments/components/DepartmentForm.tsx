@@ -3,6 +3,7 @@ import type { Branch, Department, Employee } from '@vacations/sdk';
 import { sdk } from '../../../api/sdk';
 import { useFormSubmit } from '../../../hooks/use-form-submit';
 import { FormDrawer } from '../../../components/organisms/FormDrawer';
+import { CheckboxRow } from '../../../components/molecules/CheckboxRow';
 import { SearchSelect } from '../../../components/molecules/SearchSelect';
 import { FormField, SelectField, TextField } from '../../../components/molecules/FormField';
 
@@ -93,10 +94,9 @@ export function DepartmentForm({ department, branches, employees, onClose, onSav
         />
       </FormField>
       <FormField label="Calendario">
-        <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, marginBottom: 6 }}>
-          <input type="checkbox" checked={calendarShared} onChange={(e) => setCalendarShared(e.target.checked)} /> Sus empleados ven
-          las ausencias del departamento
-        </label>
+        <CheckboxRow checked={calendarShared} onChange={(e) => setCalendarShared(e.target.checked)}>
+          Sus empleados ven las ausencias del departamento
+        </CheckboxRow>
       </FormField>
     </FormDrawer>
   );

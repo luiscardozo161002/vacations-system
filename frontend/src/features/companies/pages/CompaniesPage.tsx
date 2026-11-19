@@ -7,10 +7,12 @@ import { useApiQuery } from '../../../hooks/use-api-query';
 import { useUrlFilters } from '../../../hooks/use-url-filters';
 import { useDepartments } from '../../departments/hooks/useDepartments';
 import { DataTable, type Column } from '../../../components/organisms/DataTable';
+import { Select } from '../../../components/atoms/Input';
 import { EmptyState } from '../../../components/atoms/EmptyState';
 import { PageHeader } from '../../../components/molecules/PageHeader';
 import { KeyValue, KeyValueGrid } from '../../../components/molecules/KeyValue';
 import { Card, CardHeader, CardTitle } from '../../../components/molecules/Card';
+import { Toolbar } from '../../../components/molecules/Toolbar';
 
 const TABS = [
   { id: 'datos', label: 'Datos de empresa' },
@@ -47,7 +49,7 @@ function CompanyBranches({ companyId }: { companyId: number }) {
           <CardHeader>
             <CardTitle>{branch.branch_name}</CardTitle>
           </CardHeader>
-          <p className="cell-sub" style={{ marginBottom: 10 }}>
+          <p className="mb-2.5 text-[12.5px] text-muted">
             {branch.code}
           </p>
           <KeyValue label="Empleados">{branch.active_employees}</KeyValue>
@@ -66,7 +68,7 @@ function CompanyEmployees({ companyId, departments }: { companyId: number; depar
   const { data, loading, error } = usePagedList('employees', sdk.employees, params);
 
   const columns: Column<Employee>[] = [
-    { header: 'Nombre', render: (employee) => employee.employee_name, className: 'cell-main' },
+    { header: 'Nombre', render: (employee) => employee.employee_name, className: 'font-medium' },
     { header: 'Departamento', render: (employee) => departments.get(employee.department_id)?.department_name ?? '' },
     { header: 'Sucursal', render: (employee) => departments.get(employee.department_id)?.branch_name ?? '' },
   ];
@@ -104,15 +106,15 @@ export function CompaniesPage() {
       <PageHeader title="Empresas" subtitle="Información general y sedes de la organización." />
 
       {companies && companies.length > 1 && (
-        <div className="toolbar">
-          <select aria-label="Empresa" value={companyId ?? ''} onChange={(e) => setFilters({ empresa: e.target.value })}>
+        <Toolbar>
+          <Select compact aria-label="Empresa" value={companyId ?? ''} onChange={(e) => setFilters({ empresa: e.target.value })}>
             {companies.map((item) => (
               <option key={item.company_id} value={item.company_id}>
                 {item.folio} · {item.company_name}
               </option>
             ))}
-          </select>
-        </div>
+          </Select>
+        </Toolbar>
       )}
 
       <div className="tabs">

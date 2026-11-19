@@ -51,8 +51,11 @@ Los radios compartidos son de 8, 10 y 12 px, con un radio independiente para con
 | `DataTable` | Tablas con carga, estado vacío y paginación |
 | `Drawer` | Formularios y detalle en un panel lateral |
 | `Dialog`, `ConfirmDialog` | Confirmaciones y acciones que necesitan contexto |
-| `FormField`, `TextField`, `SelectField` | Campos con etiqueta, ayuda y validación |
-| `SearchInput`, `SearchSelect` | Búsqueda y selección de registros |
+| `Input`, `Select`, `Textarea`, `Checkbox` | Controles de formulario; `Select` admite `compact` para las barras de filtros |
+| `FieldError`, `FieldHint` | Mensaje de error y texto de ayuda de un campo |
+| `FormField`, `TextField`, `SelectField`, `CheckboxRow` | Campos con etiqueta, ayuda y validación |
+| `SearchBox`, `SearchInput`, `SearchSelect` | Búsqueda y selección de registros |
+| `Toolbar`, `ToolbarSpacer`, `RowActions` | Barra de filtros y acciones de una fila |
 | `StatusBadge` | Estado con texto y tono semántico |
 | `ToastProvider` | Confirmación breve del resultado de una acción |
 | `EmptyState` | Mensaje para listas sin resultados |

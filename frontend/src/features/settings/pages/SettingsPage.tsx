@@ -46,7 +46,7 @@ function Swatches({ colors, selected, onPick, onCustom }: SwatchesProps) {
       </div>
       <div className="custom-color-row">
         <input type="color" value={selected} aria-label="Color personalizado" onChange={(e) => onCustom(e.target.value)} />
-        <span className="cell-sub">Personalizado</span>
+        <span className="text-[12.5px] text-muted">Personalizado</span>
       </div>
     </>
   );
@@ -84,7 +84,7 @@ export function SettingsPage() {
 
       <Card style={{ maxWidth: 480, marginBottom: 16 }}>
         <CardTitle>Tema</CardTitle>
-        <p className="cell-sub">Elige el modo de color de la interfaz.</p>
+        <p className="text-[12.5px] text-muted">Elige el modo de color de la interfaz.</p>
         <div style={{ display: 'flex', gap: 10, marginTop: 12 }}>
           <button
             type="button"
@@ -105,7 +105,7 @@ export function SettingsPage() {
 
       <Card style={{ maxWidth: 480, marginBottom: 16 }}>
         <CardTitle>Color de fondo</CardTitle>
-        <p className="cell-sub">Se aplica al área alrededor de la ventana del sistema.</p>
+        <p className="text-[12.5px] text-muted">Se aplica al área alrededor de la ventana del sistema.</p>
         <Swatches
           colors={BACKDROP_PRESETS}
           selected={appearance.backdrop}
@@ -119,7 +119,7 @@ export function SettingsPage() {
 
       <Card style={{ maxWidth: 480, marginBottom: 16 }}>
         <CardTitle>Color de botones</CardTitle>
-        <p className="cell-sub">Color del botón primario (acciones principales).</p>
+        <p className="text-[12.5px] text-muted">Color del botón primario (acciones principales).</p>
         <Swatches
           colors={BUTTON_COLOR_PRESETS}
           selected={appearance.buttonColor}
@@ -137,7 +137,7 @@ export function SettingsPage() {
 
       <Card style={{ maxWidth: 480 }}>
         <CardTitle>Transparencia del contenedor</CardTitle>
-        <p className="cell-sub">Qué tan transparente se ve la ventana del sistema sobre el fondo.</p>
+        <p className="text-[12.5px] text-muted">Qué tan transparente se ve la ventana del sistema sobre el fondo.</p>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 12 }}>
           <input
             type="range"
@@ -148,7 +148,7 @@ export function SettingsPage() {
             onChange={(e) => changeWindowAlpha(Number(e.target.value))}
             style={{ flex: 1 }}
           />
-          <span className="cell-sub" style={{ width: 40 }}>
+          <span className="w-10 text-[12.5px] text-muted">
             {alphaPercent}%
           </span>
         </div>

@@ -51,7 +51,7 @@ export function DepartmentsPage() {
               <CardHeader>
                 <CardTitle>
                   {department.department_name}
-                  {repeatedNames && <span className="cell-sub"> · {department.branch_code}</span>}
+                  {repeatedNames && <span className="text-[12.5px] text-muted"> · {department.branch_code}</span>}
                 </CardTitle>
                 {canEdit && (
                   <IconButton title="Editar" onClick={() => form.open(department)}>

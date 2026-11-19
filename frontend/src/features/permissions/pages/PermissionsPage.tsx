@@ -95,7 +95,7 @@ export function PermissionsPage() {
           <span data-icon="alert-circle">
             <Icon name="alert-circle" />
           </span>
-          <span className="cell-sub">Estás viendo esta matriz en modo solo lectura con el rol actual ({roleLabel}).</span>
+          <span className="text-[12.5px] text-muted">Estás viendo esta matriz en modo solo lectura con el rol actual ({roleLabel}).</span>
         </Card>
       )}
       {!matrix ? (
@@ -116,7 +116,7 @@ export function PermissionsPage() {
                 <tr key={module.code}>
                   <td>
                     {module.label}
-                    {module.special && <div className="cell-sub">{module.special}</div>}
+                    {module.special && <div className="text-[12.5px] text-muted">{module.special}</div>}
                   </td>
                   {matrix.roles.map((role) => {
                     const permissionId = matrix.permissionIds.get(module.code) ?? 0;

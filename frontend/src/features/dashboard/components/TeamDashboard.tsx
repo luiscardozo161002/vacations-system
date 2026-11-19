@@ -9,6 +9,7 @@ import { StatCard } from '../../../components/molecules/StatCard';
 import { Button } from '../../../components/atoms/Button';
 import { Card, CardHeader, CardTitle } from '../../../components/molecules/Card';
 import { Avatar } from '../../../components/atoms/Avatar';
+import { FieldError } from '../../../components/atoms/FieldText';
 
 const ACTIVITY_LABELS = {
   request: { pending: 'Solicitud pendiente', approved: 'Solicitud aprobada', rejected: 'Solicitud rechazada', cancelled: 'Solicitud cancelada' },
@@ -37,7 +38,7 @@ export function TeamDashboard({ firstName, allBranches }: TeamDashboardProps) {
         </Button>
       </PageHeader>
 
-      {error && <p className="field-error" role="alert">{error}</p>}
+      {error && <FieldError>{error}</FieldError>}
 
       <div className="grid grid-4" style={{ marginBottom: 16 }}>
         <StatCard icon="users" label="Empleados activos" value={summary?.active_employees ?? '—'} delta={allBranches ? 'En todas las sedes' : 'En tus sedes'} />
@@ -94,9 +95,9 @@ export function TeamDashboard({ firstName, allBranches }: TeamDashboardProps) {
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12.5, marginBottom: 6 }}>
                 <span>
                   {department.department_name}
-                  {repeatedNames && <span className="cell-sub"> · {department.branch_code}</span>}
+                  {repeatedNames && <span className="text-[12.5px] text-muted"> · {department.branch_code}</span>}
                 </span>
-                <span className="cell-sub">{department.active_employees}</span>
+                <span className="text-[12.5px] text-muted">{department.active_employees}</span>
               </div>
               <div className="progress-track">
                 <div className="progress-fill" style={{ width: `${(department.active_employees / maxCount) * 100}%` }} />

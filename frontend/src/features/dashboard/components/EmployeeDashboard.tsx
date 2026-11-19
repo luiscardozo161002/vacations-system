@@ -63,7 +63,7 @@ export function EmployeeDashboard() {
           <CardTitle style={{ margin: '14px 0 10px' }}>
             Horas de permisos (dentro del día en curso)
           </CardTitle>
-          <p className="cell-sub" style={{ marginBottom: 10 }}>
+          <p className="mb-2.5 text-[12.5px] text-muted">
             Tu turno equivale a {balance.daily_hours}h al día. Las horas de permiso ya tomadas se descuentan de ese día antes de
             consumir un día completo.
           </p>

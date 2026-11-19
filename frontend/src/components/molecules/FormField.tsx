@@ -1,23 +1,24 @@
-import type { CSSProperties, InputHTMLAttributes, ReactNode } from 'react';
+import type { InputHTMLAttributes, ReactNode } from 'react';
+import { cn } from '../../utils/cn';
+import { FieldHint } from '../atoms/FieldText';
+import { Input, Select } from '../atoms/Input';
 
 interface FormFieldProps {
   label: string;
   htmlFor?: string;
   hint?: ReactNode;
-  style?: CSSProperties;
+  className?: string;
   children: ReactNode;
 }
 
-export function FormField({ label, htmlFor, hint, style, children }: FormFieldProps) {
+export function FormField({ label, htmlFor, hint, className, children }: FormFieldProps) {
   return (
-    <div className="field" style={style}>
-      <label htmlFor={htmlFor}>{label}</label>
+    <div className={cn('mb-4', className)}>
+      <label htmlFor={htmlFor} className="mb-1.5 block text-sm font-medium text-fg">
+        {label}
+      </label>
       {children}
-      {hint && (
-        <p className="field-hint" id={htmlFor && `${htmlFor}-hint`}>
-          {hint}
-        </p>
-      )}
+      {hint && <FieldHint id={htmlFor && `${htmlFor}-hint`}>{hint}</FieldHint>}
     </div>
   );
 }
@@ -33,7 +34,7 @@ type TextFieldProps = Omit<InputHTMLAttributes<HTMLInputElement>, 'value' | 'onC
 export function TextField({ label, hint, onChange, ...input }: TextFieldProps) {
   return (
     <FormField label={label} htmlFor={input.id} hint={hint}>
-      <input {...input} aria-describedby={hint ? `${input.id}-hint` : undefined} onChange={(e) => onChange(e.target.value)} />
+      <Input {...input} aria-describedby={hint ? `${input.id}-hint` : undefined} onChange={(e) => onChange(e.target.value)} />
     </FormField>
   );
 }
@@ -55,13 +56,13 @@ interface SelectFieldProps {
 export function SelectField({ id, label, value, options, onChange, required }: SelectFieldProps) {
   return (
     <FormField label={label} htmlFor={id}>
-      <select id={id} value={value} onChange={(e) => onChange(e.target.value)} required={required}>
+      <Select id={id} value={value} onChange={(e) => onChange(e.target.value)} required={required}>
         {options.map((option) => (
           <option key={option.value} value={option.value}>
             {option.label}
           </option>
         ))}
-      </select>
+      </Select>
     </FormField>
   );
 }

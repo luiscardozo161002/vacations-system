@@ -9,6 +9,7 @@ import { useRecordForm } from '../../../hooks/use-record-form';
 import { formatAbsenceRange } from '../../../utils/format';
 import { Icon } from '../../../components/atoms/Icon';
 import { DataTable, type Column } from '../../../components/organisms/DataTable';
+import { Select } from '../../../components/atoms/Input';
 import { PageHeader } from '../../../components/molecules/PageHeader';
 import { StatusBadge } from '../../../components/atoms/StatusBadge';
 import { useAuth } from '../../auth/auth-context';
@@ -18,6 +19,7 @@ import { AbsenceForm } from '../components/AbsenceForm';
 import { AbsenceDetail } from '../components/AbsenceDetail';
 import { IconButton } from '../../../components/atoms/IconButton';
 import { Button } from '../../../components/atoms/Button';
+import { RowActions, Toolbar, ToolbarSpacer } from '../../../components/molecules/Toolbar';
 
 const FILTERS = { estado: '' };
 
@@ -46,18 +48,18 @@ export function NoticesPage() {
   const { data, loading, error } = usePagedList('notices', sdk.notices, params);
 
   const columns: Column<Notice>[] = [
-    { header: 'Empleado', render: (notice) => notice.employee_name, className: 'cell-main' },
+    { header: 'Empleado', render: (notice) => notice.employee_name, className: 'font-medium' },
     { header: 'Motivo', render: (notice) => notice.reason_description },
     { header: 'Fecha', render: (notice) => formatAbsenceRange(notice) },
     { header: 'Estado', render: (notice) => <StatusBadge status={notice.status} /> },
     {
       header: '',
       render: (notice) => (
-        <div className="row-actions">
+        <RowActions>
           <IconButton title="Ver detalle" onClick={() => setSelected(notice)}>
             <Icon name="eye" />
           </IconButton>
-        </div>
+        </RowActions>
       ),
     },
   ];
@@ -84,14 +86,14 @@ export function NoticesPage() {
         )}
       </PageHeader>
 
-      <div className="toolbar">
-        <select aria-label="Estado" value={filters.estado} onChange={(e) => setFilter({ estado: e.target.value })}>
+      <Toolbar>
+        <Select compact aria-label="Estado" value={filters.estado} onChange={(e) => setFilter({ estado: e.target.value })}>
           <option value="">Todos los estados</option>
           <option value="approved">Aprobado</option>
           <option value="cancelled">Cancelado</option>
-        </select>
-        <div className="toolbar-spacer" />
-      </div>
+        </Select>
+        <ToolbarSpacer />
+      </Toolbar>
 
       <DataTable
         columns={columns}

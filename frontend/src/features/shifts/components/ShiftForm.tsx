@@ -3,6 +3,7 @@ import type { DayOfWeek, Shift } from '@vacations/sdk';
 import { sdk } from '../../../api/sdk';
 import { useFormSubmit } from '../../../hooks/use-form-submit';
 import { FormDrawer } from '../../../components/organisms/FormDrawer';
+import { Input } from '../../../components/atoms/Input';
 import { FormField, TextField } from '../../../components/molecules/FormField';
 import { Icon } from '../../../components/atoms/Icon';
 import { DAY_LETTERS, WEEK, toBlocks, toSchedule, type ScheduleBlock } from '../schedule-blocks';
@@ -97,11 +98,11 @@ export function ShiftForm({ shift, onClose, onSaved }: ShiftFormProps) {
               ))}
             </div>
             <div style={{ display: 'flex', gap: 12 }}>
-              <FormField label="Hora entrada" style={{ flex: 1, marginBottom: 0 }}>
-                <input type="time" value={block.start} onChange={(e) => changeBlock(index, { start: e.target.value })} />
+              <FormField label="Hora entrada" className="mb-0 flex-1">
+                <Input type="time" value={block.start} onChange={(e) => changeBlock(index, { start: e.target.value })} />
               </FormField>
-              <FormField label="Hora salida" style={{ flex: 1, marginBottom: 0 }}>
-                <input type="time" value={block.end} onChange={(e) => changeBlock(index, { end: e.target.value })} />
+              <FormField label="Hora salida" className="mb-0 flex-1">
+                <Input type="time" value={block.end} onChange={(e) => changeBlock(index, { end: e.target.value })} />
               </FormField>
             </div>
           </div>

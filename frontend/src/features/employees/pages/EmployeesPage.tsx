@@ -11,6 +11,7 @@ import { formatDate, initials, todayIso } from '../../../utils/format';
 import { saveFile } from '../../../utils/save-file';
 import { Icon } from '../../../components/atoms/Icon';
 import { DataTable, type Column } from '../../../components/organisms/DataTable';
+import { Select } from '../../../components/atoms/Input';
 import { ConfirmDialog } from '../../../components/organisms/Dialog';
 import { PageHeader } from '../../../components/molecules/PageHeader';
 import { SearchSelect } from '../../../components/molecules/SearchSelect';
@@ -26,6 +27,7 @@ import { useAuth } from '../../auth/auth-context';
 import { IconButton } from '../../../components/atoms/IconButton';
 import { Button } from '../../../components/atoms/Button';
 import { Avatar } from '../../../components/atoms/Avatar';
+import { RowActions, Toolbar, ToolbarSpacer } from '../../../components/molecules/Toolbar';
 
 const FILTERS = { q: '', departamento: '', estado: '', perfil: '' };
 
@@ -119,12 +121,12 @@ export function EmployeesPage() {
       render: (employee) => (
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <Avatar>{initials(employee.employee_name)}</Avatar>
-          <span className="cell-main">{employee.employee_name}</span>
+          <span className="font-medium">{employee.employee_name}</span>
         </div>
       ),
     },
     { header: 'Número', render: (employee) => employee.employee_number },
-    { header: 'Folio', render: (employee) => employee.folio, className: 'cell-sub' },
+    { header: 'Folio', render: (employee) => employee.folio, className: 'text-[12.5px] text-muted' },
     { header: 'Departamento', render: (employee) => departmentNames.get(employee.department_id) ?? '' },
     { header: 'Turno', render: (employee) => shiftNames.get(employee.shift_id) ?? '' },
     { header: 'Ingreso', render: (employee) => formatDate(employee.start_date) },
@@ -132,7 +134,7 @@ export function EmployeesPage() {
     {
       header: '',
       render: (employee) => (
-        <div className="row-actions">
+        <RowActions>
           <IconButton title="Ver perfil" onClick={() => setProfileEmployee(employee)}>
             <Icon name="eye" />
           </IconButton>
@@ -146,7 +148,7 @@ export function EmployeesPage() {
               <Icon name={employee.status === 'active' ? 'user-x' : 'user-check'} />
             </IconButton>
           )}
-        </div>
+        </RowActions>
       ),
     },
   ];
@@ -161,7 +163,7 @@ export function EmployeesPage() {
         )}
       </PageHeader>
 
-      <div className="toolbar">
+      <Toolbar>
         <SearchInput
           id="emp-search"
           placeholder="Buscar por nombre o número..."
@@ -175,16 +177,16 @@ export function EmployeesPage() {
           onChange={(value) => setFilter({ departamento: value })}
           placeholder="Todos los departamentos"
         />
-        <select aria-label="Estado" value={filters.estado} onChange={(e) => setFilter({ estado: e.target.value })}>
+        <Select compact aria-label="Estado" value={filters.estado} onChange={(e) => setFilter({ estado: e.target.value })}>
           <option value="">Todos los estados</option>
           <option value="active">Activo</option>
           <option value="inactive">Inactivo</option>
-        </select>
-        <div className="toolbar-spacer" />
+        </Select>
+        <ToolbarSpacer />
         <IconButton title="Exportar" onClick={exportCsv} disabled={exporting}>
           <Icon name="download" />
         </IconButton>
-      </div>
+      </Toolbar>
 
       <DataTable
         columns={columns}

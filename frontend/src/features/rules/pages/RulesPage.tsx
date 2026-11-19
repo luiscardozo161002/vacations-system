@@ -31,7 +31,7 @@ export function RulesPage() {
   const effectiveYear = Math.max(config.lftReformYear, ...(data?.data.map((rule) => rule.effective_year) ?? []));
 
   const columns: Column<AccrualRule>[] = [
-    { header: 'Antigüedad', render: seniority, className: 'cell-main' },
+    { header: 'Antigüedad', render: seniority, className: 'font-medium' },
     { header: 'Días otorgados', render: (rule) => `${rule.vacation_days} días` },
     { header: 'Vigente desde', render: (rule) => rule.effective_year },
     { header: 'Estado', render: (rule) => <StatusBadge status={rule.status} /> },

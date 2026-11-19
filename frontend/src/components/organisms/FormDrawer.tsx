@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { Button } from '../atoms/Button';
 import { Drawer } from './Drawer';
+import { FieldError } from '../atoms/FieldText';
 
 interface FormDrawerProps {
   title: string;
@@ -34,9 +35,9 @@ export function FormDrawer({ title, submitLabel, submitting, error, submitDisabl
       }
     >
       {error && (
-        <p className="field-error" role="alert">
+        <FieldError>
           {error}
-        </p>
+        </FieldError>
       )}
       {children}
     </Drawer>

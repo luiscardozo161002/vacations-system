@@ -9,6 +9,7 @@ import { useRecordForm } from '../../../hooks/use-record-form';
 import { formatAbsenceRange, formatDaysHours } from '../../../utils/format';
 import { Icon } from '../../../components/atoms/Icon';
 import { DataTable, type Column } from '../../../components/organisms/DataTable';
+import { Select } from '../../../components/atoms/Input';
 import { PageHeader } from '../../../components/molecules/PageHeader';
 import { SearchSelect } from '../../../components/molecules/SearchSelect';
 import { StatusBadge } from '../../../components/atoms/StatusBadge';
@@ -19,6 +20,7 @@ import { AbsenceForm } from '../components/AbsenceForm';
 import { AbsenceDetail } from '../components/AbsenceDetail';
 import { IconButton } from '../../../components/atoms/IconButton';
 import { Button } from '../../../components/atoms/Button';
+import { RowActions, Toolbar, ToolbarSpacer } from '../../../components/molecules/Toolbar';
 
 const FILTERS = { estado: '', departamento: '' };
 
@@ -54,7 +56,7 @@ export function RequestsPage() {
   );
 
   const columns: Column<Notice>[] = [
-    { header: 'Empleado', render: (notice) => notice.employee_name, className: 'cell-main' },
+    { header: 'Empleado', render: (notice) => notice.employee_name, className: 'font-medium' },
     { header: 'Departamento', render: (notice) => notice.department_name },
     { header: 'Fecha y horario', render: (notice) => formatAbsenceRange(notice) },
     { header: 'Días', render: (notice) => formatDaysHours(notice.days_taken, notice.hours_taken) },
@@ -63,11 +65,11 @@ export function RequestsPage() {
     {
       header: '',
       render: (notice) => (
-        <div className="row-actions">
+        <RowActions>
           <IconButton title="Ver detalle" onClick={() => setSelected(notice)}>
             <Icon name="eye" />
           </IconButton>
-        </div>
+        </RowActions>
       ),
     },
   ];
@@ -94,14 +96,14 @@ export function RequestsPage() {
         )}
       </PageHeader>
 
-      <div className="toolbar">
-        <select aria-label="Estado" value={filters.estado} onChange={(e) => setFilter({ estado: e.target.value })}>
+      <Toolbar>
+        <Select compact aria-label="Estado" value={filters.estado} onChange={(e) => setFilter({ estado: e.target.value })}>
           <option value="">Todos los estados</option>
           <option value="pending">Pendiente</option>
           <option value="approved">Aprobada</option>
           <option value="rejected">Rechazada</option>
           <option value="cancelled">Cancelada</option>
-        </select>
+        </Select>
         {!isEmployee && (
           <SearchSelect
             id="req-dept-filter"
@@ -111,8 +113,8 @@ export function RequestsPage() {
             placeholder="Todos los departamentos"
           />
         )}
-        <div className="toolbar-spacer" />
-      </div>
+        <ToolbarSpacer />
+      </Toolbar>
 
       <DataTable
         columns={columns}

@@ -1,6 +1,6 @@
 import { useEffect, useEffectEvent, useState } from 'react';
 import { config } from '../../config';
-import { Icon } from '../atoms/Icon';
+import { SearchBox } from './SearchBox';
 
 interface SearchInputProps {
   value: string;
@@ -20,10 +20,5 @@ export function SearchInput({ value, onSearch, placeholder, id }: SearchInputPro
     return () => clearTimeout(timer);
   }, [text, value]);
 
-  return (
-    <div className="search-box" style={{ display: 'flex' }}>
-      <Icon name="search" />
-      <input type="text" id={id} aria-label={placeholder} placeholder={placeholder} value={text} onChange={(e) => setText(e.target.value)} />
-    </div>
-  );
+  return <SearchBox id={id} aria-label={placeholder} placeholder={placeholder} value={text} onChange={(e) => setText(e.target.value)} />;
 }

@@ -20,7 +20,7 @@ const FILTERS = {};
 const plural = (count: number, word: string) => `${count} ${word}${count === 1 ? '' : 's'}`;
 
 const columns: Column<VacationEntitlement>[] = [
-  { header: 'Empleado', render: (balance) => balance.employee_name, className: 'cell-main' },
+  { header: 'Empleado', render: (balance) => balance.employee_name, className: 'font-medium' },
   { header: 'Departamento', render: (balance) => balance.department_name },
   { header: 'Antigüedad', render: (balance) => plural(balance.years_of_service, 'año') },
   { header: 'Otorgados', render: (balance) => `${balance.total_days} días` },
@@ -31,7 +31,7 @@ const columns: Column<VacationEntitlement>[] = [
     header: 'Horas disponibles',
     render: (balance) => (
       <>
-        {balance.available.hours} h <span className="cell-sub">(de {balance.daily_hours}h/día)</span>
+        {balance.available.hours} h <span className="text-[12.5px] text-muted">(de {balance.daily_hours}h/día)</span>
       </>
     ),
   },

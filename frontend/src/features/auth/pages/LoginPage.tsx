@@ -6,8 +6,10 @@ import { TextField } from '../../../components/molecules/FormField';
 import { useAuth } from '../auth-context';
 import { DevAccounts } from '../components/DevAccounts';
 import { Button } from '../../../components/atoms/Button';
+import { Checkbox } from '../../../components/atoms/Input';
 import { LinkButton } from '../../../components/atoms/LinkButton';
 import { LoginCard } from '../../../components/templates/LoginCard';
+import { FieldError, FieldHint } from '../../../components/atoms/FieldText';
 
 type View = 'login' | 'request' | 'confirm';
 
@@ -88,7 +90,7 @@ export function LoginPage() {
             onChange={setEmail}
             required
           />
-          {error && <p className="field-error" role="alert">{error}</p>}
+          {error && <FieldError>{error}</FieldError>}
           <div className="mt-1 mb-5 flex items-center justify-between text-sm">
             <LinkButton onClick={() => goTo('login')}>Volver a iniciar sesión</LinkButton>
           </div>
@@ -104,7 +106,7 @@ export function LoginPage() {
     return (
       <LoginCard title="Nueva contraseña" subtitle="Escribe el código de restablecimiento y tu nueva contraseña.">
         <form onSubmit={handleConfirm}>
-          {message && <p className="field-hint mb-4" role="status">{message}</p>}
+          {message && <FieldHint role="status" className="mb-4">{message}</FieldHint>}
           <TextField id="reset-token" label="Código" value={token} onChange={setToken} required />
           <TextField
             id="reset-password"
@@ -127,7 +129,7 @@ export function LoginPage() {
             onChange={setConfirmPassword}
             required
           />
-          {error && <p className="field-error" role="alert">{error}</p>}
+          {error && <FieldError>{error}</FieldError>}
           <div className="mt-1 mb-5 flex items-center justify-between text-sm">
             <LinkButton onClick={() => goTo('login')}>Volver a iniciar sesión</LinkButton>
           </div>
@@ -142,7 +144,7 @@ export function LoginPage() {
   return (
     <LoginCard title="Inicia sesión" subtitle="Sistema de vacaciones y avisos de ausencia">
       <form onSubmit={handleLogin}>
-        {message && <p className="field-hint mb-4" role="status">{message}</p>}
+        {message && <FieldHint role="status" className="mb-4">{message}</FieldHint>}
         <TextField
           id="login-email"
           label="Correo electrónico"
@@ -163,10 +165,10 @@ export function LoginPage() {
           onChange={setPassword}
           required
         />
-        {error && <p className="field-error" role="alert">{error}</p>}
+        {error && <FieldError>{error}</FieldError>}
         <div className="mt-1 mb-5 flex items-center justify-between text-sm">
           <label className="flex items-center gap-1.5 text-muted">
-            <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} /> Recordarme
+            <Checkbox className="size-auto" checked={remember} onChange={(e) => setRemember(e.target.checked)} /> Recordarme
           </label>
           <LinkButton onClick={() => goTo('request')}>¿Olvidaste tu contraseña?</LinkButton>
         </div>

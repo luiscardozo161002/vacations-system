@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Icon } from '../atoms/Icon';
+import { SearchBox } from './SearchBox';
 
 export interface SearchSelectOption {
   value: string;
@@ -34,20 +34,17 @@ export function SearchSelect({ id, options, value, onChange, placeholder = 'Busc
 
   return (
     <>
-      <div className="search-box" style={fullWidth ? { display: 'flex', width: '100%' } : undefined}>
-        <Icon name="search" />
-        <input
-          type="text"
-          id={id}
-          list={`${id}-list`}
-          aria-label={placeholder}
-          placeholder={placeholder}
-          value={typed ?? selectedLabel}
-          onChange={(e) => handleChange(e.target.value)}
-          onBlur={() => setTyped(null)}
-          autoComplete="off"
-        />
-      </div>
+      <SearchBox
+        wrapperClassName={fullWidth ? 'w-full' : undefined}
+        id={id}
+        list={`${id}-list`}
+        aria-label={placeholder}
+        placeholder={placeholder}
+        value={typed ?? selectedLabel}
+        onChange={(e) => handleChange(e.target.value)}
+        onBlur={() => setTyped(null)}
+        autoComplete="off"
+      />
       <datalist id={`${id}-list`}>
         {options.map((option) => (
           <option key={option.value} value={option.label} />

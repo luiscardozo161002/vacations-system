@@ -6,9 +6,11 @@ import { formatDateTime } from '../../../utils/format';
 import { usePagedList } from '../../../hooks/use-paged-list';
 import { usePageFilters } from '../../../hooks/use-page-filters';
 import { DataTable, type Column } from '../../../components/organisms/DataTable';
+import { Select } from '../../../components/atoms/Input';
 import { PageHeader } from '../../../components/molecules/PageHeader';
 import { SearchInput } from '../../../components/molecules/SearchInput';
 import { StatusBadge } from '../../../components/atoms/StatusBadge';
+import { Toolbar } from '../../../components/molecules/Toolbar';
 
 const FILTERS = { resultado: '', q: '' };
 
@@ -53,14 +55,14 @@ const detail = (entry: AuditLogEntry): string =>
     .join(' · ');
 
 const columns: Column<AuditLogEntry>[] = [
-  { header: 'Usuario', render: (entry) => entry.username ?? 'desconocido', className: 'cell-main' },
-  { header: 'Fecha y hora', render: (entry) => formatDateTime(entry.created_at), className: 'cell-sub' },
+  { header: 'Usuario', render: (entry) => entry.username ?? 'desconocido', className: 'font-medium' },
+  { header: 'Fecha y hora', render: (entry) => formatDateTime(entry.created_at), className: 'text-[12.5px] text-muted' },
   {
     header: 'Evento',
     render: (entry) => (
       <>
         {EVENT_LABELS[entry.event_type] ?? entry.event_type}
-        <div className="cell-sub">{detail(entry)}</div>
+        <div className="text-[12.5px] text-muted">{detail(entry)}</div>
       </>
     ),
   },
@@ -84,14 +86,14 @@ export function AuditPage() {
   return (
     <>
       <PageHeader title="Auditoría" subtitle="Historial de inicio de sesión y eventos de seguridad." />
-      <div className="toolbar">
-        <select aria-label="Resultado" value={filters.resultado} onChange={(e) => setFilter({ resultado: e.target.value })}>
+      <Toolbar>
+        <Select compact aria-label="Resultado" value={filters.resultado} onChange={(e) => setFilter({ resultado: e.target.value })}>
           <option value="">Todos los resultados</option>
           <option value="success">Exitoso</option>
           <option value="failed">Fallido</option>
-        </select>
+        </Select>
         <SearchInput placeholder="Buscar usuario o evento..." value={filters.q} onSearch={(q) => setFilter({ q })} />
-      </div>
+      </Toolbar>
       <DataTable
         columns={columns}
         data={data}
