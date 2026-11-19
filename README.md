@@ -1,160 +1,157 @@
 # Sistema de Vacaciones
 
-Monorepo con npm workspaces, compuesto por tres paquetes:
+Vacaciones y avisos de ausencia para RH. Monorepo con npm workspaces.
 
-- **`backend/`** — API en Hapi.js con PostgreSQL.
-- **`sdk/`** — Cliente TypeScript para consumir la API.
-- **`frontend/`** — Aplicación React que consume el SDK.
+| Paquete | Contenido |
+|---|---|
+| `backend/` | API Hapi.js con PostgreSQL |
+| `sdk/` | Cliente TypeScript de la API |
+| `frontend/` | Aplicación React que consume el SDK |
 
 ## Documentación
 
 | Documento | Contenido |
 |---|---|
-| [docs/PRD.md](docs/PRD.md) | Producto, usuarios, funcionalidades y reglas de negocio |
-| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Capas, estructura del monorepo, auth y decisiones técnicas |
-| [docs/DESIGN_SYSTEM.md](docs/DESIGN_SYSTEM.md) | Colores, tipografía y componentes del frontend |
-| [docs/ROADMAP.md](docs/ROADMAP.md) | Prioridades de seguridad, refactorización y calidad |
+| [PRD](docs/PRD.md) | Producto, roles, reglas de negocio y pantallas |
+| [Arquitectura](docs/ARCHITECTURE.md) | Capas, módulos, autenticación y decisiones |
+| [Design System](docs/DESIGN_SYSTEM.md) | Reglas de interfaz y componentes |
+| [Roadmap](docs/ROADMAP.md) | Estado y prioridades |
 
 ## Requisitos
 
-- Node.js 24 para reproducir el entorno de CI
-- PostgreSQL 17, ya sea con Docker o instalado localmente
+- Node.js 24
+- PostgreSQL 17, con Docker o instalado
 
-## Instalación
-
-Ejecuta la instalación desde la raíz del repositorio. El comando usa el lockfile y enlaza los tres paquetes.
+## Arranque rápido
 
 ```bash
 npm ci --legacy-peer-deps
-```
-
-## Backend
-
-### Arranque rápido con Docker
-
-```bash
 cp backend/.env.example backend/.env
-```
-
-```bash
 docker compose --env-file backend/.env up -d
-```
-
-```bash
 npm run migrate --workspace=backend
-```
-
-```bash
 npm run seed --workspace=backend
-```
-
-```bash
+npm run build --workspace=sdk
 npm run dev --workspace=backend
+npm run dev --workspace=frontend
 ```
 
-El contenedor toma la base, el usuario, la contraseña y el puerto de `backend/.env`, así que la API y Postgres siempre usan las mismas credenciales. Los datos se guardan en el volumen `pgdata` y sobreviven a `docker compose down`; para empezar desde cero, `docker compose down -v`. Si ya tienes un Postgres local en el 5432, cambia `DB_PORT` en `backend/.env` (por ejemplo a `5433`) antes de levantar el contenedor.
+| Servicio | URL |
+|---|---|
+| API | http://localhost:3000 |
+| Swagger | http://localhost:3000/documentation |
+| Frontend | http://localhost:5173 |
 
-Los pasos de abajo son el arranque sin Docker, o el detalle de cada comando.
+- Sin Docker: `createdb vacations_db` en lugar de `docker compose`.
+- Si el puerto 5432 está ocupado, cambia `DB_PORT` en `backend/.env` antes de levantar el contenedor.
+- Los datos viven en el volumen `pgdata`; `docker compose down -v` empieza de cero.
+- Si la API responde 500 tras bajar cambios, falta una migración.
 
-### 1. Configurar variables de entorno
+## Configuración
 
-```bash
-cp backend/.env.example backend/.env
+Todas las variables están en [`backend/.env.example`](backend/.env.example), cada una con su descripción y valor por defecto. Los schemas se validan al arrancar en [`config/index.js`](backend/src/config/index.js).
+
+| Variable | Regla |
+|---|---|
+| `DB_NAME`, `DB_USER`, `JWT_SECRET` | Obligatorias |
+| `JWT_SECRET` | Con `NODE_ENV=production`, al menos 32 caracteres |
+| `TRUSTED_PROXIES` | IPs de los proxies delante de la API; vacía si no hay proxy |
+
+Una variable inválida detiene el arranque y nombra la variable.
+
+## Datos de prueba
+
+`npm run seed --workspace=backend` borra la base y carga empresas, sedes, empleados, usuarios, vacaciones y avisos. No corre con `NODE_ENV=production`.
+
+Contraseña de todos: `Vacaciones2026!`. Solo para desarrollo.
+
+| Usuario | Correo | Rol | Empleado |
+|---|---|---|---|
+| `sysadmin` | sysadmin@grupo-jo.com | SUPERUSER | — |
+| `r.jimenez` | r.jimenez@thh.com.mx | USER | Roberto Jimenez Cruz |
+| `j.navarro` | j.navarro@jo.com.mx | EMPLOYEE | Jorge Luis Navarro |
+| `j.perez` | j.perez@jo.com.mx | EMPLOYEE | Juan Perez Lopez |
+
+`r.jimenez` atiende solo `THH_HGO` y ve 8 de los 12 empleados.
+
+## Comandos
+
+| Comando | Qué hace |
+|---|---|
+| `npm run dev --workspace=backend` | API con reinicio automático |
+| `npm run start --workspace=backend` | API sin reinicio |
+| `npm run migrate --workspace=backend` | Aplica migraciones |
+| `npm run migrate:rollback --workspace=backend` | Revierte el último batch (`-- --all` revierte todo) |
+| `npm run migrate:make --workspace=backend -- <nombre>` | Crea una migración |
+| `npm run seed --workspace=backend` | Borra e inserta los datos de prueba |
+| `npm run lint --workspace=backend` | ESLint del backend |
+| `npm test --workspace=backend` | Pruebas del backend |
+| `npm run build --workspace=sdk` | Compila el SDK (`dev` en modo watch) |
+| `npm test --workspace=sdk` | Pruebas del SDK |
+| `npm run dev --workspace=frontend` | Frontend con Vite |
+| `npm test --workspace=frontend` | Pruebas del frontend |
+
+## Pruebas
+
+| Paquete | Herramienta | Notas |
+|---|---|---|
+| Backend | `node:test` y `server.inject` | Usa `vacations_test`; `TEST_DB_NAME` debe terminar en `_test`; los archivos corren uno por uno |
+| SDK | `node:test` | Simula `fetch`; no necesita la API |
+| Frontend | Vitest, jsdom y Testing Library | Simula el SDK |
+
+El usuario de PostgreSQL necesita permiso para crear la base y acceso a `postgres`. Cada ejecución del backend aplica las migraciones y reemplaza los datos de prueba.
+
+## Integración continua
+
+[`ci.yml`](.github/workflows/ci.yml) corre en cada pull request y en cada push a `develop` y `main`, con PostgreSQL 17:
+
+1. Lint del backend y del frontend
+2. Build y pruebas del SDK
+3. Typecheck y build del frontend
+4. Pruebas del frontend y del backend
+
+Para bloquear merges con CI en rojo, activa la protección de ramas en `develop` y `main` con el check `build-and-test`.
+
+## API
+
+| Herramienta | Uso |
+|---|---|
+| Swagger | `/documentation` y `/swagger.json`, generados desde los schemas Joi |
+| [Bruno](backend/src/doc/bruno/) | Un request por endpoint; corre **Auth → Login** y las demás heredan el token |
+
+- Todo requiere `Authorization: Bearer <accessToken>`, salvo `/health`, `/auth/*` públicas y Swagger.
+- Los errores tienen una sola forma: `{ "error": { "code": "...", "message": "..." } }`.
+- `hapi-swagger` declara Joi 17 como peer y la API usa Joi 18, por eso se instala con `--legacy-peer-deps`. Al actualizar cualquiera, comprueba que `GET /swagger.json` responda 200.
+
+## SDK
+
+```ts
+const sdk = new VacationsSdk({
+  baseUrl: 'http://localhost:3000',
+  storage: myStorage,
+  onSessionExpired: () => navigate('/login'),
+});
+
+await sdk.auth.login({ email, password });
+const page = await sdk.employees.list({ status: ['active'], page: 1 });
 ```
 
-En PowerShell:
+| Tema | Detalle |
+|---|---|
+| Recursos | `auth`, `health`, `companies`, `branches`, `departments`, `employees`, `shifts`, `notices`, `reasons`, `vacationEntitlements`, `accrualRules`, `users`, `roles`, `permissions`, `rolePermissions`, `auditLog`, `calendar`, `dashboard`, `notifications` |
+| CRUD | Los catálogos heredan de `CrudResource`: `list`, `get`, `create`, `update`, `remove` |
+| Sesión | En un `401` renueva con el refresh token y reintenta una vez; si falla, borra los tokens y llama `onSessionExpired` |
+| Tokens | En memoria por defecto; `storage` con `get()` y `set()` los guarda en otro lugar |
 
-```powershell
-Copy-Item backend\.env.example backend\.env
-```
+## Proxy local con NGINX (Windows)
 
-La API carga `backend/.env` y también acepta variables del entorno del proceso. Usa `.env.example` como referencia. Para iniciar, configura el nombre y el usuario de la base de datos y el secreto JWT. Si alguno es inválido, el arranque muestra un mensaje genérico. Los ajustes numéricos ausentes o inválidos toman su valor por defecto. `TRUSTED_PROXIES` puede quedar sin configurar si la API recibe conexiones directas. [Configuración del backend](backend/src/config/index.js)
+[`nginx/development.conf`](nginx/development.conf) publica la API en `127.0.0.1:8080` y la reenvía a Hapi en `127.0.0.1:3000`. NGINX reemplaza `X-Forwarded-For` y se conecta desde `127.0.0.2`.
 
-| Variable      | Descripción                   | Ejemplo         |
-|---------------|--------------------------------|------------------|
-| `NODE_ENV`    | Entorno de ejecución            | `development`    |
-| `HOST`        | Host donde escucha la API       | `0.0.0.0`        |
-| `PORT`        | Puerto donde escucha la API     | `3000`           |
-| `DB_HOST`     | Host de PostgreSQL              | `localhost`      |
-| `DB_PORT`     | Puerto de PostgreSQL            | `5432`           |
-| `DB_NAME`     | Nombre de la base de datos      | `vacations_db`   |
-| `DB_USER`     | Usuario de PostgreSQL           | `postgres`       |
-| `DB_PASSWORD` | Password de ese usuario         | `postgres`       |
-| `JWT_SECRET`  | Firma los access token (JWT). Con `NODE_ENV=production` debe tener al menos 32 caracteres | `change-me` |
-| `ACCESS_TOKEN_TTL_MINUTES` | Vida del access token, en minutos | `15` |
-| `REFRESH_TOKEN_TTL_DAYS` | Vida de la sesión (refresh token), en días | `7` |
-| `PASSWORD_RESET_TTL_HOURS` | Vida del código de restablecimiento, en horas | `1` |
-| `MAX_FAILED_LOGIN_ATTEMPTS` | Intentos fallidos seguidos antes de bloquear la cuenta | `5` |
-| `LOCKOUT_MINUTES` | Minutos que dura el bloqueo de la cuenta | `15` |
-| `MAX_FAILED_LOGINS_PER_IP` | Intentos fallidos permitidos desde una misma IP en la ventana | `20` |
-| `FAILED_LOGINS_WINDOW_MINUTES` | Ventana del límite por IP, en minutos | `15` |
-| `CORS_ORIGINS` | Orígenes del navegador que pueden llamar a la API, separados por coma | `http://localhost:5173` (el frontend de Vite) |
-| `TRUSTED_PROXIES` | IPs de los proxies o balanceadores delante de la API, separadas por coma. Solo de ellos se acepta `X-Forwarded-For` para registrar la IP real del usuario. Puede ir vacía sin proxy | *(vacío)* |
+| Archivo | Valores |
+|---|---|
+| `backend/.env` | `HOST=127.0.0.1`, `PORT=3000`, `TRUSTED_PROXIES=127.0.0.2` |
+| `frontend/.env` | `VITE_API_BASE_URL=http://127.0.0.1:8080` |
 
-### 2. Crear la base de datos (solo sin Docker)
-
-```bash
-createdb vacations_db
-```
-
-### 3. Correr las migraciones
-
-```bash
-npm run migrate --workspace=backend
-```
-
-### 4. Cargar datos de prueba
-
-```bash
-npm run seed --workspace=backend
-```
-
-Carga datos dummy (empresas, departamentos, turnos, empleados, usuarios, vacaciones y avisos). **Borra antes todo lo que haya en la base**, así que se puede correr tantas veces como se quiera, pero no conserva datos capturados a mano. Se niega a correr con `NODE_ENV=production`.
-
-Usuarios de prueba (todos con la contraseña `Vacaciones2026!`, solo para desarrollo):
-
-| Usuario     | Correo                  | Rol       | Empleado vinculado      |
-|-------------|-------------------------|-----------|--------------------------|
-| `sysadmin`  | sysadmin@grupo-jo.com   | SUPERUSER | —                        |
-| `r.jimenez` | r.jimenez@thh.com.mx    | USER      | Roberto Jimenez Cruz     |
-| `j.navarro` | j.navarro@jo.com.mx     | EMPLOYEE  | Jorge Luis Navarro       |
-| `j.perez`   | j.perez@jo.com.mx       | EMPLOYEE  | Juan Perez Lopez         |
-
-El seed carga las 3 empresas (JOR, THH y UMJ) con sus 7 sedes. `r.jimenez` atiende solo la sede THH_HGO, así que como Usuario ve 8 de los 12 empleados.
-
-### 5. Levantar el servidor
-
-```bash
-npm run dev --workspace=backend
-```
-
-Queda disponible en `http://localhost:3000` (o el `HOST`/`PORT` configurado).
-
-**Logs:** la API registra cada petición y cada error con `hapi-pino`.
-- **Desarrollo:** se ven legibles en la terminal (`pino-pretty`), una línea por petición con método, ruta, estado y tiempo. Un error 500 imprime el mensaje real y el stack.
-- **Producción:** salen en JSON.
-- **Pruebas:** se apagan.
-- **Encabezados:** se ocultan `Authorization` y las cookies.
-
-Si la API responde 500 justo después de bajar cambios, lo más común es una migración pendiente: corre `npm run migrate --workspace=backend`.
-
-**Encabezados de seguridad:** se activan con `security: true` de hapi (`X-Frame-Options`, `X-Content-Type-Options`, HSTS, etc.). Hace lo mismo que `helmet` en Express, así que no hace falta esa dependencia.
-
-### NGINX local en Windows
-
-[nginx/development.conf](nginx/development.conf) publica la API en `http://127.0.0.1:8080` y reenvía las peticiones a Hapi en `127.0.0.1:3000`. NGINX reemplaza `X-Forwarded-For` con la IP de la conexión y se conecta a Hapi desde `127.0.0.2`. La auditoría y el límite de intentos fallidos usan la IP que Hapi resuelve a partir de esa cabecera.
-
-En `backend/.env`, usa estos valores y reinicia el backend.
-
-```dotenv
-HOST=127.0.0.1
-PORT=3000
-TRUSTED_PROXIES=127.0.0.2
-```
-
-En `frontend/.env`, configura `VITE_API_BASE_URL=http://127.0.0.1:8080` y reinicia Vite para que lea el cambio.
-
-Extrae el ZIP de NGINX para Windows dentro de `.nginx` en la raíz del repositorio. En PowerShell, ajusta la ruta de la versión si descargaste otra. [Descargas de NGINX](https://nginx.org/en/download.html)
+Extrae [NGINX para Windows](https://nginx.org/en/download.html) en `.nginx` y, en PowerShell, ajusta la versión:
 
 ```powershell
 $nginxRoot = (Resolve-Path .\.nginx\nginx-1.31.8).Path.Replace('\', '/')
@@ -165,295 +162,4 @@ Start-Process -FilePath "$nginxRoot/nginx.exe" -WorkingDirectory $nginxRoot `
 Invoke-RestMethod http://127.0.0.1:8080/api/v1/health
 ```
 
-Para detener el proxy, ejecuta `& "$nginxRoot/nginx.exe" -p "$nginxRoot/" -c $nginxConfig -s quit`.
-
-### Comandos del backend
-
-| Comando                                                 | Qué hace                                  |
-|----------------------------------------------------------|---------------------------------------------|
-| `npm run dev --workspace=backend`                        | Levanta la API con reinicio automático      |
-| `npm run start --workspace=backend`                      | Levanta la API sin reinicio automático      |
-| `npm run migrate --workspace=backend`                    | Aplica las migraciones pendientes           |
-| `npm run migrate:rollback --workspace=backend`           | Revierte el último batch de migraciones     |
-| `npm run migrate:rollback --workspace=backend -- --all`  | Revierte todas las migraciones              |
-| `npm run migrate:make --workspace=backend -- <nombre>`   | Crea un archivo de migración vacío          |
-| `npm run seed --workspace=backend`                       | Borra e inserta los datos de prueba         |
-| `npm run lint --workspace=backend`                       | Corre ESLint sobre el backend               |
-| `npm test --workspace=backend`                           | Prepara `vacations_test` y corre las pruebas |
-
-(Estos comandos también se pueden correr parado dentro de `backend/`, sin el flag `--workspace=backend`.)
-
-### Pruebas
-
-Las pruebas de integración usan `node:test` y `server.inject` con PostgreSQL. Configura `DB_HOST`, `DB_PORT`, `DB_USER` y `DB_PASSWORD` en `backend/.env` o en el entorno del proceso. El comando usa `vacations_test` por defecto. Para elegir otra base, exporta `TEST_DB_NAME` en el entorno del proceso con un nombre que termine en `_test`.
-
-```bash
-npm run lint --workspace=backend
-npm test --workspace=backend
-```
-
-El usuario de PostgreSQL necesita permiso para crear la base si falta y acceso a la base administrativa `postgres`. Cada ejecución aplica las migraciones y reemplaza los datos de prueba de la base seleccionada.
-
-Las pruebas viven en `backend/test/*.test.js`. Los archivos corren uno por uno (`--test-concurrency=1`) porque comparten la misma base.
-
-El SDK tiene sus propias pruebas en `sdk/test/*.test.ts`, también con `node:test`. Simulan `fetch`, así que no necesitan la API ni la base. Cubren el query string, los errores de la API traducidos a `SdkHttpError`, la renovación del token en un 401 (una sola vez y compartida entre peticiones simultáneas) el recurso `sdk.auth` y la ruta y método que arma cada recurso. `tsc` las compila a CommonJS en `sdk/build/` antes de correrlas:
-
-```bash
-npm test --workspace=sdk
-```
-
-### Integración continua
-
-[`.github/workflows/ci.yml`](.github/workflows/ci.yml) corre en cada pull request y en cada push a `develop` y `main`. Levanta Postgres 17 como servicio, instala con `npm ci --legacy-peer-deps` (por el peer `joi 17.x` de hapi-swagger, ver arriba) y hace, en orden: lint del backend, lint del frontend, build y pruebas del SDK, typecheck y build del frontend, pruebas del frontend y las pruebas del backend.
-
-Para que un PR no se pueda mergear con el CI en rojo hay que activar la protección de ramas en GitHub: **Settings → Branches → Add rule** para `develop` y para `main`, con *Require a pull request before merging* y *Require status checks to pass* marcando `build-and-test`.
-
-### Endpoints disponibles
-
-Todos los recursos siguen el mismo esquema CRUD con paginación en el listado (`GET /`, `GET /{id}`, `POST /`, `PATCH /{id}`, `DELETE /{id}`) y baja lógica: `DELETE` pone `status = 'inactive'`, nunca borra el registro (salvo `notices`, que usa `'cancelled'` en vez de `'inactive'`, porque ese es su propio enum de estado).
-
-**Filtros de los listados:**
-- **Varios valores:** los filtros de estado, tipo e ids aceptan varios valores separados por comas (`/api/v1/notices?status=pending,approved&department_id=1,2`) o el parámetro repetido. Desde el SDK basta con pasar un arreglo (`status: ['pending', 'approved']`).
-- **Rangos de fecha** (`AAAA-MM-DD`, ambos días incluidos): `from`/`to` en avisos (ausencias que se cruzan con el rango) y en auditoría (fecha del evento), y `hired_from`/`hired_to` en empleados (fecha de ingreso).
-- **Dónde vive:** todo sale de [`lib/list-query.js`](backend/src/lib/list-query.js), el mismo helper del orden (`sort`) y la paginación.
-
-| Recurso                            | Base                                  | Notas                                                         |
-|-------------------------------------|-----------------------------------------|------------------------------------------------------------------|
-| Health check                        | `GET /api/v1/health`                    |                                                                     |
-| Empresas                            | `/api/v1/companies`                     |                                                                    |
-| Departamentos                       | `/api/v1/departments`                   |                                                                    |
-| Turnos                              | `/api/v1/shifts`                        | cada turno trae `schedule` con sus 7 días; la semana se reemplaza completa con `PUT /api/v1/shifts/{shiftId}/schedule` |
-| Empleados                           | `/api/v1/employees`                     | `email` en el alta crea su cuenta con contraseña temporal; `POST /api/v1/employees/{employeeId}/access` la reenvía; `GET /api/v1/employees/export` descarga el CSV con los mismos filtros del listado |
-| Roles                               | `/api/v1/roles`                         |                                                                    |
-| Permisos                            | `/api/v1/permissions`                   |                                                                    |
-| Permisos por rol                    | `/api/v1/role-permissions`              | solo `GET`/`POST`/`DELETE` (clave compuesta `{roleId}/{permissionId}`, sin campos propios que editar); volver a asignar un permiso desactivado lo reactiva, no da 409 |
-| Reglas de acumulación de vacaciones | `/api/v1/vacation-accrual-rules`        |                                                                    |
-| Saldos de vacaciones                | `/api/v1/vacation-entitlements`         | `remaining_days` es una columna generada por Postgres (no se envía en el body) |
-| Motivos de aviso                    | `/api/v1/reasons`                       |                                                                    |
-| Avisos de ausencia                  | `/api/v1/notices`                       | `DELETE` pone `status = 'cancelled'`, no `'inactive'`            |
-| Usuarios                            | `/api/v1/users`                         | nunca devuelve `password_hash`; ver [Autenticación](#autenticación) |
-
-Todas las respuestas de error tienen la misma forma:
-
-```json
-{ "error": { "code": "ALGUN_CODIGO", "message": "..." } }
-```
-
-La colección de [Bruno](https://www.usebruno.com/) en [`backend/src/doc/bruno/`](backend/src/doc/bruno/) tiene un request de ejemplo por cada endpoint, con los campos requeridos y los códigos de error de cada uno. Para usarla: elegir el entorno **Local**, correr **Auth → Login** (guarda el token en la variable `accessToken`) y después cualquier otra petición; todas las protegidas heredan `Bearer {{accessToken}}` de la configuración de la colección. Cuando el token vence (15 min), correr **Auth → Refresh**.
-
-#### Documentación interactiva (Swagger)
-
-Con el servidor corriendo, `http://localhost:3000/documentation` muestra todos los endpoints en Swagger UI (agrupados por recurso, con "Try it out" para probarlos desde el navegador) y `http://localhost:3000/swagger.json` expone el spec OpenAPI 2.0 crudo. Se genera automaticamente a partir de los mismos schemas de Joi que ya validan cada ruta ([hapi-swagger](https://github.com/hapi-swagger/hapi-swagger), registrado en [server.js](backend/src/server.js) junto con `@hapi/inert` y `@hapi/vision`, que son requisito de hapi-swagger) — no hay que mantener la documentacion aparte ni duplicar los schemas.
-
-La versión del lockfile de `hapi-swagger` declara Joi 17 como dependencia par y la API usa Joi 18. El comando de instalación y CI usan `--legacy-peer-deps`. Al actualizar cualquiera de los dos paquetes, comprueba que `GET /swagger.json` responda 200 y contenga los esquemas esperados.
-
-### Autenticación
-
-Las otras tres tablas de este dominio (`user_sessions`, `password_reset_tokens`, `auth_audit_log`) a propósito no tienen un CRUD genérico — login, refresh, logout y reset de contraseña necesitan su propia lógica, no un `POST`/`PATCH` abierto:
-
-| Acción                        | Endpoint                                    |
-|---------------------------------|------------------------------------------------|
-| Login (con `email` o `username`) | `POST /api/v1/auth/login`                       |
-| Usuario actual                   | `GET /api/v1/auth/me`                           |
-| Editar username o correo         | `PATCH /api/v1/auth/me`                         |
-| Cambiar contraseña               | `POST /api/v1/auth/me/password`                 |
-| Refrescar sesión                 | `POST /api/v1/auth/refresh`                     |
-| Logout                           | `POST /api/v1/auth/logout`                      |
-| Pedir reset de contraseña        | `POST /api/v1/auth/password-reset/request`      |
-| Confirmar reset de contraseña    | `POST /api/v1/auth/password-reset/confirm`      |
-| Log de auditoría (solo lectura)  | `GET /api/v1/auth-audit-log`, `GET /api/v1/auth-audit-log/{id}` |
-
-Cómo funciona:
-
-- **Usuario actual:** `GET /auth/me` devuelve el usuario con su rol, su empleado vinculado (o `null`) y la lista de códigos de permiso activos del rol. Cambiar la contraseña pide la actual, revoca todas las sesiones del usuario y devuelve tokens nuevos para la sesión que hizo el cambio.
-- **Login** recibe `email` o `username` (uno de los dos, no ambos), valida la contraseña (bcrypt) y devuelve un **access token** (JWT, dura 15 minutos, firmado con `JWT_SECRET`) y un **refresh token** (opaco, dura 7 días; solo se guarda su hash en `user_sessions`, nunca el valor original).
-- **Refresh** revoca el token usado y crea su reemplazo en una sola transacción. Cada token se puede usar una vez. Los intentos posteriores responden `401 INVALID_REFRESH_TOKEN`.
-- El límite por IP cuenta los intentos que responden `INVALID_CREDENTIALS`. Al llegar a 20 en 15 minutos, la API responde `429` hasta que vence la ventana. El contador vive en memoria por instancia. Configura `TRUSTED_PROXIES` cuando el balanceador añade la IP del cliente a `X-Forwarded-For`.
-- Tras cinco intentos fallidos de login consecutivos, la cuenta queda temporalmente bloqueada. El próximo intento después de 15 minutos o un restablecimiento de contraseña puede desbloquearla.
-- **Restablecimiento.** La solicitud devuelve un mensaje genérico. En `development` y `test` incluye `devToken` para cuentas elegibles. El envío por correo está pendiente. La confirmación consume el código una sola vez, revoca los refresh tokens y los códigos pendientes, y rechaza las cuentas inactivas. Los access tokens ya emitidos conservan su vigencia hasta expirar.
-- Todo evento relevante (`LOGIN_SUCCESS`, `LOGIN_FAILED`, `TOKEN_REFRESH`, `LOGOUT`, `PASSWORD_RESET_REQUESTED`, `PASSWORD_RESET_COMPLETED`) queda registrado en `auth_audit_log`, consultable pero no editable por la API.
-
-**Rutas protegidas:** todas las rutas exigen `Authorization: Bearer <accessToken>`, salvo `GET /api/v1/health`, las 5 de `/api/v1/auth/*` y la documentación de Swagger. Sin token, con un token vencido o con una firma inválida responden `401`. El token lleva `user_id`, `role_id`, `employee_id` y `username`. En Swagger, el botón **Authorize** recibe `Bearer <accessToken>`.
-
-Las rutas de negocio comprueban permisos por rol y los repositorios aplican el alcance por sede o por empleado. Los cambios de permisos y asignaciones se reflejan en el siguiente access token.
-
-## SDK
-
-Se compila antes de poder usarse desde el frontend:
-
-```bash
-npm run build --workspace=sdk
-```
-
-Durante el desarrollo conviene dejarlo en modo watch:
-
-```bash
-npm run dev --workspace=sdk
-```
-
-**Recursos:**
-- **Auth y salud:** `auth`, `health`.
-- **Organización:** `companies`, `branches`, `departments`, `employees`, `shifts` (con `replaceSchedule`).
-- **Ausencias:**
-  - `notices`, con `preview`, `approve`, `reject` y `cancel`;
-  - `reasons`;
-  - `vacationEntitlements`;
-  - `accrualRules`.
-- **Administración:**
-  - `users`, con `branches` y `replaceBranches`;
-  - `roles`, `permissions`, `rolePermissions`;
-  - `auditLog`.
-- **Cómo funcionan:** los catálogos heredan de `CrudResource` (`list`, `get`, `create`, `update`, `remove`); `list` acepta los filtros de la API más `sort`, `page` y `pageSize`.
-- **Datos para pantallas:**
-  - Las solicitudes traen el nombre, número y departamento del empleado y la descripción del motivo.
-  - Los saldos traen lo disponible real en días y horas (`available`) según la jornada del turno.
-
-**Sesión:** `sdk.auth.login({ email, password })` (o `{ username, password }`) guarda los tokens y desde ahí cada petición lleva el `accessToken`. Si una petición responde `401`, el SDK renueva la sesión con el `refreshToken` y la reintenta una vez; si varias fallan a la vez, comparten una sola renovación. Si el refresh también falla, borra los tokens y llama a `onSessionExpired`. `sdk.auth.logout()` revoca el refresh token.
-
-Por defecto los tokens viven en memoria y se pierden al recargar. Para guardarlos en otro lado se pasa un `storage` con `get()` y `set(tokens | null)`:
-
-```ts
-const sdk = new VacationsSdk({
-  baseUrl: 'http://localhost:3000',
-  storage: myStorage,
-  onSessionExpired: () => navigate('/login'),
-});
-```
-
-## Frontend
-
-```bash
-npm run dev --workspace=frontend
-```
-
-El frontend usa `@vacations/sdk` como paquete local del workspace, sin publicarlo a ningún registro. Apunta a `VITE_API_BASE_URL`, que por defecto es `http://localhost:3000`.
-
-**Datos:** cada lectura pasa por TanStack Query.
-- **Hooks:** `usePagedList` para tablas paginadas y `useApiQuery` para lo demás, los dos en `frontend/src/lib`.
-- **Después de guardar:** se llama `refreshData()`, que vuelve a pedir lo que hay en pantalla. Así una aprobación actualiza a la vez la lista, el saldo y la campana.
-- **Sesión:** al entrar o salir se vacía la caché para no mostrar datos de otro usuario.
-
-**Componentes compartidos:** `frontend/src/components` tiene la tabla (`DataTable`), el drawer, los diálogos, el selector con búsqueda y los campos de formulario. Todos usan las clases del prototipo.
-- **`FormField`:** etiqueta, contenido y ayuda.
-- **`TextField`:** cualquier `input`, sea texto, correo, contraseña, número o fecha.
-- **`SelectField`:** lista de opciones.
-- **`SearchInput`:** caja de búsqueda que espera 300 ms después de la última tecla.
-
-Las reglas de cada módulo se quedan en su carpeta de `features`.
-
-**Filtros en la URL:** los filtros, la búsqueda y la página de cada lista viven en la URL (`/empleados?estado=active&q=ra&pagina=2`), igual que el mes del calendario y la empresa y pestaña de Empresas. Recargar o compartir el enlace conserva la vista.
-
-**Pruebas:**
-
-```bash
-npm test --workspace=frontend
-```
-
-Usan Vitest con jsdom y Testing Library, con el SDK simulado. Cubren dos grupos:
-- **Flujos críticos:** inicio de sesión y sus errores, sesión expirada (regresa al login y vacía la caché), menú según el rol y redirección de URLs sin permiso, solicitud que excede el saldo, y aprobar o rechazar.
-- **Piezas compartidas:** formatos, bloques de horario, filtros en la URL, campos de formulario, buscador y campana.
-
-**Login:** se entra con correo y contraseña. En desarrollo, la pantalla muestra las cuentas de prueba para autocompletarlas; en el build de producción no aparecen. La sesión se guarda en `localStorage` con **Recordarme**, o en `sessionStorage` sin esa opción, y se renueva sola. Si el refresh token ya no sirve, regresa al login con el aviso de sesión expirada.
-
-**Shell y rutas:** el sidebar y la topbar son los del prototipo. Las 14 pantallas tienen su ruta (`/dashboard`, `/empleados`, `/solicitudes`…) y funcionan con datos reales. El menú solo enseña los módulos que permite el rol. Entrar por URL a uno prohibido, o a una ruta que no existe, lleva al primer módulo permitido, como en el prototipo.
-
-Cada módulo pide su permiso `modulo:view` (por ejemplo `employees:view`); Configuración no pide ninguno. El menú queda así por rol:
-
-| Rol | Módulos |
-|---|---|
-| Superusuario | Todos |
-| Usuario | Todos menos Usuarios, Roles y permisos, y Auditoría |
-| Empleado | Dashboard, Solicitudes, Calendario, Días, Avisos y Configuración |
-
-La configuración vive en [frontend/src/app/navigation.ts](frontend/src/app/navigation.ts).
-
-**Solicitudes:**
-- **Lista:** tiene filtro de estado y, para RH, de departamento. El Empleado ve solo las suyas y RH solo las de sus sedes.
-- **Nueva solicitud:** solo para quien tiene empleado vinculado. Muestra el cálculo en vivo con `sdk.notices.preview` y no deja enviar si hay un error.
-- **Detalle:** según el usuario, aprueba, rechaza o cancela, siguiendo sus permisos y las acciones de revisión que tiene.
-
-**Avisos:**
-- **Registro:** RH registra avisos ya aprobados para empleados de sus sedes. Busca al empleado por número o nombre y elige cualquier motivo, con fechas u horas.
-- **Formulario:** es el mismo de Solicitudes, con el cálculo en vivo. Un aviso de Vacaciones descuenta el saldo al registrarse.
-- **Empleado:** ve sus avisos en "Mis avisos", sin poder crearlos.
-
-**Días:**
-- **Qué muestra:** el saldo del periodo vigente de cada empleado. Antigüedad, días otorgados, usados y disponibles, y horas usadas y disponibles según la jornada de su turno.
-- **Empleado:** por ahora ve solo su fila. Cuando exista el dashboard de empleado (VM-038), esta pantalla lo llevará ahí, como en el prototipo.
-
-**Empleados:**
-- **Búsqueda:** por nombre o número (`search` en la API, sin importar mayúsculas), con filtros de departamento y estado.
-- **Perfil:** un drawer con los datos del empleado, su antigüedad, el saldo del periodo vigente y el historial de solicitudes y avisos.
-- **Botones:** dar de alta, editar y dar de baja aparecen solo con el permiso correspondiente.
-- **Acceso:** el alta pide el correo y muestra la contraseña temporal (vence en un mes). El perfil muestra el usuario y el estado de la contraseña, y permite reenviar el acceso o crearlo si falta.
-- **Primer ingreso:** quien entra con una contraseña temporal ve primero la pantalla para crear la suya.
-- **Exportar:** el ícono de descarga de la barra baja un CSV para Excel con los filtros activos. Respeta las sedes del usuario y queda en la auditoría.
-  - **Columnas:** número, folio, nombre, sede, departamento, turno, fecha de ingreso, correo y estado.
-
-**Departamentos:**
-- **Tarjetas:** cada departamento muestra su responsable, sus empleados activos y si comparte su calendario.
-- **Formulario:** pide nombre, código, sede, responsable y si sus empleados ven las ausencias del departamento.
-- **Permisos:** RH edita los de sus sedes. Solo el Superusuario crea departamentos.
-
-**Empresas:** tiene pestañas de datos fiscales, sucursales con su número de empleados y empleados con su departamento y sede. El Superusuario elige la empresa en un selector.
-
-**Turnos y horarios:**
-- **Tarjetas:** cada turno muestra su horario resumido (por ejemplo "Lun-Vie 07:00–15:00; Sáb 08:00–13:00") y cuántos empleados lo tienen.
-- **Editor por bloques:** cada bloque es un grupo de días con un mismo horario. Al guardar se arman los 7 días y se mandan con `replaceSchedule`. El editor no deja poner un día en dos bloques ni una salida antes de la entrada.
-
-**Reglas de acumulación:**
-- **Tabla:** la antigüedad y los días que otorga la LFT.
-- **Edición:** RH edita los días. Solo el Superusuario crea reglas.
-- **Validación:** la API rechaza rangos que se crucen con otra regla del mismo año (`409 RULE_OVERLAP`).
-
-**Usuarios (Superusuario):**
-- **Tabla:** cada cuenta muestra su nombre, correo, rol, sedes y estado.
-- **Alta:** con usuario, correo, contraseña inicial, rol y empleado vinculado (opcional).
-- **Asignación organizacional:** a los usuarios de RH se les marcan sus sedes y las acciones que pueden hacer (aprobar, rechazar y cancelar). Los cambios aplican en su siguiente token.
-- **Desactivar:** se puede desactivar y reactivar con confirmación. Un usuario desactivado ya no puede entrar.
-
-**Roles y permisos:**
-- **Matriz:** módulos contra roles, como la del prototipo. Cada casilla es el permiso `modulo:view` (o `approvals:review` en Aprobaciones).
-- **Cambios:** solo el Superusuario la edita, y su columna queda fija. Al marcar o desmarcar se activa o desactiva el permiso en `role_permissions`, y aplica en el siguiente token del rol.
-
-**Auditoría:**
-- **Tabla:** usuario, fecha, evento y resultado, con filtro por resultado y búsqueda por usuario o evento. Debajo del evento se ve el registro afectado (por ejemplo "Ausencia #7") y la IP.
-- **Qué se registra:**
-  - **Sesión:** inicios y cierres de sesión, y cambios de contraseña.
-  - **Ausencias:** aprobar, rechazar y cancelar.
-  - **Empleados:** alta, edición, baja y envío de acceso.
-  - **Reglas de acumulación:** alta, edición y baja.
-  - **Usuarios:** alta, edición, baja y cambio de sedes.
-  - **Permisos:** otorgar y quitar.
-  - **Intentos fallidos:** se guardan con su motivo, incluido intentar algo sin permiso.
-- **Renovaciones de sesión (`TOKEN_REFRESH`):** no se muestran, salvo que se pidan con `event_type`.
-
-**PDF del aviso:**
-- **Dónde:** el detalle de una solicitud o aviso aprobado tiene "Descargar PDF".
-- **Formato:** el de RH, en hoja carta con dos copias. Lleva logo, razón social, dirección fiscal, RFC y teléfono de la empresa del empleado, un renglón de días y/o de horas, los días y horas restantes y las líneas de firma.
-- **Cómo se genera:** lo hace el servidor con PDFKit (`GET /notices/{id}/pdf`). Los logos se descargan una vez y quedan en memoria; si no se pueden bajar, el PDF sale sin logo.
-
-**Periodos y avisos:**
-- **Proceso diario:** cada día el servidor abre los periodos nuevos y vence los terminados, sin arrastrar días.
-- **Avisos:** avisa al empleado cuando se abre su periodo y una semana antes de que venza, con los días que le quedan.
-- **Superusuario:** puede correr el proceso con "Generar periodos" en la pantalla de Días.
-- **Campana:** en la topbar se ven los avisos; al abrirla se marcan como leídos. RH y Superusuario ven primero las solicitudes y avisos pendientes de sus sedes; el empleado recibe la resolución de sus solicitudes y los avisos que RH le registra. Cada elemento lleva a su pantalla.
-- **Buscador:** con permiso de ver empleados, la topbar busca por nombre o número mientras se escribe (dentro de las sedes del usuario) y al elegir abre el perfil del empleado.
-
-**Dashboard:**
-- **Superusuario y RH:** ven los indicadores de su alcance, las próximas ausencias, los empleados por departamento (con la sede cuando el nombre se repite) y la actividad reciente.
-- **Empleado:** ve su perfil, su saldo con horas y sus últimas solicitudes y avisos. En "Días" el empleado también llega a esta vista.
-- **Datos:** cada vista pide una sola llamada, `GET /dashboard/summary` o `GET /dashboard/me`.
-
-**Calendario:**
-- **Qué muestra:** vista mensual con las ausencias aprobadas y pendientes de la sede (o las propias para el Empleado), con los festivos de la LFT.
-- **Datos:** pide a `GET /calendar` solo el mes visible.
-- **Días marcados:** se ve la semana completa, sábado y domingo incluidos, pero cada ausencia aparece solo en los días que el empleado trabaja según su turno y nunca en los festivos. La API manda esos días en `dates`, calculados con la misma regla que descuenta el saldo.
-
-**Diálogos de confirmación:** tienen un solo botón con la acción (por ejemplo "Cancelar" o "Rechazar"). Para cerrarlos sin hacer nada se usa la X o la tecla Escape.
-
-**Recuperar contraseña.** «¿Olvidaste tu contraseña?» pide el correo y luego el código. En desarrollo y pruebas el formulario usa el `devToken` devuelto por la API. La entrega por correo está pendiente.
-
-## Próximos pasos
-
-El orden de trabajo y los criterios de aceptación están en [docs/ROADMAP.md](docs/ROADMAP.md).
+Para detenerlo: `& "$nginxRoot/nginx.exe" -p "$nginxRoot/" -c $nginxConfig -s quit`.

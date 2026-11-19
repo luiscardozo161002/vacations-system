@@ -1,166 +1,205 @@
 # Arquitectura
 
-## Visión general del sistema
+## Vista general
 
-```
-Usuario (navegador)
-  ↓
-Frontend React (Vite) — features/*/{components,hooks,pages}
-  ↓ usa
-SDK TypeScript (@vacations/sdk) — HttpClient con fetch + AbortSignal, Bearer y refresh automático
-  ↓ HTTP/JSON
-API Hapi.js — validación Joi, un plugin por entidad
-  ↓ Objection.js / Knex
-PostgreSQL
+```mermaid
+flowchart TD
+  U[Navegador] --> F[Frontend React + Vite]
+  F --> S[SDK TypeScript]
+  S -->|HTTP JSON| A[API Hapi]
+  A --> O[Objection / Knex]
+  O --> P[(PostgreSQL 17)]
 ```
 
-Sin servicios externos: no hay proveedor de autenticación, pagos, correo ni analítica de terceros — login, sesiones y RBAC son propios, implementados en el plugin `auth`.
+Sin servicios externos: login, sesiones y RBAC son propios (plugin `auth`). El correo con Resend está pendiente.
 
-## Estructura del monorepo (npm workspaces)
+## Monorepo
 
+| Carpeta | Contenido |
+|---|---|
+| `backend/src/config` | Variables de entorno validadas con un schema |
+| `backend/src/db` | Conexión Knex, migraciones y seeds |
+| `backend/src/lib` | Clases base, errores, auditoría, alcance de datos y cálculos |
+| `backend/src/plugins` | Un módulo por entidad: rutas, schemas, servicio, repositorio y modelo |
+| `backend/src/doc/bruno` | Colección Bruno |
+| `sdk/src` | `core/` transporte, `resources/` un recurso por entidad, `types/` |
+| `frontend/src` | `app/` shell y menú, `components/` kit, `features/` por dominio, `lib/` SDK y sesión |
+| `docs` | Este documento, PRD, Design System y Roadmap |
+
+## Backend
+
+### Clases base
+
+| Clase | Archivo | Responsabilidad |
+|---|---|---|
+| `ApiRoutes` | `lib/api-routes.js` | Plugin de Hapi, permisos y auditoría de cada ruta |
+| `CrudRoutes` | `lib/crud/crud-routes.js` | Las cinco rutas del CRUD |
+| `CrudService` | `lib/crud/crud-service.js` | Listar, buscar, crear, editar, dar de baja y error "no existe" |
+| `CrudRepository` | `lib/crud/crud-repository.js` | Listado con orden y paginación, baja lógica, `applyFilters` y `restrictToScope` |
+| `DataScope` | `lib/data-scope.js` | Restringe consultas y valida referencias según el rol |
+
+Cada módulo extiende solo lo que lo distingue y exporta una instancia. Un módulo nuevo necesita:
+
+1. `fields.js` con las columnas públicas y `model.js` con el modelo de Objection.
+2. Repositorio y servicio que extienden las clases base.
+3. Rutas con `CrudRoutes`, registradas en `server.js`.
+
+Los cálculos sin estado siguen como funciones: `request-breakdown`, `periods`, `holidays`, `balance` y `list-query`.
+
+### Configuración
+
+Todo valor configurable sale de `backend/src/config/index.js`.
+
+| Pieza | Función |
+|---|---|
+| `GenericValidator` (`lib/generic-validators.js`) | Validadores reutilizables: `positive`, `decimal`, `text`, `flag`, `list`, `timeZone` |
+| Schema de `config/index.js` | Valida `process.env` y expone los valores ya convertidos |
+| `backend/.env.example` | Lista cada variable con su descripción y valor por defecto |
+
+Una variable inválida detiene el arranque y nombra la variable sin mostrar su valor.
+
+### Errores
+
+| Origen | Resultado |
+|---|---|
+| Validación Joi | `400 VALIDATION_ERROR` con `lib/validation-messages.js` |
+| `AppError` del servicio | Código de negocio con su estado HTTP |
+| Error de PostgreSQL | Se traduce por restricción y SQLSTATE; sin traducción, mensaje genérico |
+| Cualquier otro | `500 INTERNAL_ERROR` |
+
+Forma única de respuesta: `{ "error": { "code": "...", "message": "..." } }`. Los mensajes al usuario van en español, los de desarrollo en inglés.
+
+### Consultas y transacciones
+
+- Usa Objection o Knex. En `raw`, liga los valores con `?`.
+- Identificadores dinámicos: solo desde una lista permitida.
+- Filtros, orden y fechas: `lib/list-query.js`. Las fechas son `AAAA-MM-DD` y el rango incluye el último día.
+- Una operación en varias tablas abre la transacción en el servicio y pasa `trx` a cada consulta.
+- Autenticación bloquea la fila del usuario antes de rotar tokens o cambiar contraseñas.
+- Índices y restricciones nuevos van en migraciones, con una prueba del contrato HTTP.
+
+## Datos y alcance
+
+```mermaid
+erDiagram
+  COMPANY ||--o{ BRANCHES : tiene
+  BRANCHES ||--o{ DEPARTMENTS : tiene
+  DEPARTMENTS ||--o{ EMPLOYEES : tiene
+  USERS }o--o{ BRANCHES : user_branches
 ```
-docs/              Documentación del sistema (este archivo, PRD, Design System, Roadmap)
-backend/
-  src/
-    config/        Variables de entorno
-    db/             Conexión Knex, migraciones, seeds
-    lib/            Utilidades compartidas (app-error, error-handler, password, list-query)
-    plugins/        Rutas, esquemas, servicios, repositorios y modelos por módulo
-    doc/bruno/      Colección Bruno para probar la API manualmente
-sdk/
-  src/
-    core/           HttpClient (transporte) y SdkHttpError
-    resources/      Una clase por entidad (Employees, Departments, Shifts, ...)
-    types/          Tipos compartidos (Pagination, Paginated<T>)
-frontend/
-  src/
-    app/            Shell (sidebar y topbar), navegación con permisos y pantallas pendientes
-    components/     Piezas compartidas (Icon)
-    features/       Un folder por dominio: components/ hooks/ pages/
-    lib/            sdk.ts (instancia del SDK), sesión, tema, utilidades
-    styles.css      Copia idéntica del styles.css del prototipo
-```
 
-## Módulos del backend
+| Rol | Ve | Fuera de alcance |
+|---|---|---|
+| `SUPERUSER` | Todo | — |
+| `USER` | Lo que cuelga de sus sedes | Leer, editar o borrar responde 404; apuntar a un registro ajeno responde 422 |
+| `EMPLOYEE` | Lo suyo (`employee_id` del token) | Igual |
 
-Los módulos de catálogo y negocio incluyen organización, empleados, usuarios, roles, permisos, reglas, saldos y avisos. También hay plugins para autenticación, auditoría, calendario, dashboard, notificaciones y salud.
-
-El backend está escrito con clases. Cada módulo exporta una instancia de su repositorio, su servicio y su grupo de rutas.
-
-- **Rutas:** `ApiRoutes` (`lib/api-routes.js`) arma el plugin de Hapi, los permisos y la auditoría. `CrudRoutes` (`lib/crud`) extiende `ApiRoutes` con las cinco rutas del CRUD; un módulo la extiende para agregar las suyas, por ejemplo el horario de un turno o la exportación de empleados.
-- **Servicios:** `CrudService` trae listar, buscar, crear, editar, dar de baja y el error de "no existe". El módulo lo extiende solo para lo que lo distingue: validar referencias, calcular totales o describir las filas.
-- **Repositorios:** `CrudRepository` trae el listado con orden y paginación, la baja lógica y los hooks `applyFilters` y `restrictToScope`; el módulo sobrescribe solo sus filtros y su alcance.
-- **Alcance de datos:** `DataScope.from(credentials)` restringe las consultas a las sedes del usuario (`restrictEmployees`, `restrictDepartments`…) y valida referencias (`allowsEmployee`…).
-- **Un módulo nuevo:** crea el repositorio y el servicio con las clases base, define las rutas con `CrudRoutes` y registra el plugin en `server.js`. `fields.js` declara las columnas públicas y `model.js` describe el modelo de Objection.
-- **Funciones puras:** los cálculos de fechas, periodos, festivos y saldo (`lib/request-breakdown.js`, `lib/periods.js`, `lib/holidays.js`, `lib/balance.js`) y los filtros de listado (`lib/list-query.js`) siguen como funciones, porque no guardan estado.
-
-El plugin `lib/error-handler.js` normaliza los fallos de la API en `{ error: { code, message } }` y conserva las cabeceras HTTP de Boom, como `WWW-Authenticate`.
-
-- La validación Joi usa `lib/validation-messages.js` y responde `400 VALIDATION_ERROR`.
-- El servicio lanza un `AppError` con un código de negocio. El manejador asigna su estado HTTP.
-- El manejador traduce errores de PostgreSQL por nombre de restricción y SQLSTATE. Un fallo de PostgreSQL sin traducción devuelve un mensaje genérico y el log del manejador guarda el SQLSTATE y la restricción.
-
-## Consultas y transacciones
-
-- Usa Objection o Knex para filtros, joins y escrituras habituales. En una expresión SQL de PostgreSQL que requiera `raw`, liga valores con `?`. Para identificadores dinámicos, usa una lista permitida y pásalos al constructor de consultas o escápalos con la API del cliente si la sentencia exige un identificador literal.
-- Reutiliza `lib/list-query.js` para filtros, columnas de ordenamiento permitidas y fechas. El esquema `isoDate` valida el calendario y conserva el texto `AAAA-MM-DD`. El filtro de auditoría incluye el último día con el límite exclusivo de la medianoche siguiente.
-- Si una operación escribe en varias tablas, abre la transacción en el servicio y pasa `trx` a cada consulta relacionada. En autenticación, la rotación, la emisión de códigos y los cambios de contraseña que pasan por el plugin `auth` bloquean primero la fila del usuario. Las actualizaciones de tokens verifican su vigencia y el número de filas afectadas dentro de la transacción.
-- Define en migraciones las restricciones e índices que respaldan las consultas nuevas. Los errores de integridad esperados se mapean en el manejador global y se verifican con una prueba del contrato HTTP.
-
-## Empresas, sedes y alcance de datos
-
-```
-company 1─N branches 1─N departments 1─N employees
-users N─N branches (user_branches)
-```
-
-- `company` guarda la empresa: razón social, RFC, logo, teléfono y dirección fiscal (`location`).
-- `branches` guarda la sede (código, nombre y estado) y pertenece a una empresa. Cada departamento cuelga de una sede (`departments.branch_id`).
-- `user_branches` dice qué sedes atiende cada Usuario de RH. El Superusuario las asigna con `PUT /users/{id}/branches`.
-- **Alcance:**
-  - Superusuario ve todo.
-  - Usuario ve solo lo que cuelga de sus sedes.
-  - Empleado ve solo lo suyo (`employee_id` del token).
-  - Leer, editar o borrar un registro fuera del alcance responde 404. Apuntar a un departamento, sede o empleado fuera del alcance al crear o editar responde 422.
-- **Cómo se aplica:**
-  - El access token lleva `role` y `branch_ids`; un cambio de sedes se aplica en el siguiente token.
-  - Cada ruta convierte las credenciales con `scopeFrom` (`backend/src/lib/data-scope.js`).
-  - Los repositorios filtran con `inBranches`, `inCompanies`, `inDepartments` o `forEmployees`, y los servicios validan referencias con `allowsBranch`, `allowsDepartment` y `allowsEmployee`.
-  - Turnos, motivos y reglas son catálogos globales y no se filtran.
-
-## Flujo de solicitudes y avisos
-
-- **Tipo de registro.** `notices.kind` dice si es una solicitud (`request`, la crea el empleado y nace `pending`) o un aviso (`notice`, lo registra RH y nace `approved`). Lo decide el servidor según si el token tiene `notices:create`. `created_by`, `approved_by` y `approved_at` salen del token y del reloj del servidor, nunca del cliente.
-- **Cambios de estado.** Solo con `POST /notices/{id}/approve | reject | cancel`, y `PATCH` ya no toca el estado. Cada acción es un `UPDATE … WHERE status IN (…)`, así que dos peticiones simultáneas no pueden aplicar dos transiciones; si no cambia ninguna fila, responde 409 `INVALID_TRANSITION`.
-- **Quién puede.** `users.review_actions` guarda qué acciones puede hacer cada Usuario de RH (por defecto las tres); sin la acción, responde 403 `REVIEW_ACTION_FORBIDDEN`. El Empleado solo cancela sus solicitudes pendientes.
-
-## Saldo de vacaciones
-
-- **Cálculo.** `lib/request-breakdown.js` (puro) calcula días, horas y días de descanso de un rango según el horario del turno. `lib/balance.js` convierte días y horas a horas totales y de regreso. Un día equivale a la jornada del turno.
-- **Evaluación.** `plugins/notices/balance.js` revisa una solicitud contra el periodo vigente (`vacation_entitlements` con `period_start <= hoy <= period_end`). La usan `POST /notices/preview`, que responde 200 con `error` si algo no se cumple, y el alta, la edición y la aprobación, que responden 422 con el mismo código.
-- **Descuento.** Se descuenta al aprobar una solicitud de Vacaciones, o al registrar un aviso de Vacaciones de RH, y se devuelve al cancelar una aprobada. Cada movimiento ocurre en la misma transacción que el cambio de estado y bloquea la fila del saldo (`SELECT … FOR UPDATE`), así que dos operaciones simultáneas no pueden pasarse del saldo.
-- **Qué guarda cada aviso.** `days_taken`, `hours_taken` y el `entitlement_id` del que descontó. El saldo guarda `used_days` y `used_hours`; cuando las horas suman una jornada, pasan a días.
-- **Festivos.** `lib/holidays.js` calcula los descansos obligatorios del Art. 74 LFT de cada año, sin tabla que mantener. Los lunes movibles se calculan por año, y el 1 de octubre se agrega cada 6 años desde 2024. El cálculo de una solicitud no los descuenta, y pedir solo festivos responde 422 `MANDATORY_REST_DAY`.
-- **Calendario.** `GET /calendar?from&to` (máximo 62 días) devuelve en una sola llamada las ausencias aprobadas y pendientes del alcance del usuario y los festivos del rango. El Empleado ve las suyas y, si su departamento tiene `calendar_shared`, también las de sus compañeros.
-- **PDF.** `plugins/notices/pdf.js` arma con PDFKit el aviso en el formato de RH (dos copias en una hoja carta). Solo se genera para avisos aprobados y dentro del alcance. Mientras no haya teléfono por empresa, usa el que dio RH para las tres. La fecha de solicitud se toma en horario de Ciudad de México.
-- **Periodos.** `lib/periods.js` calcula el periodo vigente de aniversario a aniversario. `plugins/vacation-entitlements/rollover.js` es idempotente:
-  - vence lo que ya terminó (lo no usado se pierde);
-  - abre el periodo vigente con la regla de la antigüedad;
-  - cancela solicitudes de Vacaciones pendientes de periodos anteriores;
-  - avisa al abrir el periodo y una semana antes de que venza.
-
-  Lo corre el servidor al arrancar y cada 24 horas (no con `NODE_ENV=test`), y el Superusuario con `POST /vacation-entitlements/generate`. Si un empleado falla, queda en `skipped` y el resto sigue.
-- **Notificaciones.** La tabla `notifications` guarda una fila por usuario, tipo y referencia, así que repetir un aviso no lo duplica. `GET /me/notifications` y `POST /me/notifications/read` alimentan la campana de la topbar. El envío por correo (VM-054) leerá esa misma tabla.
-  - **Resoluciones:** al aprobar, rechazar o cancelar una solicitud, o cuando RH registra un aviso, el empleado recibe una notificación (`request_approved`, `notice_approved`…), salvo si fue él mismo quien hizo la acción (`plugins/notices/notifications.js`).
-  - **Pendientes:** quien tiene `approvals:review` recibe además `pending` con el total y las 10 solicitudes o avisos pendientes más antiguos de sus sedes. Se calculan al consultar, no se guardan.
-- **Dashboard.** `GET /dashboard/summary` (requiere `employees:view`) junta en una sola llamada los indicadores, las próximas ausencias, el conteo por departamento y la actividad reciente, siempre dentro del alcance. `GET /dashboard/me` usa solo el `employee_id` del token, aunque el usuario sea de RH.
-- **Fechas.** `pg` devuelve las columnas `DATE` como texto `YYYY-MM-DD` y las `NUMERIC` como número (`src/db/index.js`), para no depender de la zona horaria del servidor.
+- El token lleva `role` y `branch_ids`; un cambio de sedes aplica en el siguiente token.
+- Los repositorios usan `DataScope.restrictEmployees`, `restrictDepartments`, `restrictBranches` y `restrictCompanies`; los servicios validan con `allowsEmployee`, `allowsDepartment` y `allowsBranch`.
+- Turnos, motivos y reglas son catálogos globales.
 
 ## Autenticación y autorización
 
-JWT (`@hapi/jwt`) con access token de vida corta (15 min) + refresh token (7 días), contraseñas con `bcryptjs`, bloqueo de cuenta tras 5 intentos fallidos (15 min), tokens de reseteo de contraseña con expiración de 1 hora, y bitácora de auditoría (`auth_audit_log`).
+| Tema | Regla |
+|---|---|
+| Tokens | Access token JWT de vida corta y refresh token opaco; de este solo se guarda el hash |
+| Rotación | Cada refresh token se usa una vez, en una transacción |
+| Contraseñas | `bcryptjs`; cambiar o restablecer revoca sesiones y códigos pendientes |
+| Bloqueo | Por cuenta tras intentos fallidos seguidos; límite por IP en memoria |
+| Permisos | `modulo:accion` en `scope` del token; la ruta los pide con `requires(...)`, basta uno |
+| Sin permiso | `403 FORBIDDEN` |
+| Cambio de permisos | Aplica en el siguiente access token |
 
-La rotación consume el refresh token una sola vez. Cambiar o restablecer la contraseña revoca las sesiones de renovación y los códigos pendientes en la misma transacción. Una cuenta inactiva rechaza un código emitido antes de la baja. El access token ya emitido se valida por su firma y vencimiento.
+Los tiempos y límites están en `.env.example`.
 
-Auditoría de negocio (`backend/src/lib/audit.js`):
+### Contraseña temporal
 
-- **Declarativa:** cada ruta auditada dice en `options.plugins.audit` qué evento registra (`NOTICE_APPROVED`, `EMPLOYEE_DEACTIVATED`…), sobre qué entidad y de dónde sale su id (parámetro de la URL o campo de la respuesta). Un solo `onPreResponse` guarda la fila.
-- **Qué guarda.** El usuario, el evento, la entidad y su id, el resultado, el código del error cuando aplica, la IP, el navegador y el id de petición. Los metadatos de los eventos de negocio guardan campos de la petición y excluyen `password`, `currentPassword` y `newPassword` en el primer nivel.
-- **Fallos:** se registran también los rechazos de negocio (`INVALID_TRANSITION`) y los intentos sin permiso (403). Por eso la fila se escribe al responder y no dentro de la transacción de la acción: si se escribiera dentro, un fallo la desharía junto con la acción. Si la escritura de auditoría falla, se registra en el log y la respuesta no cambia.
-- **IP real:** `lib/client-ip.js` toma `X-Forwarded-For` solo cuando la petición llega de una IP de `TRUSTED_PROXIES`. Recorre la cadena de derecha a izquierda y se queda con la primera IP que no es de un proxy, así no se puede falsificar desde el navegador.
-- **Solo agregar:** la API solo lee la bitácora; no hay rutas para editarla ni borrarla.
+| Paso | Regla |
+|---|---|
+| Alta | `POST /employees` con `email` crea el usuario `EMPLOYEE` en la misma transacción |
+| Temporal | `must_change_password = true` y vence según `TEMP_PASSWORD_VALID_MONTHS` |
+| Login vencida | `403 TEMPORARY_PASSWORD_EXPIRED` |
+| Reenvío | `POST /employees/{id}/access` emite una nueva, desbloquea y cierra sesiones |
+| Rechazos | `409 ACCOUNT_NOT_EMPLOYEE` y `409 EMPLOYEE_INACTIVE` |
 
-RBAC vía `roles` / `permissions` / `role_permissions`.
+### Auditoría
 
-- **Roles:** `SUPERUSER`, `USER` y `EMPLOYEE`.
-- **Permisos:** tienen la forma `modulo:accion` (`employees:view`, `approvals:review`…). La migración `rbac_matrix` siembra la matriz del PRD.
-- **Token:** el access token lleva los permisos del rol en `scope`. Cada ruta los pide con `auth: requires('modulo:accion')` (`backend/src/lib/permissions.js`); si pide varios, basta con tener uno.
-- **Sin permiso:** la ruta responde 403 `FORBIDDEN`.
-- **Cambios:** si se cambian los permisos de un rol, se aplican en el siguiente token, en un máximo de 15 minutos.
+`lib/audit.js` es declarativa: cada ruta indica en `options.plugins.audit` el evento, la entidad y el origen del id; un `onPreResponse` guarda la fila.
 
-Cuentas de empleado con contraseña temporal (`backend/src/lib/temporary-password.js`, `plugins/employees/access.js`):
+| Campo | Contenido |
+|---|---|
+| Quién y qué | Usuario, evento, entidad, id y resultado |
+| Contexto | IP, navegador, id de petición y código de error |
+| Metadatos | Campos de la petición sin `SECRET_FIELDS` |
 
-- **Alta:** `POST /employees` con `email` crea, en la misma transacción, el usuario con rol `EMPLOYEE`. El usuario sale de la parte local del correo (`j.perez`, `j.perez2` si ya existe).
-- **Temporal:** 10 caracteres sin ambiguos, `must_change_password = true` y vence en un mes (`temporary_password_expires_at`). La respuesta trae `temporary_password` para que RH la entregue mientras no haya correo.
-- **Login:** con la temporal vencida responde 403 `TEMPORARY_PASSWORD_EXPIRED`. Si sigue vigente, el login y `/auth/me` traen `must_change_password` y el frontend obliga a cambiarla antes de entrar.
-- **Cambio:** cambiar o restablecer la contraseña limpia ambos campos.
-- **Reenvío:** `POST /employees/{id}/access` (permiso `employees:update`, dentro de las sedes de RH) crea la cuenta si falta (pide `email`) o emite una temporal nueva, desbloquea la cuenta y cierra sus sesiones. No toca cuentas administrativas (409 `ACCOUNT_NOT_EMPLOYEE`) ni empleados de baja (409 `EMPLOYEE_INACTIVE`).
+- Registra también los rechazos de negocio y los 403.
+- Se escribe al responder, no dentro de la transacción, para que un fallo no la deshaga. Si falla, se registra en el log.
+- IP real: `lib/client-ip.js` lee `X-Forwarded-For` solo si la conexión viene de `TRUSTED_PROXIES`.
+- Solo lectura desde la API.
 
-## Flujo de datos (ejemplo: listar empleados con un filtro)
+## Flujos de negocio
 
-1. El usuario cambia un filtro en `EmployeesPage`.
-2. El hook `useEmployees` arma los parámetros (memoizados) y llama a `sdk.employees.list(params, { signal })`.
-3. `HttpClient.request()` arma la query string, agrega `Authorization: Bearer <token>` si hay sesión, y hace `fetch` con el `AbortSignal` del hook — si el filtro cambia antes de que responda, la petición anterior se cancela.
-4. Hapi valida los filtros con Joi. El servicio llama al repositorio de empleados, que aplica el alcance y ejecuta la consulta.
-5. El error handler global normaliza cualquier falla (validación, constraint de BD, 404) a `{ error: { code, message } }`.
-6. El SDK lo traduce a `SdkHttpError` si la respuesta no fue 2xx. TanStack Query guarda la respuesta en caché con su clave (`['employees', params]`) y el hook expone `data`, `loading` y `error` al componente.
+| Flujo | Dónde vive | Regla clave |
+|---|---|---|
+| Solicitud o aviso | `plugins/notices` | `kind` lo decide el servidor según el permiso `notices:create` |
+| Cambio de estado | `POST /notices/{id}/approve \| reject \| cancel` | `UPDATE … WHERE status IN (…)`; sin fila afectada, `409 INVALID_TRANSITION` |
+| Quién revisa | `users.review_actions` | Sin la acción, `403 REVIEW_ACTION_FORBIDDEN` |
+| Cálculo de días y horas | `lib/request-breakdown.js` | Un día equivale a la jornada del turno |
+| Saldo | `plugins/notices/balance.js` | Descuenta al aprobar y devuelve al cancelar, con `SELECT … FOR UPDATE` |
+| Festivos | `lib/holidays.js` | Art. 74 LFT calculado por año, sin tabla |
+| Periodos | `plugins/vacation-entitlements/rollover.js` | Idempotente; corre al arrancar, cada `ROLLOVER_INTERVAL_HOURS` y con `POST /vacation-entitlements/generate` |
+| Calendario | `GET /calendar?from&to` | Ausencias del alcance y festivos del rango |
+| Notificaciones | tabla `notifications` | Una fila por usuario, tipo y referencia; repetir no duplica |
+| Dashboard | `GET /dashboard/summary` y `/dashboard/me` | Una llamada por vista, dentro del alcance |
+| PDF | `plugins/notices/pdf.js` | PDFKit, solo avisos aprobados y dentro del alcance |
 
-## Decisiones explícitas
+Las fechas `DATE` salen como texto `AAAA-MM-DD` y `NUMERIC` como número (`src/db/index.js`).
 
-- **Esquema**: las migraciones de Knex (`backend/src/db/migrations`) son la única fuente del esquema y los datos de prueba viven en `backend/src/db/seeds`, un archivo por dominio con prefijo numérico (`01_clean`, `02_organization`, `03_auth`, `04_vacations`, `05_notices`). Knex los corre en orden alfabético, así que el número respeta las llaves foráneas; las funciones compartidas van en `backend/src/db/seed-helpers.js`, fuera de la carpeta, porque Knex trata cada archivo de `seeds/` como un seed. El script SQL original, convertido de SQL Server, ya no se usa y se retiró del repo.
-- **Soft delete** en todas las tablas que lo necesitan: nunca se borra una fila, se marca `status = 'inactive'`.
-- **Validación en dos capas, a propósito**: Joi valida en el borde HTTP, Objection valida al escribir en BD — no es redundancia accidental, son capas distintas (forma de la petición vs. integridad de datos).
-- **El SDK es la única puerta al backend**: el frontend nunca hace `fetch` directo; todo pasa por `@vacations/sdk` para mantener un solo lugar de manejo de errores y auth.
-- **Caché y estado en el frontend**: los datos de la API viven en TanStack Query; los filtros y la página, en la URL; lo demás, en `useState` o en el contexto de sesión. No hay un store global. Tras cualquier cambio se refresca lo que está en pantalla (`refreshData`) en lugar de invalidar recurso por recurso, porque una aprobación toca solicitudes, saldos, calendario, dashboard y campana a la vez.
-- **Estilos**: se sigue el `styles.css` del prototipo tal cual; no se usan Tailwind ni librerías de componentes.
-- **Entorno de ejecución.** Docker Compose provee PostgreSQL para desarrollo. GitHub Actions usa PostgreSQL 17 y Node.js 24 para lint, compilación y pruebas. El despliegue de producción está pendiente de definir.
+## API
+
+| Recurso | Base `/api/v1` |
+|---|---|
+| Salud | `/health` |
+| Autenticación | `/auth/login`, `/auth/me`, `/auth/me/password`, `/auth/refresh`, `/auth/logout`, `/auth/password-reset/request`, `/auth/password-reset/confirm` |
+| Organización | `/companies`, `/branches`, `/departments`, `/employees`, `/shifts` |
+| Ausencias | `/notices`, `/reasons`, `/vacation-entitlements`, `/vacation-accrual-rules` |
+| Administración | `/users`, `/roles`, `/permissions`, `/role-permissions`, `/auth-audit-log` |
+| Vistas | `/calendar`, `/dashboard/summary`, `/dashboard/me`, `/me/notifications` |
+
+- Listados con `page`, `pageSize`, `sort=campo` o `sort=-campo` y filtros propios.
+- Los filtros de estado, tipo e ids aceptan varios valores separados por coma o repetidos.
+- Rangos de fecha: `from` y `to` en avisos y auditoría; `hired_from` y `hired_to` en empleados.
+- `DELETE` es baja lógica: `status = 'inactive'`, o `'cancelled'` en `notices`.
+- Detalle por endpoint: Swagger en `/documentation` y la colección Bruno.
+
+## Frontend
+
+```mermaid
+sequenceDiagram
+  participant P as Página
+  participant H as Hook
+  participant S as SDK
+  participant A as API
+  P->>H: cambia un filtro
+  H->>S: sdk.employees.list(params, signal)
+  S->>A: GET con Bearer
+  A-->>S: datos o error
+  S-->>H: datos o SdkHttpError
+  H-->>P: data, loading, error
+```
+
+- Los datos viven en TanStack Query; filtros y página, en la URL; lo demás, en `useState` o en el contexto de sesión.
+- Tras guardar se llama `refreshData()`, porque una aprobación toca solicitudes, saldos, calendario, dashboard y campana.
+- Una petición cancelada por un filtro nuevo se aborta con `AbortSignal`.
+
+## Decisiones
+
+| Tema | Decisión |
+|---|---|
+| Esquema | Solo las migraciones de Knex; los seeds viven en `db/seeds`, un archivo por dominio con prefijo numérico |
+| Baja | Lógica: nunca se borra una fila |
+| Validación | Joi en el borde HTTP y Objection al escribir en la base |
+| SDK | Única puerta al backend; el frontend no usa `fetch` directo |
+| Estilos | `styles.css` del prototipo tal cual, sin Tailwind ni librerías de componentes |
+| Entorno | Docker Compose para PostgreSQL en desarrollo; CI con PostgreSQL 17 y Node.js 24 |
+| Producción | Despliegue pendiente de definir |

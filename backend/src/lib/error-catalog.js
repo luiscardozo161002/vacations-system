@@ -1,0 +1,106 @@
+const duplicate = (code, message) => ({ sqlstate: '23505', status: 409, code, message });
+const missingReference = (code, message) => ({ sqlstate: '23503', status: 422, code, message });
+
+const DATABASE_UNAVAILABLE = { status: 503, code: 'DATABASE_UNAVAILABLE', message: 'Servicio temporalmente no disponible' };
+
+const BUSINESS_STATUS = {
+  NOT_FOUND: 404,
+  EMPLOYEE_NOT_FOUND: 404,
+  EMPLOYEE_FORBIDDEN: 403,
+  DEPARTMENT_NOT_FOUND: 404,
+  SHIFT_NOT_FOUND: 404,
+  COMPANY_NOT_FOUND: 404,
+  BRANCH_NOT_FOUND: 404,
+  INVALID_BRANCH: 422,
+  INVALID_DEPARTMENT: 422,
+  INVALID_EMPLOYEE: 422,
+  INVALID_MANAGER: 422,
+  REASON_NOT_FOUND: 404,
+  ROLE_NOT_FOUND: 404,
+  PERMISSION_NOT_FOUND: 404,
+  ROLE_PERMISSION_NOT_FOUND: 404,
+  INVALID_SCHEDULE: 400,
+  VACATION_RULE_NOT_FOUND: 404,
+  VACATION_ENTITLEMENT_NOT_FOUND: 404,
+  NOTICE_NOT_FOUND: 404,
+  INVALID_TRANSITION: 409,
+  NOTICE_LOCKED: 409,
+  NOTICE_NOT_APPROVED: 409,
+  INVALID_REASON: 422,
+  INVALID_RANGE: 422,
+  RANGE_TOO_LONG: 422,
+  INVALID_RULE_RANGE: 422,
+  RULE_OVERLAP: 409,
+  NO_WORKING_DAYS: 422,
+  MANDATORY_REST_DAY: 422,
+  NO_VACATION_YET: 422,
+  NO_ACTIVE_PERIOD: 422,
+  OUTSIDE_PERIOD: 422,
+  INSUFFICIENT_BALANCE: 422,
+  REVIEW_ACTION_FORBIDDEN: 403,
+  USER_NOT_FOUND: 404,
+  AUTH_LOG_NOT_FOUND: 404,
+  INVALID_CREDENTIALS: 401,
+  ACCOUNT_LOCKED: 423,
+  ACCOUNT_INACTIVE: 403,
+  TEMPORARY_PASSWORD_EXPIRED: 403,
+  EMAIL_REQUIRED: 422,
+  ACCOUNT_NOT_EMPLOYEE: 409,
+  EMPLOYEE_INACTIVE: 409,
+  INVALID_REFRESH_TOKEN: 401,
+  INVALID_RESET_TOKEN: 401,
+  INVALID_CURRENT_PASSWORD: 400,
+};
+
+const DB_ERRORS = {
+  employees_employee_number_unique: duplicate('EMPLOYEE_NUMBER_EXISTS', 'El número de empleado ya está registrado'),
+  employees_department_id_foreign: missingReference('INVALID_DEPARTMENT', 'El departamento no existe'),
+  employees_shift_id_foreign: missingReference('INVALID_SHIFT', 'El turno no existe'),
+  uq_departments_branch_code: duplicate('DEPARTMENT_CODE_EXISTS', 'Ya existe un departamento con ese código en esa sede'),
+  departments_branch_id_foreign: missingReference('INVALID_BRANCH', 'La sede no existe'),
+  branches_code_unique: duplicate('BRANCH_CODE_EXISTS', 'Ya existe una sede con ese código'),
+  branches_company_id_foreign: missingReference('INVALID_COMPANY', 'La empresa no existe'),
+  user_branches_branch_id_foreign: missingReference('INVALID_BRANCH', 'La sede no existe'),
+  fk_departments_manager: missingReference('INVALID_MANAGER', 'El empleado asignado como responsable no existe'),
+  shifts_code_unique: duplicate('SHIFT_CODE_EXISTS', 'Ya existe un turno con ese código'),
+  company_folio_unique: duplicate('COMPANY_FOLIO_EXISTS', 'Ya existe una empresa con ese folio'),
+  company_rfc_unique: duplicate('COMPANY_RFC_EXISTS', 'Ya existe una empresa con ese RFC'),
+  reasons_description_unique: duplicate('REASON_DESCRIPTION_EXISTS', 'Ya existe un motivo con esa descripción'),
+  roles_role_code_unique: duplicate('ROLE_CODE_EXISTS', 'Ya existe un rol con ese código'),
+  permissions_permission_code_unique: duplicate('PERMISSION_CODE_EXISTS', 'Ya existe un permiso con ese código'),
+  role_permissions_role_id_foreign: missingReference('INVALID_ROLE', 'El rol no existe'),
+  role_permissions_permission_id_foreign: missingReference('INVALID_PERMISSION', 'El permiso no existe'),
+  vacation_entitlements_employee_id_foreign: missingReference('INVALID_EMPLOYEE', 'El empleado no existe'),
+  vacation_entitlements_rule_id_foreign: missingReference('INVALID_RULE', 'La regla de acumulación no existe'),
+  uq_vacation_entitlements: duplicate(
+    'VACATION_ENTITLEMENT_EXISTS',
+    'Ya existe un saldo de vacaciones para ese empleado en ese periodo'
+  ),
+  notices_employee_id_foreign: missingReference('INVALID_EMPLOYEE', 'El empleado no existe'),
+  notices_reason_id_foreign: missingReference('INVALID_REASON', 'El motivo no existe'),
+  notices_approved_by_foreign: missingReference('INVALID_APPROVER', 'El usuario que aprueba no existe'),
+  users_username_unique: duplicate('USERNAME_EXISTS', 'Ese nombre de usuario ya está en uso'),
+  users_email_unique: duplicate('EMAIL_EXISTS', 'Ese correo ya está en uso'),
+  users_employee_id_unique: duplicate('USER_ALREADY_LINKED', 'Ese empleado ya tiene un usuario asociado'),
+  users_role_id_foreign: missingReference('INVALID_ROLE', 'El rol no existe'),
+  users_employee_id_foreign: missingReference('INVALID_EMPLOYEE', 'El empleado no existe'),
+};
+
+const SQLSTATE_FALLBACK = {
+  23505: { status: 409, code: 'DUPLICATE_RECORD', message: 'Ya existe un registro con esos datos' },
+  23503: { status: 409, code: 'RELATED_RECORDS', message: 'La operación afecta registros relacionados' },
+  23514: { status: 400, code: 'INVALID_CONSTRAINT', message: 'Los datos incumplen una regla de integridad' },
+  '08001': DATABASE_UNAVAILABLE,
+  '08006': DATABASE_UNAVAILABLE,
+  53300: DATABASE_UNAVAILABLE,
+};
+
+const HTTP_ERRORS = {
+  401: ['UNAUTHORIZED', 'Tu sesión no es válida o expiró; inicia sesión de nuevo'],
+  403: ['FORBIDDEN', 'No tienes permiso para esta acción'],
+  404: ['NOT_FOUND', 'La ruta solicitada no existe'],
+  413: ['PAYLOAD_TOO_LARGE', 'La petición es demasiado grande'],
+  415: ['UNSUPPORTED_MEDIA_TYPE', 'El formato de la petición no es compatible'],
+};
+
+module.exports = { BUSINESS_STATUS, DB_ERRORS, SQLSTATE_FALLBACK, HTTP_ERRORS };

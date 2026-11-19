@@ -1,48 +1,52 @@
 # Design System
 
-El diseño es el prototipo de `C:\Develop\vacations-design-system`: 14 pantallas y 3 roles. No hay otro.
+La fuente de diseño es el prototipo `C:\Develop\vacations-design-system`: 14 pantallas y 3 roles.
 
 ```bash
 npx serve C:/Develop/vacations-design-system -l 4600
 ```
 
-## Cómo se reutiliza
+## Qué se reutiliza
 
 | Prototipo | Frontend | Regla |
 |---|---|---|
-| `styles.css` | [frontend/src/styles.css](../frontend/src/styles.css) | Copia idéntica, no se edita a mano |
-| `icons.js` | [frontend/src/components/Icon.tsx](../frontend/src/components/Icon.tsx) | El mismo mapa de iconos, usado como `<Icon name="plus" />` |
-| Markup de `app.js` (`renderEmpleados`, `openDrawer`, `openDialog`, `paginationFooter`…) | Componentes de React | Mismas clases y misma estructura |
-| `applyTheme`, `applyButtonColor`, `applyWindowAlpha` y las claves `vm_theme`, `vm_backdrop`, `vm_btn_color`, `vm_window_alpha` | [frontend/src/lib/appearance.ts](../frontend/src/lib/appearance.ts) | Mismos presets y fórmulas; se aplican al arrancar, también en el login. Tema claro por defecto |
+| `styles.css` | [frontend/src/styles.css](../frontend/src/styles.css) | Copia idéntica, no se edita |
+| `icons.js` | [frontend/src/components/Icon.tsx](../frontend/src/components/Icon.tsx) | Mismo mapa: `<Icon name="plus" />` |
+| Markup de `app.js` (`renderEmpleados`, `openDrawer`, `openDialog`, `paginationFooter`…) | Componentes React | Mismas clases y estructura |
+| `applyTheme`, `applyButtonColor`, `applyWindowAlpha` y las claves `vm_*` | [frontend/src/lib/appearance.ts](../frontend/src/lib/appearance.ts) | Mismos presets y fórmulas; tema claro por defecto |
 
 ## Reglas
 
-1. **Una sola fuente de verdad.** Cualquier cambio de diseño (un color, un componente nuevo, otro espaciado) se hace primero en el prototipo. Después se vuelve a copiar `styles.css`:
+1. **Una fuente de verdad.** Todo cambio de diseño se hace primero en el prototipo y luego se copia el CSS:
    ```bash
    cp C:/Develop/vacations-design-system/styles.css frontend/src/styles.css
    ```
-2. **No hay CSS propio por pantalla.** Si una pantalla necesita algo que el prototipo no tiene, se agrega al prototipo.
-3. **Para armar una pantalla se copia el markup** de la función `render…` correspondiente en `app.js` y se pasa a JSX. Se cambian los datos falsos (`data.js`) por llamadas al SDK.
-4. **Estados:** se usan las mismas clases que `statusBadge` en `app.js`.
-   - `active` y `approved` → `badge-success`
-   - `pending` → `badge-warning`
-   - `rejected` → `badge-danger`
-   - `inactive` y `cancelled` → `badge-neutral`
+2. **Sin CSS por pantalla.** Si falta algo, se agrega al prototipo.
+3. **Una pantalla nueva** copia el markup de su función `render…` y lo pasa a JSX, cambiando los datos falsos de `data.js` por llamadas al SDK.
+4. **Estados** con las clases de `statusBadge`:
+
+| Estado | Clase |
+|---|---|
+| `active`, `approved` | `badge-success` |
+| `pending` | `badge-warning` |
+| `rejected` | `badge-danger` |
+| `inactive`, `cancelled` | `badge-neutral` |
 
 ## Componentes del kit
 
-Están en [frontend/src/components](../frontend/src/components). Cada uno reproduce una función de `app.js` con el mismo markup:
+Están en [frontend/src/components](../frontend/src/components) y reproducen una función de `app.js`.
 
-| Componente | En el prototipo | Uso |
+| Componente | Prototipo | Uso |
 |---|---|---|
-| `Drawer` | `openDrawer` | Formularios laterales; con `onSubmit` se vuelve `<form>` |
-| `Dialog` y `ConfirmDialog` | `openDialog` | Confirmaciones; sustituyen a `window.confirm` |
-| `ToastProvider` y `useToast()` | `showToast` | Avisos de 3.2 s abajo a la derecha |
-| `DataTable` | `table-wrap` + `paginationFooter` | Tablas con estado vacío, carga y "Página X de Y" |
+| `Drawer` | `openDrawer` | Formularios laterales; con `onSubmit` es un `<form>` |
+| `Dialog`, `ConfirmDialog` | `openDialog` | Confirmaciones, en lugar de `window.confirm` |
+| `ToastProvider`, `useToast()` | `showToast` | Avisos de 3.2 s abajo a la derecha |
+| `DataTable` | `table-wrap`, `paginationFooter` | Tabla con estado vacío, carga y paginación |
 | `EmptyState` | `emptyState` | Listas sin resultados |
-| `StatusBadge` | `statusBadge` | Estados con su color |
+| `StatusBadge` | `statusBadge` | Estado con su color |
 | `SearchSelect` | `searchSelect` | Combobox con `datalist` |
 | `StatCard` | `statCard` | Indicadores del dashboard |
-| `Icon` | `iconSvg` | Iconos de `icons.js` |
+| `Icon` | `iconSvg` | Iconos |
+| `FormField`, `TextField`, `SelectField`, `SearchInput` | Formularios | Campos con etiqueta y ayuda; la búsqueda espera 300 ms |
 
-Los drawers y los diálogos se cierran con Escape o con clic fuera.
+Drawers y diálogos se cierran con Escape o con clic fuera. Los diálogos de confirmación tienen un solo botón de acción.
