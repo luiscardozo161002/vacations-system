@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useToast } from '../hooks/use-toast';
-import { refreshData } from '../api/query-client';
+import { refreshData } from '../services/query-client';
 
 export function useRecordForm<T = null>() {
   const showToast = useToast();

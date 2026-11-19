@@ -1,12 +1,11 @@
 import { StrictMode } from 'react'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { createRoot } from 'react-dom/client'
-import './tailwind.css'
-import './styles.css'
+import './styles/index.css'
 import App from './App.tsx'
-import { AuthProvider } from './features/auth/AuthProvider'
+import { AuthProvider } from './contexts/AuthProvider'
 import { initAppearance } from './utils/appearance'
-import { queryClient } from './api/query-client'
+import { queryClient } from './services/query-client'
 
 initAppearance()
 

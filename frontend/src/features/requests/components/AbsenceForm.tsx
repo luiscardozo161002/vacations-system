@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { Employee, NoticePreview, PreviewNoticeInput, Reason } from '@vacations/sdk';
-import { sdk } from '../../../api/sdk';
+import { sdk } from '../../../services/sdk';
 import { getErrorMessage } from '../../../utils/get-error-message';
 import { useFormSubmit } from '../../../hooks/use-form-submit';
 import { todayIso } from '../../../utils/format';

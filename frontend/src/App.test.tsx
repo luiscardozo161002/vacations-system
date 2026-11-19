@@ -3,8 +3,8 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { SdkHttpError } from '@vacations/sdk';
 import App from './App';
-import { AuthProvider } from './features/auth/AuthProvider';
-import { queryClient } from './api/query-client';
+import { AuthProvider } from './contexts/AuthProvider';
+import { queryClient } from './services/query-client';
 import { employeeUser, hrUser } from './test/users';
 
 const { auth, sessionEvents } = vi.hoisted(() => ({
@@ -12,7 +12,7 @@ const { auth, sessionEvents } = vi.hoisted(() => ({
   sessionEvents: new EventTarget(),
 }));
 
-vi.mock('./api/sdk', async () => {
+vi.mock('./services/sdk', async () => {
   const { sdkMock } = await import('./test/sdk-mock');
   return { sdk: sdkMock({ auth }), sessionEvents };
 });

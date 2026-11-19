@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { act, renderHook } from '@testing-library/react';
 import { toast } from 'sonner';
-import { queryClient } from '../api/query-client';
+import { queryClient } from '../services/query-client';
 import { useRecordForm } from './use-record-form';
 
 vi.mock('sonner', () => ({ toast: vi.fn() }));

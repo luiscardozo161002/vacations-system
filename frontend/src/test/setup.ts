@@ -1,6 +1,6 @@
 import { afterEach } from 'vitest';
 import { cleanup } from '@testing-library/react';
-import { queryClient } from '../api/query-client';
+import { queryClient } from '../services/query-client';
 
 Element.prototype.hasPointerCapture ??= () => false;
 Element.prototype.setPointerCapture ??= () => undefined;

@@ -10,13 +10,12 @@ El prototipo de Vacation Manager es la referencia visual. La interfaz usa Tailwi
 
 | Recurso | Referencia |
 | --- | --- |
-| Tokens y tema de Tailwind | [tailwind.css](../frontend/src/tailwind.css) |
-| Variables y estilos heredados, en migración | [styles.css](../frontend/src/styles.css) |
+| Tokens, tema claro y oscuro y estilos base | [index.css](../frontend/src/styles/index.css) |
 | Componentes React | [components](../frontend/src/components) |
 | Tema y preferencias | [appearance.ts](../frontend/src/utils/appearance.ts) |
-| Menú y nombres de módulos | [navigation.ts](../frontend/src/app/navigation.ts) |
+| Menú y nombres de módulos | [navigation.ts](../frontend/src/layouts/navigation.ts) |
 
-Los componentes se organizan por nivel: `atoms` (botón, insignia, icono), `molecules` (campos, búsqueda, encabezado) y `organisms` (tabla, paneles, diálogos). Las páginas viven en `features`. Las variantes se declaran con `class-variance-authority` y las clases se combinan con `cn`. Las clases nuevas usan los tokens del tema, como `bg-primary` o `text-muted`; no se agregan clases a `styles.css`.
+Los componentes se organizan por nivel: `atoms` (botón, insignia, icono), `molecules` (campos, búsqueda, encabezado) y `organisms` (tabla, paneles, diálogos). Las pantallas viven en `pages` y sus formularios y componentes de dominio en `features`. Las variantes se declaran con `class-variance-authority` y las clases se combinan con `cn`. Las clases usan los tokens del tema, como `bg-primary` o `text-muted`; no existen hojas de estilo por componente.
 
 ## Fundamentos visuales
 
@@ -42,9 +41,9 @@ Cada tema recuerda su propio fondo exterior. Si el fondo elegido contradice el t
 
 ### Tipografía y forma
 
-La interfaz utiliza Inter con fuentes del sistema como alternativa. El texto base es de 14 px y tiene una altura de línea de 1.5. Los títulos usan peso 600.
+La interfaz utiliza Inter, servida desde el propio paquete `@fontsource/inter`, con fuentes del sistema como alternativa. El texto base es de 14 px y tiene una altura de línea de 1.5. Los títulos usan peso 600.
 
-Los radios compartidos son de 8, 10 y 12 px, con un radio independiente para controles redondeados. Las sombras y las dimensiones de la navegación se definen en los mismos estilos. [Tokens visuales](../frontend/src/tailwind.css)
+Los radios compartidos son de 8, 10 y 12 px, con un radio independiente para controles redondeados. Las sombras y las dimensiones de la navegación se definen en los mismos estilos. [Tokens visuales](../frontend/src/styles/index.css)
 
 ## Componentes
 

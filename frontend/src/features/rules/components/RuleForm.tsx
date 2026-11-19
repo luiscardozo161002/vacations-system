@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { AccrualRule } from '@vacations/sdk';
-import { sdk } from '../../../api/sdk';
+import { sdk } from '../../../services/sdk';
 import { useFormSubmit } from '../../../hooks/use-form-submit';
 import { FormDrawer } from '../../../components/organisms/FormDrawer';
 import { TextField } from '../../../components/molecules/FormField';

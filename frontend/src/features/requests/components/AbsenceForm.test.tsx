@@ -5,7 +5,7 @@ import { AbsenceForm } from './AbsenceForm';
 
 const { preview, create } = vi.hoisted(() => ({ preview: vi.fn(), create: vi.fn() }));
 
-vi.mock('../../../api/sdk', () => ({ sdk: { notices: { preview, create } } }));
+vi.mock('../../../services/sdk', () => ({ sdk: { notices: { preview, create } } }));
 
 const vacation: Reason = {
   reason_id: 1,

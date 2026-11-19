@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router';
-import { sdk } from '../../../api/sdk';
+import { sdk } from '../../../services/sdk';
 import { useApiQuery } from '../../../hooks/use-api-query';
 import { formatDate, formatDateTime, initials } from '../../../utils/format';
 import { EmptyState } from '../../../components/atoms/EmptyState';

@@ -38,12 +38,15 @@ El frontend importa el SDK como paquete del workspace. El SDK se compila antes d
 | `backend/src/db/` | Conexión, migraciones y seeds por dominio |
 | `sdk/src/core/` | HTTP, renovación de sesión y errores |
 | `sdk/src/resources/` | Operaciones y tipos de cada recurso |
-| `frontend/src/app/` | Plantilla de la aplicación, navegación, buscador y campana |
-| `frontend/src/features/` | Páginas, formularios y hooks por dominio |
+| `frontend/src/pages/` | Pantallas de la aplicación, una por ruta |
+| `frontend/src/layouts/` | Plantilla de la aplicación, tarjeta de acceso, navegación, buscador y campana |
+| `frontend/src/contexts/` | Contexto de autenticación y su proveedor |
+| `frontend/src/features/` | Formularios, componentes y hooks por dominio |
 | `frontend/src/components/` | `atoms/`, `molecules/` y `organisms/` compartidos (Atomic Design) sobre Tailwind, Radix UI y Sonner |
 | `frontend/src/hooks/` | Hooks compartidos: filtros, listados, formularios y consultas |
 | `frontend/src/utils/` | Formato, errores, archivos, apariencia y `cn` |
-| `frontend/src/api/` | SDK, cliente de consultas y almacenamiento de sesión |
+| `frontend/src/services/` | SDK, cliente de consultas y almacenamiento de sesión |
+| `frontend/src/styles/` | Tokens, tema claro y oscuro, variantes y estilos base de Tailwind |
 | `frontend/src/config/` | Valores configurables leídos de `VITE_*` |
 
 ## Backend
@@ -102,9 +105,9 @@ La auditoría registra los eventos declarados por las rutas, incluidos rechazos 
 
 ## Frontend y SDK
 
-TanStack Query mantiene los datos remotos. Los filtros y la paginación se guardan en la URL. El SDK serializa los parámetros, adjunta el access token y comparte una única renovación entre peticiones que reciben `401`. Las consultas admiten cancelación mediante `AbortSignal`. [Cliente HTTP](../sdk/src/core/http-client.ts), [consultas del frontend](../frontend/src/api/query-client.ts)
+TanStack Query mantiene los datos remotos. Los filtros y la paginación se guardan en la URL. El SDK serializa los parámetros, adjunta el access token y comparte una única renovación entre peticiones que reciben `401`. Las consultas admiten cancelación mediante `AbortSignal`. [Cliente HTTP](../sdk/src/core/http-client.ts), [consultas del frontend](../frontend/src/services/query-client.ts)
 
-Al guardar cambios, el frontend invalida las consultas para actualizar listas, saldos, calendario e indicadores. Los permisos determinan las opciones del menú y las rutas disponibles. [Navegación](../frontend/src/app/navigation.ts)
+Al guardar cambios, el frontend invalida las consultas para actualizar listas, saldos, calendario e indicadores. Los permisos determinan las opciones del menú y las rutas disponibles. [Navegación](../frontend/src/layouts/navigation.ts)
 
 Las pantallas comparten estas piezas:
 

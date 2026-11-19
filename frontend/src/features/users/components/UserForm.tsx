@@ -1,9 +1,9 @@
 import { useMemo, useState } from 'react';
 import type { Employee, Role } from '@vacations/sdk';
-import { sdk } from '../../../api/sdk';
+import { sdk } from '../../../services/sdk';
 import { config } from '../../../config';
 import { useFormSubmit } from '../../../hooks/use-form-submit';
-import { ROLE_LABELS } from '../../../app/navigation';
+import { ROLE_LABELS } from '../../../layouts/navigation';
 import { FormDrawer } from '../../../components/organisms/FormDrawer';
 import { SearchSelect } from '../../../components/molecules/SearchSelect';
 import { FormField, SelectField, TextField } from '../../../components/molecules/FormField';

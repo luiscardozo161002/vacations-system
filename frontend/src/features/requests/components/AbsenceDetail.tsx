@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { CurrentUser, Notice } from '@vacations/sdk';
-import { sdk } from '../../../api/sdk';
+import { sdk } from '../../../services/sdk';
 import { getErrorMessage } from '../../../utils/get-error-message';
 import { useApiQuery } from '../../../hooks/use-api-query';
 import { saveFile } from '../../../utils/save-file';

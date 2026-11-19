@@ -1,10 +1,10 @@
 import { useState, type FormEvent } from 'react';
 import type { Branch, Company, ReviewAction, User } from '@vacations/sdk';
-import { sdk } from '../../../api/sdk';
+import { sdk } from '../../../services/sdk';
 import { config } from '../../../config';
 import { useFormSubmit } from '../../../hooks/use-form-submit';
 import { initials } from '../../../utils/format';
-import { ROLE_LABELS } from '../../../app/navigation';
+import { ROLE_LABELS } from '../../../layouts/navigation';
 import { Drawer } from '../../../components/organisms/Drawer';
 import { FormField } from '../../../components/molecules/FormField';
 import { CheckboxRow } from '../../../components/molecules/CheckboxRow';

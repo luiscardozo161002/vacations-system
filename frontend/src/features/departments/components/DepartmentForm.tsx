@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import type { Branch, Department, Employee } from '@vacations/sdk';
-import { sdk } from '../../../api/sdk';
+import { sdk } from '../../../services/sdk';
 import { useFormSubmit } from '../../../hooks/use-form-submit';
 import { FormDrawer } from '../../../components/organisms/FormDrawer';
 import { CheckboxRow } from '../../../components/molecules/CheckboxRow';

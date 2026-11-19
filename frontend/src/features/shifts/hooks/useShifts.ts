@@ -1,4 +1,4 @@
-import { sdk } from '../../../api/sdk';
+import { sdk } from '../../../services/sdk';
 import { useCatalog } from '../../../hooks/use-catalog';
 
 export function useShifts() {

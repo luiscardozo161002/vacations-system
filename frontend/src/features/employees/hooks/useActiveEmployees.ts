@@ -1,4 +1,4 @@
-import { sdk } from '../../../api/sdk';
+import { sdk } from '../../../services/sdk';
 import { listAll } from '../../../utils/list-all';
 import { useApiQuery } from '../../../hooks/use-api-query';
 

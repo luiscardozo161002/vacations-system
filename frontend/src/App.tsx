@@ -1,24 +1,24 @@
 import type { ReactNode } from 'react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router';
-import { Shell } from './app/Shell';
-import { NAV_GROUPS, visibleGroups } from './app/navigation';
-import { EmployeesPage } from './features/employees/pages/EmployeesPage';
-import { RequestsPage } from './features/requests/pages/RequestsPage';
-import { NoticesPage } from './features/requests/pages/NoticesPage';
-import { BalancesPage } from './features/balances/pages/BalancesPage';
-import { CalendarPage } from './features/calendar/pages/CalendarPage';
-import { DashboardPage } from './features/dashboard/pages/DashboardPage';
-import { DepartmentsPage } from './features/departments/pages/DepartmentsPage';
-import { CompaniesPage } from './features/companies/pages/CompaniesPage';
-import { ShiftsPage } from './features/shifts/pages/ShiftsPage';
-import { RulesPage } from './features/rules/pages/RulesPage';
-import { UsersPage } from './features/users/pages/UsersPage';
-import { PermissionsPage } from './features/permissions/pages/PermissionsPage';
-import { AuditPage } from './features/audit/pages/AuditPage';
-import { SettingsPage } from './features/settings/pages/SettingsPage';
-import { LoginPage } from './features/auth/pages/LoginPage';
-import { ChangePasswordPage } from './features/auth/pages/ChangePasswordPage';
-import { useAuth } from './features/auth/auth-context';
+import { Shell } from './layouts/Shell';
+import { NAV_GROUPS, visibleGroups } from './layouts/navigation';
+import { EmployeesPage } from './pages/EmployeesPage';
+import { RequestsPage } from './pages/RequestsPage';
+import { NoticesPage } from './pages/NoticesPage';
+import { BalancesPage } from './pages/BalancesPage';
+import { CalendarPage } from './pages/CalendarPage';
+import { DashboardPage } from './pages/DashboardPage';
+import { DepartmentsPage } from './pages/DepartmentsPage';
+import { CompaniesPage } from './pages/CompaniesPage';
+import { ShiftsPage } from './pages/ShiftsPage';
+import { RulesPage } from './pages/RulesPage';
+import { UsersPage } from './pages/UsersPage';
+import { PermissionsPage } from './pages/PermissionsPage';
+import { AuditPage } from './pages/AuditPage';
+import { SettingsPage } from './pages/SettingsPage';
+import { LoginPage } from './pages/LoginPage';
+import { ChangePasswordPage } from './pages/ChangePasswordPage';
+import { useAuth } from './contexts/auth-context';
 
 const PAGES: Record<string, ReactNode> = {
   '/dashboard': <DashboardPage />,
