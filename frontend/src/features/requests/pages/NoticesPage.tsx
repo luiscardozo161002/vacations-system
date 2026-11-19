@@ -9,7 +9,7 @@ import { useRecordForm } from '../../../hooks/use-record-form';
 import { formatAbsenceRange } from '../../../utils/format';
 import { Icon } from '../../../components/atoms/Icon';
 import { DataTable, type Column } from '../../../components/organisms/DataTable';
-import { Select } from '../../../components/atoms/Input';
+import { Select } from '../../../components/atoms/Select';
 import { PageHeader } from '../../../components/molecules/PageHeader';
 import { StatusBadge } from '../../../components/atoms/StatusBadge';
 import { useAuth } from '../../auth/auth-context';
@@ -22,6 +22,12 @@ import { Button } from '../../../components/atoms/Button';
 import { RowActions, Toolbar, ToolbarSpacer } from '../../../components/molecules/Toolbar';
 
 const FILTERS = { estado: '' };
+
+const STATUS_OPTIONS = [
+  { value: '', label: 'Todos los estados' },
+  { value: 'approved', label: 'Aprobado' },
+  { value: 'cancelled', label: 'Cancelado' },
+];
 
 export function NoticesPage() {
   const { user, can } = useAuth();
@@ -87,11 +93,7 @@ export function NoticesPage() {
       </PageHeader>
 
       <Toolbar>
-        <Select compact aria-label="Estado" value={filters.estado} onChange={(e) => setFilter({ estado: e.target.value })}>
-          <option value="">Todos los estados</option>
-          <option value="approved">Aprobado</option>
-          <option value="cancelled">Cancelado</option>
-        </Select>
+        <Select compact aria-label="Estado" value={filters.estado} onChange={(estado) => setFilter({ estado })} options={STATUS_OPTIONS} />
         <ToolbarSpacer />
       </Toolbar>
 

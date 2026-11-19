@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { SdkHttpError, type Notice } from '@vacations/sdk';
 import { AbsenceDetail } from './AbsenceDetail';
-import { ToastProvider } from '../../../components/organisms/ToastProvider';
+import { Toaster } from '../../../components/organisms/Toaster';
 import { queryClient } from '../../../api/query-client';
 import { hrUser } from '../../../test/users';
 
@@ -41,9 +41,7 @@ const renderDetail = () => {
   const onChanged = vi.fn();
   render(
     <QueryClientProvider client={queryClient}>
-      <ToastProvider>
-        <AbsenceDetail notice={pendingRequest} user={hrUser} can={can} onClose={vi.fn()} onChanged={onChanged} />
-      </ToastProvider>
+      <><AbsenceDetail notice={pendingRequest} user={hrUser} can={can} onClose={vi.fn()} onChanged={onChanged} /><Toaster /></>
     </QueryClientProvider>,
   );
   return onChanged;
@@ -63,7 +61,7 @@ describe('Revisión de una solicitud', () => {
 
     await waitFor(() => expect(onChanged).toHaveBeenCalled());
     expect(approve).toHaveBeenCalledWith(7);
-    expect(screen.getByText('Solicitud de Maria Garcia Hernandez aprobada.')).toBeTruthy();
+    expect(await screen.findByText('Solicitud de Maria Garcia Hernandez aprobada.')).toBeTruthy();
   });
 
   it('RH la rechaza después de confirmar', async () => {
@@ -73,11 +71,11 @@ describe('Revisión de una solicitud', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Rechazar' }));
     expect(reject).not.toHaveBeenCalled();
     const dialog = screen.getByRole('dialog', { name: 'Rechazar solicitud' });
-    fireEvent.click(dialog.querySelector('.dialog-foot button')!);
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Rechazar' }));
 
     await waitFor(() => expect(onChanged).toHaveBeenCalled());
     expect(reject).toHaveBeenCalledWith(7);
-    expect(screen.getByText('Solicitud de Maria Garcia Hernandez rechazada.')).toBeTruthy();
+    expect(await screen.findByText('Solicitud de Maria Garcia Hernandez rechazada.')).toBeTruthy();
   });
 
   it('si la API la rechaza, muestra el motivo y no la da por resuelta', async () => {
@@ -95,9 +93,7 @@ describe('Revisión de una solicitud', () => {
   it('sin permiso de revisión no hay botones para aprobar ni rechazar', () => {
     render(
       <QueryClientProvider client={queryClient}>
-        <ToastProvider>
-          <AbsenceDetail notice={pendingRequest} user={hrUser} can={() => false} onClose={vi.fn()} onChanged={vi.fn()} />
-        </ToastProvider>
+        <><AbsenceDetail notice={pendingRequest} user={hrUser} can={() => false} onClose={vi.fn()} onChanged={vi.fn()} /><Toaster /></>
       </QueryClientProvider>,
     );
 

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { ConfirmDialog, Dialog } from './Dialog';
 
 function Opener({ onInnerClose = () => {} }: { onInnerClose?: () => void }) {
@@ -36,7 +36,7 @@ function Opener({ onInnerClose = () => {} }: { onInnerClose?: () => void }) {
 }
 
 describe('Dialog', () => {
-  it('lleva el foco al primer campo y lo regresa al botón que lo abrió', () => {
+  it('lleva el foco al primer campo y lo regresa al botón que lo abrió', async () => {
     render(<Opener />);
     const opener = screen.getByText('Abrir');
     opener.focus();
@@ -47,7 +47,7 @@ describe('Dialog', () => {
     fireEvent.keyDown(document.activeElement!, { key: 'Escape' });
 
     expect(screen.queryByRole('dialog')).toBeNull();
-    expect(document.activeElement).toBe(opener);
+    await waitFor(() => expect(document.activeElement).toBe(opener));
   });
 
   it('mantiene el tabulador dentro del diálogo', () => {

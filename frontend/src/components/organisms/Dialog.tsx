@@ -1,8 +1,6 @@
 import type { ReactNode } from 'react';
-import { Icon } from '../atoms/Icon';
-import { Overlay } from './Overlay';
-import { IconButton } from '../atoms/IconButton';
 import { Button } from '../atoms/Button';
+import { Modal, ModalBody, ModalFooter, ModalHeader } from './Modal';
 
 interface DialogProps {
   title: string;
@@ -13,18 +11,14 @@ interface DialogProps {
 
 export function Dialog({ title, onClose, footer, children }: DialogProps) {
   return (
-    <Overlay center onClose={onClose}>
-      <div className="dialog" role="dialog" aria-modal="true" aria-label={title}>
-        <div className="dialog-head">
-          <h2>{title}</h2>
-          <IconButton title="Cerrar" onClick={onClose}>
-            <Icon name="x" />
-          </IconButton>
-        </div>
-        <div className="dialog-body">{children}</div>
-        {footer && <div className="dialog-foot">{footer}</div>}
-      </div>
-    </Overlay>
+    <Modal
+      onClose={onClose}
+      className="top-1/2 left-1/2 max-h-[90vh] w-[calc(100%-40px)] max-w-[440px] -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-lg shadow-md"
+    >
+      <ModalHeader title={title} />
+      <ModalBody>{children}</ModalBody>
+      {footer && <ModalFooter>{footer}</ModalFooter>}
+    </Modal>
   );
 }
 
@@ -42,7 +36,7 @@ export function ConfirmDialog({ title, message, confirmLabel = 'Confirmar', onCo
       title={title}
       onClose={onCancel}
       footer={
-        <Button onClick={onConfirm} autoFocus>
+        <Button onClick={onConfirm} data-autofocus>
           {confirmLabel}
         </Button>
       }

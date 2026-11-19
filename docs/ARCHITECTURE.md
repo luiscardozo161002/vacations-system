@@ -40,7 +40,7 @@ El frontend importa el SDK como paquete del workspace. El SDK se compila antes d
 | `sdk/src/resources/` | Operaciones y tipos de cada recurso |
 | `frontend/src/app/` | Plantilla de la aplicación, navegación, buscador y campana |
 | `frontend/src/features/` | Páginas, formularios y hooks por dominio |
-| `frontend/src/components/` | `atoms/`, `molecules/` y `organisms/` compartidos (Atomic Design) |
+| `frontend/src/components/` | `atoms/`, `molecules/` y `organisms/` compartidos (Atomic Design) sobre Tailwind, Radix UI y Sonner |
 | `frontend/src/hooks/` | Hooks compartidos: filtros, listados, formularios y consultas |
 | `frontend/src/utils/` | Formato, errores, archivos, apariencia y `cn` |
 | `frontend/src/api/` | SDK, cliente de consultas y almacenamiento de sesión |

@@ -99,7 +99,7 @@ export function UserAssignment({ user, branches, companies, onClose, onSaved }: 
               <CheckboxRow
                 key={branch.branch_id}
                 checked={branchIds.includes(branch.branch_id)}
-                onChange={() => setBranchIds((prev) => toggle(prev, branch.branch_id))}
+                onCheckedChange={() => setBranchIds((prev) => toggle(prev, branch.branch_id))}
               >
                 {branch.code} · {branch.branch_name}
               </CheckboxRow>
@@ -110,7 +110,7 @@ export function UserAssignment({ user, branches, companies, onClose, onSaved }: 
               <CheckboxRow
                 key={action}
                 checked={reviewActions.includes(action)}
-                onChange={() => setReviewActions((prev) => toggle(prev, action))}
+                onCheckedChange={() => setReviewActions((prev) => toggle(prev, action))}
               >
                 {label}
               </CheckboxRow>

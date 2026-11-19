@@ -3,6 +3,7 @@ const ICONS: Record<string, string> = {
   'log-out': '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/>',
   'menu': '<path d="M4 6h16M4 12h16M4 18h16"/>',
   'chevron-right': '<path d="m9 18 6-6-6-6"/>',
+  'chevron-down': '<path d="m6 9 6 6 6-6"/>',
   'chevron-left': '<path d="m15 18-6-6 6-6"/>',
   'search': '<circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35"/>',
   'building-2': '<path d="M6 22V5a1 1 0 0 1 1-1h7a1 1 0 0 1 1 1v17"/><path d="M15 11h5a1 1 0 0 1 1 1v10"/><path d="M3 22h18"/><path d="M9 7h1M9 11h1M9 15h1M13 7h1M13 11h1M13 15h1M18 15h1M18 18h1"/>',

@@ -12,7 +12,7 @@ import { EmptyState } from '../../../components/atoms/EmptyState';
 import { Icon } from '../../../components/atoms/Icon';
 import { TextField } from '../../../components/molecules/FormField';
 import { StatusBadge } from '../../../components/atoms/StatusBadge';
-import { useToast } from '../../../components/organisms/toast-context';
+import { useToast } from '../../../hooks/use-toast';
 import { useAuth } from '../../auth/auth-context';
 import { AccessDialog, type GrantedAccess } from './AccessDialog';
 import { Button } from '../../../components/atoms/Button';

@@ -15,7 +15,7 @@ export function SearchBox({ wrapperClassName, wrapperId, wrapperRef, children, c
       id={wrapperId}
       ref={wrapperRef}
       className={cn(
-        'relative flex h-9 w-60 items-center gap-2 rounded-sm border border-line bg-subtle px-2.5 text-muted focus-within:border-fg focus-within:shadow-[0_0_0_3px_rgba(15,23,42,0.08)]',
+        'relative flex h-9 w-60 items-center gap-2 rounded-sm border border-line bg-subtle px-2.5 text-muted focus-within:border-fg focus-within:shadow-[0_0_0_3px_var(--focus-ring)]',
         wrapperClassName,
       )}
     >

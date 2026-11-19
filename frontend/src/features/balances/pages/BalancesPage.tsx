@@ -10,7 +10,7 @@ import { formatDate } from '../../../utils/format';
 import { DataTable, type Column } from '../../../components/organisms/DataTable';
 import { Icon } from '../../../components/atoms/Icon';
 import { PageHeader } from '../../../components/molecules/PageHeader';
-import { useToast } from '../../../components/organisms/toast-context';
+import { useToast } from '../../../hooks/use-toast';
 import { useAuth } from '../../auth/auth-context';
 import { EmployeeDashboard } from '../../dashboard/components/EmployeeDashboard';
 import { Button } from '../../../components/atoms/Button';

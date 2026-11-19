@@ -1,26 +1,23 @@
-import type { ButtonHTMLAttributes, HTMLAttributes } from 'react';
+import type { ComponentProps } from 'react';
+import * as TabsPrimitive from '@radix-ui/react-tabs';
 import { cn } from '../../utils/cn';
 
-export function TabList({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
-  return <div role="tablist" className={cn('mb-[18px] flex gap-1 border-b border-line', className)} {...props} />;
+export const Tabs = TabsPrimitive.Root;
+
+export function TabList({ className, ...props }: ComponentProps<typeof TabsPrimitive.List>) {
+  return <TabsPrimitive.List className={cn('mb-[18px] flex gap-1 border-b border-line', className)} {...props} />;
 }
 
-interface TabProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  active: boolean;
-}
-
-export function Tab({ active, className, ...props }: TabProps) {
+export function Tab({ className, ...props }: ComponentProps<typeof TabsPrimitive.Trigger>) {
   return (
-    <button
-      type="button"
-      role="tab"
-      aria-selected={active}
+    <TabsPrimitive.Trigger
       className={cn(
-        '-mb-px cursor-pointer border-b-2 border-transparent px-3.5 py-2.5 text-[13.5px] font-medium text-muted',
-        active && 'border-fg text-fg',
+        '-mb-px cursor-pointer border-b-2 border-transparent px-3.5 py-2.5 text-[13.5px] font-medium text-muted data-[state=active]:border-fg data-[state=active]:text-fg',
         className,
       )}
       {...props}
     />
   );
 }
+
+export const TabPanel = TabsPrimitive.Content;

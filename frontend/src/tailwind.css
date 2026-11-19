@@ -35,6 +35,7 @@
   --color-muted: var(--text-muted);
   --color-line: var(--border);
   --color-divider: var(--divider);
+  --color-faint: var(--text-faint);
 
   --color-primary: var(--btn-primary-bg);
   --color-primary-hover: var(--btn-primary-bg-hover);

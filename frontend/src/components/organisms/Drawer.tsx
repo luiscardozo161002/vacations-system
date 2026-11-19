@@ -1,7 +1,5 @@
 import type { FormEvent, ReactNode } from 'react';
-import { Icon } from '../atoms/Icon';
-import { Overlay } from './Overlay';
-import { IconButton } from '../atoms/IconButton';
+import { Modal, ModalBody, ModalFooter, ModalHeader } from './Modal';
 
 interface DrawerProps {
   title: string;
@@ -11,31 +9,29 @@ interface DrawerProps {
   children: ReactNode;
 }
 
+const PANEL = 'flex h-full flex-col overflow-y-auto';
+
 export function Drawer({ title, onClose, onSubmit, footer, children }: DrawerProps) {
   const content = (
     <>
-      <div className="drawer-head">
-        <h2>{title}</h2>
-        <IconButton title="Cerrar" onClick={onClose}>
-          <Icon name="x" />
-        </IconButton>
-      </div>
-      <div className="drawer-body">{children}</div>
-      {footer && <div className="drawer-foot">{footer}</div>}
+      <ModalHeader title={title} />
+      <ModalBody>{children}</ModalBody>
+      {footer && <ModalFooter>{footer}</ModalFooter>}
     </>
   );
 
   return (
-    <Overlay onClose={onClose}>
+    <Modal
+      onClose={onClose}
+      className="top-0 right-0 h-full w-full max-w-[420px] shadow-[-8px_0_24px_rgba(15,23,42,0.12)]"
+    >
       {onSubmit ? (
-        <form className="drawer" role="dialog" aria-modal="true" aria-label={title} onSubmit={onSubmit}>
+        <form className={PANEL} onSubmit={onSubmit}>
           {content}
         </form>
       ) : (
-        <div className="drawer" role="dialog" aria-modal="true" aria-label={title}>
-          {content}
-        </div>
+        <div className={PANEL}>{content}</div>
       )}
-    </Overlay>
+    </Modal>
   );
 }

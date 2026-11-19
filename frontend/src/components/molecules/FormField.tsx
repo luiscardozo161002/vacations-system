@@ -1,7 +1,8 @@
 import type { InputHTMLAttributes, ReactNode } from 'react';
 import { cn } from '../../utils/cn';
 import { FieldHint } from '../atoms/FieldText';
-import { Input, Select } from '../atoms/Input';
+import { Input } from '../atoms/Input';
+import { Select, type SelectOption } from '../atoms/Select';
 
 interface FormFieldProps {
   label: string;
@@ -39,11 +40,6 @@ export function TextField({ label, hint, onChange, ...input }: TextFieldProps) {
   );
 }
 
-export interface SelectOption {
-  value: string | number;
-  label: string;
-}
-
 interface SelectFieldProps {
   id: string;
   label: string;
@@ -56,13 +52,7 @@ interface SelectFieldProps {
 export function SelectField({ id, label, value, options, onChange, required }: SelectFieldProps) {
   return (
     <FormField label={label} htmlFor={id}>
-      <Select id={id} value={value} onChange={(e) => onChange(e.target.value)} required={required}>
-        {options.map((option) => (
-          <option key={option.value} value={option.value}>
-            {option.label}
-          </option>
-        ))}
-      </Select>
+      <Select id={id} value={value} onChange={onChange} options={options} required={required} />
     </FormField>
   );
 }

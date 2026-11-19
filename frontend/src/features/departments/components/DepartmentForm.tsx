@@ -94,7 +94,7 @@ export function DepartmentForm({ department, branches, employees, onClose, onSav
         />
       </FormField>
       <FormField label="Calendario">
-        <CheckboxRow checked={calendarShared} onChange={(e) => setCalendarShared(e.target.checked)}>
+        <CheckboxRow checked={calendarShared} onCheckedChange={(checked) => setCalendarShared(checked === true)}>
           Sus empleados ven las ausencias del departamento
         </CheckboxRow>
       </FormField>

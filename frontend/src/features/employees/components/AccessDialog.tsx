@@ -27,7 +27,7 @@ export function AccessDialog({ access, onClose }: AccessDialogProps) {
       title="Acceso del empleado"
       onClose={onClose}
       footer={
-        <Button onClick={copy} autoFocus>
+        <Button onClick={copy} data-autofocus>
           {copied ? 'Copiada' : 'Copiar contraseña'}
         </Button>
       }

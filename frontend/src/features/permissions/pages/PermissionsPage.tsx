@@ -10,10 +10,11 @@ import { ROLE_LABELS } from '../../../app/navigation';
 import { EmptyState } from '../../../components/atoms/EmptyState';
 import { Icon } from '../../../components/atoms/Icon';
 import { PageHeader } from '../../../components/molecules/PageHeader';
-import { useToast } from '../../../components/organisms/toast-context';
+import { useToast } from '../../../hooks/use-toast';
 import { useAuth } from '../../auth/auth-context';
 import { Card } from '../../../components/molecules/Card';
 import { cn } from '../../../utils/cn';
+import { Checkbox } from '../../../components/atoms/Checkbox';
 
 const cell = 'border-b border-line px-3.5 py-2.5 text-center text-sm';
 const headCell = 'border-b border-line bg-subtle px-3.5 py-2.5 text-center text-xs font-semibold text-muted uppercase first:text-left';
@@ -129,18 +130,12 @@ export function PermissionsPage() {
                     const on = fixed || matrix.granted.has(key);
                     return (
                       <td key={role.role_id} className={cell}>
-                        <button
-                          type="button"
-                          className={cn(
-                            'inline-flex size-[18px] cursor-pointer items-center justify-center rounded-[5px] border border-line bg-surface text-white [&_svg]:size-3 [&_svg]:stroke-[3]',
-                            on && 'border-fg bg-fg',
-                          )}
+                        <Checkbox
+                          checked={on}
                           disabled={fixed || !canEdit || saving === key}
-                          onClick={() => toggle(role, module)}
+                          onCheckedChange={() => toggle(role, module)}
                           aria-label={`${module.label} para ${ROLE_LABELS[role.role_code] ?? role.role_code}`}
-                        >
-                          {on && <Icon name="check" />}
-                        </button>
+                        />
                       </td>
                     );
                   })}

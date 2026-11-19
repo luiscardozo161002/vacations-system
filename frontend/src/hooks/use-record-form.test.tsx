@@ -1,24 +1,19 @@
-import type { ReactNode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { act, renderHook } from '@testing-library/react';
-import { ToastContext } from '../components/organisms/toast-context';
+import { toast } from 'sonner';
 import { queryClient } from '../api/query-client';
 import { useRecordForm } from './use-record-form';
 
-const toasts: string[] = [];
-
-const wrapper = ({ children }: { children: ReactNode }) => (
-  <ToastContext.Provider value={(message) => toasts.push(message)}>{children}</ToastContext.Provider>
-);
+vi.mock('sonner', () => ({ toast: vi.fn() }));
 
 afterEach(() => {
-  toasts.length = 0;
+  vi.mocked(toast).mockClear();
   vi.restoreAllMocks();
 });
 
 describe('useRecordForm', () => {
   it('abre un formulario nuevo y uno con un registro, y lo cierra', () => {
-    const { result } = renderHook(() => useRecordForm<{ id: number }>(), { wrapper });
+    const { result } = renderHook(() => useRecordForm<{ id: number }>());
 
     expect(result.current.isOpen).toBe(false);
 
@@ -35,13 +30,13 @@ describe('useRecordForm', () => {
 
   it('al guardar cierra, avisa y refresca los datos', () => {
     const refresh = vi.spyOn(queryClient, 'invalidateQueries').mockResolvedValue();
-    const { result } = renderHook(() => useRecordForm(), { wrapper });
+    const { result } = renderHook(() => useRecordForm());
 
     act(() => result.current.open());
     act(() => result.current.saved('Empleado creado.'));
 
     expect(result.current.isOpen).toBe(false);
-    expect(toasts).toEqual(['Empleado creado.']);
+    expect(vi.mocked(toast).mock.calls[0][0]).toBe('Empleado creado.');
     expect(refresh).toHaveBeenCalledTimes(1);
   });
 });

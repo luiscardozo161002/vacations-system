@@ -6,13 +6,19 @@ import { formatDateTime } from '../../../utils/format';
 import { usePagedList } from '../../../hooks/use-paged-list';
 import { usePageFilters } from '../../../hooks/use-page-filters';
 import { DataTable, type Column } from '../../../components/organisms/DataTable';
-import { Select } from '../../../components/atoms/Input';
+import { Select } from '../../../components/atoms/Select';
 import { PageHeader } from '../../../components/molecules/PageHeader';
 import { SearchInput } from '../../../components/molecules/SearchInput';
 import { StatusBadge } from '../../../components/atoms/StatusBadge';
 import { Toolbar } from '../../../components/molecules/Toolbar';
 
 const FILTERS = { resultado: '', q: '' };
+
+const RESULT_OPTIONS = [
+  { value: '', label: 'Todos los resultados' },
+  { value: 'success', label: 'Exitoso' },
+  { value: 'failed', label: 'Fallido' },
+];
 
 const EVENT_LABELS: Record<string, string> = {
   LOGIN_SUCCESS: 'Inicio de sesión',
@@ -87,11 +93,7 @@ export function AuditPage() {
     <>
       <PageHeader title="Auditoría" subtitle="Historial de inicio de sesión y eventos de seguridad." />
       <Toolbar>
-        <Select compact aria-label="Resultado" value={filters.resultado} onChange={(e) => setFilter({ resultado: e.target.value })}>
-          <option value="">Todos los resultados</option>
-          <option value="success">Exitoso</option>
-          <option value="failed">Fallido</option>
-        </Select>
+        <Select compact aria-label="Resultado" value={filters.resultado} onChange={(resultado) => setFilter({ resultado })} options={RESULT_OPTIONS} />
         <SearchInput placeholder="Buscar usuario o evento..." value={filters.q} onSearch={(q) => setFilter({ q })} />
       </Toolbar>
       <DataTable

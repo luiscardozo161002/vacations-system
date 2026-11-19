@@ -45,6 +45,8 @@
   --window-bg-rgb: 255, 255, 255;
   --window-bg-alpha: 1;
   --divider: rgba(15, 23, 42, 0.07);
+  --text-faint: #cbd5e1;
+  --focus-ring: rgba(15, 23, 42, 0.08);
 }
 
 :root[data-theme="dark"] {
@@ -72,6 +74,8 @@
 
   --window-bg-rgb: 26, 34, 50;
   --divider: rgba(255, 255, 255, 0.07);
+  --text-faint: #475569;
+  --focus-ring: rgba(255, 255, 255, 0.16);
 }
 
 @layer base {

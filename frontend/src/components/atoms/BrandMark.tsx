@@ -1,7 +1,7 @@
 import { cva, type VariantProps } from 'class-variance-authority';
 import { Icon } from './Icon';
 
-const mark = cva('flex shrink-0 items-center justify-center rounded-full bg-primary text-white', {
+const mark = cva('flex shrink-0 items-center justify-center rounded-full bg-primary text-primary-fg', {
   variants: {
     size: {
       default: 'size-7',

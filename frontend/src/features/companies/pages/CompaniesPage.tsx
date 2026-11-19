@@ -7,14 +7,14 @@ import { useApiQuery } from '../../../hooks/use-api-query';
 import { useUrlFilters } from '../../../hooks/use-url-filters';
 import { useDepartments } from '../../departments/hooks/useDepartments';
 import { DataTable, type Column } from '../../../components/organisms/DataTable';
-import { Select } from '../../../components/atoms/Input';
+import { Select } from '../../../components/atoms/Select';
 import { EmptyState } from '../../../components/atoms/EmptyState';
 import { PageHeader } from '../../../components/molecules/PageHeader';
 import { KeyValue, KeyValueGrid } from '../../../components/molecules/KeyValue';
 import { Card, CardHeader, CardTitle } from '../../../components/molecules/Card';
 import { Toolbar } from '../../../components/molecules/Toolbar';
 import { Grid } from '../../../components/molecules/Grid';
-import { Tab, TabList } from '../../../components/molecules/Tabs';
+import { Tab, TabList, TabPanel, Tabs } from '../../../components/molecules/Tabs';
 
 const TABS = [
   { id: 'datos', label: 'Datos de empresa' },
@@ -109,33 +109,40 @@ export function CompaniesPage() {
 
       {companies && companies.length > 1 && (
         <Toolbar>
-          <Select compact aria-label="Empresa" value={companyId ?? ''} onChange={(e) => setFilters({ empresa: e.target.value })}>
-            {companies.map((item) => (
-              <option key={item.company_id} value={item.company_id}>
-                {item.folio} · {item.company_name}
-              </option>
-            ))}
-          </Select>
+          <Select
+            compact
+            aria-label="Empresa"
+            value={String(companyId ?? '')}
+            onChange={(empresa) => setFilters({ empresa })}
+            options={companies.map((item) => ({ value: item.company_id, label: `${item.folio} · ${item.company_name}` }))}
+          />
         </Toolbar>
       )}
 
-      <TabList>
-        {TABS.map((tab) => (
-          <Tab key={tab.id} active={filters.pestana === tab.id} onClick={() => setFilters({ pestana: tab.id })}>
-            {tab.label}
-          </Tab>
-        ))}
-      </TabList>
-
-      {!company ? (
-        <EmptyState message={error ?? (companies ? 'No hay empresas.' : 'Cargando...')} />
-      ) : filters.pestana === 'datos' ? (
-        <CompanyData company={company} />
-      ) : filters.pestana === 'sucursales' ? (
-        <CompanyBranches companyId={company.company_id} />
-      ) : (
-        <CompanyEmployees key={company.company_id} companyId={company.company_id} departments={departments} />
-      )}
+      <Tabs value={filters.pestana} onValueChange={(pestana) => setFilters({ pestana })}>
+        <TabList>
+          {TABS.map((tab) => (
+            <Tab key={tab.id} value={tab.id}>
+              {tab.label}
+            </Tab>
+          ))}
+        </TabList>
+        {!company ? (
+          <EmptyState message={error ?? (companies ? 'No hay empresas.' : 'Cargando...')} />
+        ) : (
+          <>
+            <TabPanel value="datos">
+              <CompanyData company={company} />
+            </TabPanel>
+            <TabPanel value="sucursales">
+              <CompanyBranches companyId={company.company_id} />
+            </TabPanel>
+            <TabPanel value="empleados">
+              <CompanyEmployees key={company.company_id} companyId={company.company_id} departments={departments} />
+            </TabPanel>
+          </>
+        )}
+      </Tabs>
     </>
   );
 }

@@ -21,7 +21,7 @@ describe('TextField', () => {
 });
 
 describe('SelectField', () => {
-  it('pinta las opciones y entrega el valor elegido', () => {
+  it('pinta las opciones y entrega el valor elegido', async () => {
     const onChange = vi.fn();
     render(
       <SelectField
@@ -36,9 +36,14 @@ describe('SelectField', () => {
       />,
     );
 
-    fireEvent.change(screen.getByLabelText('Rol'), { target: { value: '3' } });
+    const trigger = screen.getByLabelText('Rol');
+    expect(trigger.textContent).toContain('Superusuario');
 
-    expect(screen.getAllByRole('option').map((option) => option.textContent)).toEqual(['Superusuario', 'Empleado']);
+    fireEvent.keyDown(trigger, { key: 'Enter' });
+
+    const options = await screen.findAllByRole('option');
+    expect(options.map((option) => option.textContent)).toEqual(['Superusuario', 'Empleado']);
+    fireEvent.click(screen.getByRole('option', { name: 'Empleado' }));
     expect(onChange).toHaveBeenCalledWith('3');
   });
 });

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Outlet, useNavigate } from 'react-router';
 import { cn } from '../utils/cn';
 import { config } from '../config';
-import { ToastProvider } from '../components/organisms/ToastProvider';
+import { Toaster } from '../components/organisms/Toaster';
 import { useAuth } from '../features/auth/auth-context';
 import { ProfileDrawer } from '../features/auth/components/ProfileDrawer';
 import { ROLE_LABELS } from './navigation';
@@ -39,7 +39,7 @@ export function Shell() {
         id="app-shell"
         className="relative flex h-[calc(100vh-var(--window-margin)*2)] w-full overflow-hidden rounded-[var(--window-radius)] border border-line bg-[var(--surface)] shadow-[0_24px_60px_rgba(15,23,42,0.14),0_2px_8px_rgba(15,23,42,0.06)] [--surface:rgba(var(--window-bg-rgb,255,255,255),var(--window-bg-alpha,1))] mobile:h-screen mobile:rounded-none mobile:border-0 mobile:shadow-none"
       >
-        <ToastProvider>
+        <>
           <div
             className={cn('fixed inset-0 z-[45] hidden bg-[rgba(15,23,42,0.35)]', mobileOpen && 'mobile:block')}
             onClick={() => setMobileOpen(false)}
@@ -64,7 +64,8 @@ export function Shell() {
           {profileOpen && user && (
             <ProfileDrawer user={user} roleLabel={roleLabel} onClose={() => setProfileOpen(false)} />
           )}
-        </ToastProvider>
+          <Toaster />
+        </>
       </div>
     </div>
   );

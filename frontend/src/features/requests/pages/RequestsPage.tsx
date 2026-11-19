@@ -9,7 +9,7 @@ import { useRecordForm } from '../../../hooks/use-record-form';
 import { formatAbsenceRange, formatDaysHours } from '../../../utils/format';
 import { Icon } from '../../../components/atoms/Icon';
 import { DataTable, type Column } from '../../../components/organisms/DataTable';
-import { Select } from '../../../components/atoms/Input';
+import { Select } from '../../../components/atoms/Select';
 import { PageHeader } from '../../../components/molecules/PageHeader';
 import { SearchSelect } from '../../../components/molecules/SearchSelect';
 import { StatusBadge } from '../../../components/atoms/StatusBadge';
@@ -23,6 +23,14 @@ import { Button } from '../../../components/atoms/Button';
 import { RowActions, Toolbar, ToolbarSpacer } from '../../../components/molecules/Toolbar';
 
 const FILTERS = { estado: '', departamento: '' };
+
+const STATUS_OPTIONS = [
+  { value: '', label: 'Todos los estados' },
+  { value: 'pending', label: 'Pendiente' },
+  { value: 'approved', label: 'Aprobada' },
+  { value: 'rejected', label: 'Rechazada' },
+  { value: 'cancelled', label: 'Cancelada' },
+];
 
 export function RequestsPage() {
   const { user, can } = useAuth();
@@ -97,13 +105,7 @@ export function RequestsPage() {
       </PageHeader>
 
       <Toolbar>
-        <Select compact aria-label="Estado" value={filters.estado} onChange={(e) => setFilter({ estado: e.target.value })}>
-          <option value="">Todos los estados</option>
-          <option value="pending">Pendiente</option>
-          <option value="approved">Aprobada</option>
-          <option value="rejected">Rechazada</option>
-          <option value="cancelled">Cancelada</option>
-        </Select>
+        <Select compact aria-label="Estado" value={filters.estado} onChange={(estado) => setFilter({ estado })} options={STATUS_OPTIONS} />
         {!isEmployee && (
           <SearchSelect
             id="req-dept-filter"

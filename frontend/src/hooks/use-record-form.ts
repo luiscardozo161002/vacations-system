@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useToast } from '../components/organisms/toast-context';
+import { useToast } from '../hooks/use-toast';
 import { refreshData } from '../api/query-client';
 
 export function useRecordForm<T = null>() {

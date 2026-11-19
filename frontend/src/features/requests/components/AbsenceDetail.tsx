@@ -9,7 +9,7 @@ import { Drawer } from '../../../components/organisms/Drawer';
 import { ConfirmDialog } from '../../../components/organisms/Dialog';
 import { Icon } from '../../../components/atoms/Icon';
 import { StatusBadge } from '../../../components/atoms/StatusBadge';
-import { useToast } from '../../../components/organisms/toast-context';
+import { useToast } from '../../../hooks/use-toast';
 import { BreakdownBox } from './BreakdownBox';
 import { Button } from '../../../components/atoms/Button';
 import { KeyValue, KeyValueGrid } from '../../../components/molecules/KeyValue';

@@ -14,7 +14,7 @@ import { ConfirmDialog } from '../../../components/organisms/Dialog';
 import { Icon } from '../../../components/atoms/Icon';
 import { PageHeader } from '../../../components/molecules/PageHeader';
 import { StatusBadge } from '../../../components/atoms/StatusBadge';
-import { useToast } from '../../../components/organisms/toast-context';
+import { useToast } from '../../../hooks/use-toast';
 import { useAuth } from '../../auth/auth-context';
 import { useActiveEmployees } from '../../employees/hooks/useActiveEmployees';
 import { UserForm } from '../components/UserForm';

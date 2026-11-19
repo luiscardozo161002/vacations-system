@@ -1,14 +1,18 @@
 export type Theme = 'light' | 'dark';
 
-export const BACKDROP_PRESETS = ['#e7eaee', '#f2f2f0', '#e4ecf3', '#eef1e9', '#efe7f0', '#1c1f24'];
+export const BACKDROP_PRESETS: Record<Theme, string[]> = {
+  light: ['#e7eaee', '#f2f2f0', '#e4ecf3', '#eef1e9', '#efe7f0', '#1c1f24'],
+  dark: ['#0b1220', '#111827', '#0f1a2b', '#14201c', '#1a1426', '#000000'],
+};
 export const BUTTON_COLOR_PRESETS = ['#111111', '#334155', '#1d4ed8', '#0f766e', '#7c3aed', '#9f1239'];
 
-const DEFAULT_BACKDROP = BACKDROP_PRESETS[0];
 const DEFAULT_BUTTON_COLOR = BUTTON_COLOR_PRESETS[0];
+const LIGHT_BACKDROP_LUMINANCE = 140;
+const MIN_ALPHA_ON_CLASH = 0.85;
 
 const KEYS = {
   theme: 'vm_theme',
-  backdrop: 'vm_backdrop',
+  backdrop: { light: 'vm_backdrop', dark: 'vm_backdrop_dark' },
   buttonColor: 'vm_btn_color',
   windowAlpha: 'vm_window_alpha',
 };
@@ -60,9 +64,26 @@ export const subscribeTheme = (listener: () => void) => {
 
 export const getTheme = (): Theme => (root().dataset.theme === 'dark' ? 'dark' : 'light');
 
+const backdropFor = (theme: Theme): string => readStored(KEYS.backdrop[theme], BACKDROP_PRESETS[theme][0]);
+
+const clashes = (theme: Theme, backdrop: string): boolean => (theme === 'dark') === (luminance(backdrop) > LIGHT_BACKDROP_LUMINANCE);
+
+const requestedAlpha = (): number => Number(readStored(KEYS.windowAlpha, '1'));
+
+export const effectiveWindowAlpha = (alpha: number, theme: Theme, backdrop: string): number =>
+  clashes(theme, backdrop) ? Math.max(alpha, MIN_ALPHA_ON_CLASH) : alpha;
+
+const applyWindow = () => {
+  const theme = getTheme();
+  const backdrop = backdropFor(theme);
+  root().style.setProperty('--backdrop', backdrop);
+  root().style.setProperty('--window-bg-alpha', String(effectiveWindowAlpha(requestedAlpha(), theme, backdrop)));
+};
+
 export const setTheme = (theme: Theme): void => {
   root().dataset.theme = theme;
   writeStored(KEYS.theme, theme);
+  applyWindow();
   themeListeners.forEach((listener) => listener());
 };
 
@@ -72,25 +93,27 @@ export const toggleTheme = (): Theme => {
   return next;
 };
 
-const applyBackdrop = (color: string) => root().style.setProperty('--backdrop', color);
-
 const applyButtonColor = (hex: string) => {
   root().style.setProperty('--btn-primary-bg', hex);
   root().style.setProperty('--btn-primary-bg-hover', shade(hex, 0.85));
   root().style.setProperty('--btn-primary-text', luminance(hex) > 170 ? '#0f172a' : '#ffffff');
 };
 
-const applyWindowAlpha = (alpha: number) => root().style.setProperty('--window-bg-alpha', String(alpha));
-
-export const getAppearance = () => ({
-  backdrop: readStored(KEYS.backdrop, DEFAULT_BACKDROP),
-  buttonColor: readStored(KEYS.buttonColor, DEFAULT_BUTTON_COLOR),
-  windowAlpha: Number(readStored(KEYS.windowAlpha, '1')),
-});
+export const getAppearance = () => {
+  const theme = getTheme();
+  const backdrop = backdropFor(theme);
+  const windowAlpha = requestedAlpha();
+  return {
+    backdrop,
+    buttonColor: readStored(KEYS.buttonColor, DEFAULT_BUTTON_COLOR),
+    windowAlpha,
+    alphaLimited: effectiveWindowAlpha(windowAlpha, theme, backdrop) > windowAlpha,
+  };
+};
 
 export const setBackdrop = (color: string): void => {
-  applyBackdrop(color);
-  writeStored(KEYS.backdrop, color);
+  writeStored(KEYS.backdrop[getTheme()], color);
+  applyWindow();
 };
 
 export const setButtonColor = (hex: string): void => {
@@ -99,14 +122,12 @@ export const setButtonColor = (hex: string): void => {
 };
 
 export const setWindowAlpha = (alpha: number): void => {
-  applyWindowAlpha(alpha);
   writeStored(KEYS.windowAlpha, String(alpha));
+  applyWindow();
 };
 
 export const initAppearance = (): void => {
-  const { backdrop, buttonColor, windowAlpha } = getAppearance();
   root().dataset.theme = readStored(KEYS.theme, 'light') === 'dark' ? 'dark' : 'light';
-  applyBackdrop(backdrop);
-  applyButtonColor(buttonColor);
-  applyWindowAlpha(windowAlpha);
+  applyButtonColor(readStored(KEYS.buttonColor, DEFAULT_BUTTON_COLOR));
+  applyWindow();
 };

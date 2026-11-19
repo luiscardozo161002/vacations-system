@@ -21,7 +21,7 @@ describe('FormDrawer', () => {
     const onSubmit = vi.fn();
     render(drawer({ onSubmit }));
 
-    const form = screen.getByRole('dialog');
+    const form = screen.getByRole('dialog').querySelector('form')!;
     const notPrevented = fireEvent.submit(form);
 
     expect(onSubmit).toHaveBeenCalledTimes(1);

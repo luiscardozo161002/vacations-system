@@ -125,11 +125,11 @@ export function CalendarPage() {
                   key={cell.date}
                   className={cn(
                     'flex min-h-24 flex-col gap-1 border-r border-b border-line bg-surface p-2 text-[12.5px] text-muted',
-                    !cell.inMonth && 'bg-subtle text-[#cbd5e1]',
-                    isToday && 'shadow-[inset_0_0_0_2px_var(--btn-primary-bg)]',
+                    !cell.inMonth && 'bg-subtle text-faint',
+                    isToday && 'shadow-[inset_0_0_0_2px_var(--text)]',
                   )}
                 >
-                  <span className={cn('text-sm font-semibold text-fg', !cell.inMonth && 'text-[#cbd5e1]', isToday && 'text-primary')}>
+                  <span className={cn('text-sm font-semibold text-fg', !cell.inMonth && 'text-faint')}>
                     {cell.day}
                   </span>
                   {holiday && (

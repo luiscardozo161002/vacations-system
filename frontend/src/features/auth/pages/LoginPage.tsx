@@ -6,7 +6,7 @@ import { TextField } from '../../../components/molecules/FormField';
 import { useAuth } from '../auth-context';
 import { DevAccounts } from '../components/DevAccounts';
 import { Button } from '../../../components/atoms/Button';
-import { Checkbox } from '../../../components/atoms/Input';
+import { Checkbox } from '../../../components/atoms/Checkbox';
 import { LinkButton } from '../../../components/atoms/LinkButton';
 import { LoginCard } from '../../../components/templates/LoginCard';
 import { FieldError, FieldHint } from '../../../components/atoms/FieldText';
@@ -168,7 +168,7 @@ export function LoginPage() {
         {error && <FieldError>{error}</FieldError>}
         <div className="mt-1 mb-5 flex items-center justify-between text-sm">
           <label className="flex items-center gap-1.5 text-muted">
-            <Checkbox className="size-auto" checked={remember} onChange={(e) => setRemember(e.target.checked)} /> Recordarme
+            <Checkbox checked={remember} onCheckedChange={(checked) => setRemember(checked === true)} /> Recordarme
           </label>
           <LinkButton onClick={() => goTo('request')}>¿Olvidaste tu contraseña?</LinkButton>
         </div>

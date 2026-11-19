@@ -1,7 +1,7 @@
 import { useState, useSyncExternalStore } from 'react';
 import { Icon } from '../../../components/atoms/Icon';
 import { PageHeader } from '../../../components/molecules/PageHeader';
-import { useToast } from '../../../components/organisms/toast-context';
+import { useToast } from '../../../hooks/use-toast';
 import {
   BACKDROP_PRESETS,
   BUTTON_COLOR_PRESETS,
@@ -18,10 +18,15 @@ import { Button } from '../../../components/atoms/Button';
 import { Card, CardTitle } from '../../../components/molecules/Card';
 import { Divider } from '../../../components/atoms/Divider';
 import { SwatchPicker } from '../../../components/molecules/SwatchPicker';
+import { FieldHint } from '../../../components/atoms/FieldText';
 
 export function SettingsPage() {
-  const showToast = useToast();
   const theme = useSyncExternalStore(subscribeTheme, getTheme);
+  return <AppearanceSettings key={theme} theme={theme} />;
+}
+
+function AppearanceSettings({ theme }: { theme: Theme }) {
+  const showToast = useToast();
   const [appearance, setAppearance] = useState(getAppearance);
   const alphaPercent = Math.round(appearance.windowAlpha * 100);
 
@@ -32,17 +37,17 @@ export function SettingsPage() {
 
   const changeBackdrop = (color: string) => {
     setBackdrop(color);
-    setAppearance((current) => ({ ...current, backdrop: color }));
+    setAppearance(getAppearance());
   };
 
   const changeButtonColor = (color: string) => {
     setButtonColor(color);
-    setAppearance((current) => ({ ...current, buttonColor: color }));
+    setAppearance(getAppearance());
   };
 
   const changeWindowAlpha = (percent: number) => {
     setWindowAlpha(percent / 100);
-    setAppearance((current) => ({ ...current, windowAlpha: percent / 100 }));
+    setAppearance(getAppearance());
   };
 
   return (
@@ -66,7 +71,7 @@ export function SettingsPage() {
         <CardTitle>Color de fondo</CardTitle>
         <p className="text-[12.5px] text-muted">Se aplica al área alrededor de la ventana del sistema.</p>
         <SwatchPicker
-          colors={BACKDROP_PRESETS}
+          colors={BACKDROP_PRESETS[theme]}
           selected={appearance.backdrop}
           onPick={(color) => {
             changeBackdrop(color);
@@ -107,6 +112,12 @@ export function SettingsPage() {
           />
           <span className="w-10 text-[12.5px] text-muted">{alphaPercent}%</span>
         </div>
+        {appearance.alphaLimited && (
+          <FieldHint className="mt-2">
+            Con este fondo la ventana no baja de 85% para que el texto se lea. Elige un fondo del mismo tono que el tema para usar
+            más transparencia.
+          </FieldHint>
+        )}
       </Card>
     </>
   );

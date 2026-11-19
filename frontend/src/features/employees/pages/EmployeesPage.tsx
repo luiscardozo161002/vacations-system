@@ -11,13 +11,13 @@ import { formatDate, initials, todayIso } from '../../../utils/format';
 import { saveFile } from '../../../utils/save-file';
 import { Icon } from '../../../components/atoms/Icon';
 import { DataTable, type Column } from '../../../components/organisms/DataTable';
-import { Select } from '../../../components/atoms/Input';
+import { Select } from '../../../components/atoms/Select';
 import { ConfirmDialog } from '../../../components/organisms/Dialog';
 import { PageHeader } from '../../../components/molecules/PageHeader';
 import { SearchSelect } from '../../../components/molecules/SearchSelect';
 import { SearchInput } from '../../../components/molecules/SearchInput';
 import { StatusBadge } from '../../../components/atoms/StatusBadge';
-import { useToast } from '../../../components/organisms/toast-context';
+import { useToast } from '../../../hooks/use-toast';
 import { useDepartments } from '../../departments/hooks/useDepartments';
 import { useShifts } from '../../shifts/hooks/useShifts';
 import { EmployeeForm } from '../components/EmployeeForm';
@@ -30,6 +30,12 @@ import { Avatar } from '../../../components/atoms/Avatar';
 import { RowActions, Toolbar, ToolbarSpacer } from '../../../components/molecules/Toolbar';
 
 const FILTERS = { q: '', departamento: '', estado: '', perfil: '' };
+
+const STATUS_OPTIONS = [
+  { value: '', label: 'Todos los estados' },
+  { value: 'active', label: 'Activo' },
+  { value: 'inactive', label: 'Inactivo' },
+];
 
 export function EmployeesPage() {
   const showToast = useToast();
@@ -177,11 +183,7 @@ export function EmployeesPage() {
           onChange={(value) => setFilter({ departamento: value })}
           placeholder="Todos los departamentos"
         />
-        <Select compact aria-label="Estado" value={filters.estado} onChange={(e) => setFilter({ estado: e.target.value })}>
-          <option value="">Todos los estados</option>
-          <option value="active">Activo</option>
-          <option value="inactive">Inactivo</option>
-        </Select>
+        <Select compact aria-label="Estado" value={filters.estado} onChange={(estado) => setFilter({ estado })} options={STATUS_OPTIONS} />
         <ToolbarSpacer />
         <IconButton title="Exportar" onClick={exportCsv} disabled={exporting}>
           <Icon name="download" />

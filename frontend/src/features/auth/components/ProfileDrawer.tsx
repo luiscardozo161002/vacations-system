@@ -6,7 +6,7 @@ import { useFormSubmit } from '../../../hooks/use-form-submit';
 import { initials } from '../../../utils/format';
 import { FormDrawer } from '../../../components/organisms/FormDrawer';
 import { TextField } from '../../../components/molecules/FormField';
-import { useToast } from '../../../components/organisms/toast-context';
+import { useToast } from '../../../hooks/use-toast';
 import { useAuth } from '../auth-context';
 import { Avatar } from '../../../components/atoms/Avatar';
 import { Divider } from '../../../components/atoms/Divider';

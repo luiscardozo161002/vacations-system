@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
+import * as PopoverPrimitive from '@radix-ui/react-popover';
 import { useNavigate } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
 import type { MyNotifications, Notice } from '@vacations/sdk';
@@ -7,7 +8,7 @@ import { Icon } from '../components/atoms/Icon';
 import { formatDaysHours } from '../utils/format';
 import { queryClient } from '../api/query-client';
 import { IconButton } from '../components/atoms/IconButton';
-import { DropdownEmpty, DropdownItem, DropdownPanel, DropdownTitle } from '../components/molecules/DropdownPanel';
+import { DropdownEmpty, DropdownItem, DropdownTitle } from '../components/molecules/DropdownPanel';
 
 const REFRESH_MS = 5 * 60 * 1000;
 const QUERY_KEY = ['notifications'];
@@ -29,7 +30,6 @@ const pendingText = (notice: Notice) =>
 
 export function NotificationBell() {
   const navigate = useNavigate();
-  const wrapRef = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState(false);
   const { data: notifications = EMPTY, refetch } = useQuery({
     queryKey: QUERY_KEY,
@@ -37,17 +37,7 @@ export function NotificationBell() {
     refetchInterval: REFRESH_MS,
   });
 
-  useEffect(() => {
-    if (!open) return;
-    const closeOnOutsideClick = (e: MouseEvent) => {
-      if (!wrapRef.current?.contains(e.target as Node)) setOpen(false);
-    };
-    document.addEventListener('click', closeOnOutsideClick);
-    return () => document.removeEventListener('click', closeOnOutsideClick);
-  }, [open]);
-
-  const toggle = () => {
-    const opening = !open;
+  const changeOpen = (opening: boolean) => {
     setOpen(opening);
     if (!opening) return;
     refetch().then(({ data }) => {
@@ -71,16 +61,27 @@ export function NotificationBell() {
   const isEmpty = !notifications.data.length && !notifications.pending.data.length;
 
   return (
-    <div id="notif-wrap" ref={wrapRef} className="relative">
-      <IconButton id="notif-btn" title="Notificaciones" onClick={toggle} className="rounded-full">
-        <Icon name="bell" />
-      </IconButton>
+    <PopoverPrimitive.Root open={open} onOpenChange={changeOpen}>
+      <div id="notif-wrap" className="relative">
+        <PopoverPrimitive.Trigger asChild>
+          <IconButton id="notif-btn" title="Notificaciones" className="rounded-full">
+            <Icon name="bell" />
+          </IconButton>
+        </PopoverPrimitive.Trigger>
       <span
         id="notif-badge"
         className="absolute top-1 right-1 size-2 rounded-full border-[1.5px] border-surface bg-[#ef4444]"
         hidden={notifications.unread === 0 && notifications.pending.total === 0}
       />
-      <DropdownPanel id="notif-dropdown" hidden={!open}>
+      </div>
+      <PopoverPrimitive.Portal>
+        <PopoverPrimitive.Content
+          id="notif-dropdown"
+          align="end"
+          sideOffset={10}
+          onOpenAutoFocus={(event) => event.preventDefault()}
+          className="z-[60] max-h-[360px] w-80 overflow-y-auto rounded-md border border-line bg-surface shadow-md focus:outline-none"
+        >
         <DropdownTitle>Notificaciones{count ? ` (${count})` : ''}</DropdownTitle>
         {notifications.pending.data.map((notice) => {
           const text = pendingText(notice);
@@ -104,7 +105,8 @@ export function NotificationBell() {
             <DropdownItem key={item.notification_id} title={item.title} subtitle={item.body} onClick={() => go(item.link)} />
           ))
         )}
-      </DropdownPanel>
-    </div>
+        </PopoverPrimitive.Content>
+      </PopoverPrimitive.Portal>
+    </PopoverPrimitive.Root>
   );
 }
