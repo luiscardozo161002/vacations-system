@@ -8,8 +8,10 @@ import { Icon } from '../../../components/atoms/Icon';
 import { PageHeader } from '../../../components/molecules/PageHeader';
 import { Button } from '../../../components/atoms/Button';
 import { IconButton } from '../../../components/atoms/IconButton';
-import { Card, CardTitle } from '../../../components/molecules/Card';
+import { Card, CardHeader, CardTitle } from '../../../components/molecules/Card';
 import { FieldError } from '../../../components/atoms/FieldText';
+import { cn } from '../../../utils/cn';
+import { DayPill } from '../components/DayPill';
 
 const MONTH_NAMES = [
   'Enero',
@@ -88,11 +90,11 @@ export function CalendarPage() {
       <PageHeader title="Calendario de vacaciones" subtitle="Vista mensual de ausencias aprobadas y pendientes." />
       {error && <FieldError>{error}</FieldError>}
       <Card>
-        <div className="calendar-head">
+        <CardHeader>
           <CardTitle>
             {MONTH_NAMES[view.month]} {view.year}
           </CardTitle>
-          <div style={{ display: 'flex', gap: 8 }}>
+          <div className="flex gap-2">
             <Button variant="secondary" size="sm" onClick={goToday}>
               Hoy
             </Button>
@@ -103,36 +105,44 @@ export function CalendarPage() {
               <Icon name="chevron-right" />
             </IconButton>
           </div>
-        </div>
-        <div style={{ overflowX: 'auto' }}>
-          <div className="calendar-grid">
+        </CardHeader>
+        <div className="overflow-x-auto">
+          <div className="grid grid-cols-[repeat(7,minmax(120px,1fr))] border-t border-l border-line bg-surface">
             {WEEKDAYS.map((weekday) => (
-              <div key={weekday} className="weekday">
+              <div
+                key={weekday}
+                className="border-r border-b border-line bg-subtle px-2.5 py-2 text-[11.5px] font-semibold text-muted uppercase"
+              >
                 {weekday}
               </div>
             ))}
             {cells.map((cell) => {
               const holiday = cell.inMonth ? holidays.get(cell.date) : undefined;
               const entries = cell.inMonth ? (absences.get(cell.date) ?? []) : [];
+              const isToday = cell.date === today;
               return (
                 <div
                   key={cell.date}
-                  className={`day ${cell.inMonth ? '' : 'muted'} ${cell.date === today ? 'today' : ''}`}
+                  className={cn(
+                    'flex min-h-24 flex-col gap-1 border-r border-b border-line bg-surface p-2 text-[12.5px] text-muted',
+                    !cell.inMonth && 'bg-subtle text-[#cbd5e1]',
+                    isToday && 'shadow-[inset_0_0_0_2px_var(--btn-primary-bg)]',
+                  )}
                 >
-                  <span className="day-num">{cell.day}</span>
+                  <span className={cn('text-sm font-semibold text-fg', !cell.inMonth && 'text-[#cbd5e1]', isToday && 'text-primary')}>
+                    {cell.day}
+                  </span>
                   {holiday && (
-                    <span className="day-pill" title={`${holiday.name} — descanso obligatorio`}>
-                      {holiday.name}
-                    </span>
+                    <DayPill title={`${holiday.name} — descanso obligatorio`}>{holiday.name}</DayPill>
                   )}
                   {entries.map((absence) => (
-                    <span
+                    <DayPill
                       key={absence.notice_id}
-                      className={`day-pill ${absence.status}`}
+                      status={absence.status}
                       title={`${absence.employee_name} — ${absence.reason_description}`}
                     >
                       {absence.employee_name.split(' ')[0]}
-                    </span>
+                    </DayPill>
                   ))}
                 </div>
               );

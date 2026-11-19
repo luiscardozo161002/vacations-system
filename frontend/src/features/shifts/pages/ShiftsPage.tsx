@@ -7,6 +7,7 @@ import { useRecordForm } from '../../../hooks/use-record-form';
 import { EmptyState } from '../../../components/atoms/EmptyState';
 import { Icon } from '../../../components/atoms/Icon';
 import { PageHeader } from '../../../components/molecules/PageHeader';
+import { Grid } from '../../../components/molecules/Grid';
 import { useAuth } from '../../auth/auth-context';
 import { ShiftForm } from '../components/ShiftForm';
 import { formatBlocks, toBlocks } from '../schedule-blocks';
@@ -36,7 +37,7 @@ export function ShiftsPage() {
       {shifts.length === 0 ? (
         <EmptyState message={loading ? 'Cargando...' : (error ?? 'No hay turnos.')} />
       ) : (
-        <div className="grid grid-2">
+        <Grid cols={2}>
           {shifts.map((shift) => (
             <Card key={shift.shift_id}>
               <CardHeader>
@@ -56,7 +57,7 @@ export function ShiftsPage() {
               <p className="text-[12.5px] text-muted">{shift.active_employees} empleados asignados</p>
             </Card>
           ))}
-        </div>
+        </Grid>
       )}
 
       {form.isOpen && (

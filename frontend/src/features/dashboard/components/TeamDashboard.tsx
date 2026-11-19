@@ -10,6 +10,9 @@ import { Button } from '../../../components/atoms/Button';
 import { Card, CardHeader, CardTitle } from '../../../components/molecules/Card';
 import { Avatar } from '../../../components/atoms/Avatar';
 import { FieldError } from '../../../components/atoms/FieldText';
+import { Grid } from '../../../components/molecules/Grid';
+import { ListRow } from '../../../components/molecules/ListRow';
+import { ProgressBar } from '../../../components/atoms/ProgressBar';
 
 const ACTIVITY_LABELS = {
   request: { pending: 'Solicitud pendiente', approved: 'Solicitud aprobada', rejected: 'Solicitud rechazada', cancelled: 'Solicitud cancelada' },
@@ -40,7 +43,7 @@ export function TeamDashboard({ firstName, allBranches }: TeamDashboardProps) {
 
       {error && <FieldError>{error}</FieldError>}
 
-      <div className="grid grid-4" style={{ marginBottom: 16 }}>
+      <Grid cols={4} className="mb-4">
         <StatCard icon="users" label="Empleados activos" value={summary?.active_employees ?? '—'} delta={allBranches ? 'En todas las sedes' : 'En tus sedes'} />
         <StatCard icon="bell-ring" label="Ausentes hoy" value={summary?.absent_today ?? '—'} delta={`${absentShare}% del equipo`} />
         <StatCard
@@ -55,10 +58,10 @@ export function TeamDashboard({ firstName, allBranches }: TeamDashboardProps) {
           value={summary?.upcoming_vacations ?? '—'}
           delta="En los próximos 30 días"
         />
-      </div>
+      </Grid>
 
-      <div className="grid grid-3">
-        <Card style={{ gridColumn: 'span 2' }}>
+      <Grid cols={3}>
+        <Card className="col-span-2">
           <CardHeader>
             <CardTitle>Próximas ausencias</CardTitle>
             <Button variant="ghost" size="sm" onClick={() => navigate('/calendario')}>
@@ -67,19 +70,20 @@ export function TeamDashboard({ firstName, allBranches }: TeamDashboardProps) {
           </CardHeader>
           {summary?.upcoming_absences.length ? (
             summary.upcoming_absences.map((absence) => (
-              <div key={absence.notice_id} className="list-row">
-                <Avatar>{initials(absence.employee_name)}</Avatar>
-                <div className="info">
-                  <div className="name">{absence.employee_name}</div>
-                  <div className="sub">{absence.department_name}</div>
-                </div>
-                <div className="meta">
-                  <strong>
-                    {formatDate(absence.absence_start_date)} – {formatDate(absence.absence_end_date)}
-                  </strong>
-                  {absence.days_taken} día{absence.days_taken === 1 ? '' : 's'}
-                </div>
-              </div>
+              <ListRow
+                key={absence.notice_id}
+                leading={<Avatar>{initials(absence.employee_name)}</Avatar>}
+                title={absence.employee_name}
+                subtitle={absence.department_name}
+                meta={
+                  <>
+                    <strong>
+                      {formatDate(absence.absence_start_date)} – {formatDate(absence.absence_end_date)}
+                    </strong>
+                    {absence.days_taken} día{absence.days_taken === 1 ? '' : 's'}
+                  </>
+                }
+              />
             ))
           ) : (
             <EmptyState message={summary ? 'No hay ausencias próximas.' : 'Cargando...'} />
@@ -91,38 +95,31 @@ export function TeamDashboard({ firstName, allBranches }: TeamDashboardProps) {
             <CardTitle>Por departamento</CardTitle>
           </CardHeader>
           {departments.map((department) => (
-            <div key={department.department_id} style={{ marginBottom: 12 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12.5, marginBottom: 6 }}>
+            <div key={department.department_id} className="mb-3">
+              <div className="mb-1.5 flex justify-between text-[12.5px]">
                 <span>
                   {department.department_name}
                   {repeatedNames && <span className="text-[12.5px] text-muted"> · {department.branch_code}</span>}
                 </span>
                 <span className="text-[12.5px] text-muted">{department.active_employees}</span>
               </div>
-              <div className="progress-track">
-                <div className="progress-fill" style={{ width: `${(department.active_employees / maxCount) * 100}%` }} />
-              </div>
+              <ProgressBar percent={(department.active_employees / maxCount) * 100} />
             </div>
           ))}
         </Card>
-      </div>
+      </Grid>
 
-      <Card style={{ marginTop: 16 }}>
-        <CardTitle style={{ marginBottom: 12 }}>
-          Actividad reciente
-        </CardTitle>
+      <Card className="mt-4">
+        <CardTitle className="mb-3">Actividad reciente</CardTitle>
         {summary?.recent_activity.length ? (
           summary.recent_activity.map((activity) => (
-            <div key={activity.notice_id} className="list-row">
-              <Avatar>{initials(activity.employee_name)}</Avatar>
-              <div className="info">
-                <div className="name">
-                  {ACTIVITY_LABELS[activity.kind][activity.status]} · {activity.reason_description}
-                </div>
-                <div className="sub">{activity.employee_name}</div>
-              </div>
-              <div className="meta">{formatDateTime(activity.happened_at)}</div>
-            </div>
+            <ListRow
+              key={activity.notice_id}
+              leading={<Avatar>{initials(activity.employee_name)}</Avatar>}
+              title={`${ACTIVITY_LABELS[activity.kind][activity.status]} · ${activity.reason_description}`}
+              subtitle={activity.employee_name}
+              meta={formatDateTime(activity.happened_at)}
+            />
           ))
         ) : (
           <EmptyState message={summary ? 'Sin actividad reciente.' : 'Cargando...'} />

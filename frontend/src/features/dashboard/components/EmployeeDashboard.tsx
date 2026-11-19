@@ -10,6 +10,9 @@ import { Button } from '../../../components/atoms/Button';
 import { KeyValue, KeyValueGrid } from '../../../components/molecules/KeyValue';
 import { Card, CardHeader, CardTitle } from '../../../components/molecules/Card';
 import { Divider } from '../../../components/atoms/Divider';
+import { Grid } from '../../../components/molecules/Grid';
+import { ListRow } from '../../../components/molecules/ListRow';
+import { ProgressBar } from '../../../components/atoms/ProgressBar';
 
 export function EmployeeDashboard() {
   const navigate = useNavigate();
@@ -32,7 +35,7 @@ export function EmployeeDashboard() {
         </Button>
       </PageHeader>
 
-      <Card style={{ marginBottom: 16 }}>
+      <Card className="mb-4">
         <CardHeader>
           <CardTitle>Mi perfil</CardTitle>
         </CardHeader>
@@ -45,7 +48,7 @@ export function EmployeeDashboard() {
       </Card>
 
       {balance && (
-        <Card style={{ marginBottom: 16 }}>
+        <Card className="mb-4">
           <CardHeader>
             <CardTitle>
               Mis días de vacaciones — periodo {formatDate(balance.period_start)} – {formatDate(balance.period_end)}
@@ -56,13 +59,9 @@ export function EmployeeDashboard() {
             <KeyValue label="Usados">{balance.used_days} días</KeyValue>
             <KeyValue label="Disponibles">{balance.available.days} días</KeyValue>
           </KeyValueGrid>
-          <div className="progress-track" style={{ marginBottom: 16 }}>
-            <div className="progress-fill" style={{ width: `${usedShare}%` }} />
-          </div>
+          <ProgressBar percent={usedShare} className="mb-4" />
           <Divider />
-          <CardTitle style={{ margin: '14px 0 10px' }}>
-            Horas de permisos (dentro del día en curso)
-          </CardTitle>
+          <CardTitle className="mt-3.5 mb-2.5">Horas de permisos (dentro del día en curso)</CardTitle>
           <p className="mb-2.5 text-[12.5px] text-muted">
             Tu turno equivale a {balance.daily_hours}h al día. Las horas de permiso ya tomadas se descuentan de ese día antes de
             consumir un día completo.
@@ -74,27 +73,19 @@ export function EmployeeDashboard() {
         </Card>
       )}
 
-      <div className="grid grid-2">
+      <Grid cols={2}>
         <Card>
           <CardHeader>
             <CardTitle>Mis solicitudes</CardTitle>
           </CardHeader>
           {requests.length ? (
             requests.map((request) => (
-              <div key={request.notice_id} className="list-row">
-                <div className="info">
-                  <div className="name">
-                    {formatAbsenceRange(request)} · {formatDaysHours(request.days_taken, request.hours_taken)}
-                  </div>
-                  <div className="sub">
-                    {request.reason_description}
-                    {request.remarks ? ` — ${request.remarks}` : ''}
-                  </div>
-                </div>
-                <div className="meta">
-                  <StatusBadge status={request.status} />
-                </div>
-              </div>
+              <ListRow
+                key={request.notice_id}
+                title={`${formatAbsenceRange(request)} · ${formatDaysHours(request.days_taken, request.hours_taken)}`}
+                subtitle={`${request.reason_description}${request.remarks ? ` — ${request.remarks}` : ''}`}
+                meta={<StatusBadge status={request.status} />}
+              />
             ))
           ) : (
             <EmptyState message="Aún no tienes solicitudes." />
@@ -106,24 +97,18 @@ export function EmployeeDashboard() {
           </CardHeader>
           {notices.length ? (
             notices.map((notice) => (
-              <div key={notice.notice_id} className="list-row">
-                <div className="info">
-                  <div className="name">{notice.reason_description}</div>
-                  <div className="sub">
-                    {formatAbsenceRange(notice)}
-                    {notice.remarks ? ` — ${notice.remarks}` : ''}
-                  </div>
-                </div>
-                <div className="meta">
-                  <StatusBadge status={notice.status} />
-                </div>
-              </div>
+              <ListRow
+                key={notice.notice_id}
+                title={notice.reason_description}
+                subtitle={`${formatAbsenceRange(notice)}${notice.remarks ? ` — ${notice.remarks}` : ''}`}
+                meta={<StatusBadge status={notice.status} />}
+              />
             ))
           ) : (
             <EmptyState message="Aún no tienes avisos." />
           )}
         </Card>
-      </div>
+      </Grid>
     </>
   );
 }

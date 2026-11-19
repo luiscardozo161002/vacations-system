@@ -119,7 +119,7 @@ export function EmployeesPage() {
     {
       header: 'Nombre',
       render: (employee) => (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <div className="flex items-center gap-2.5">
           <Avatar>{initials(employee.employee_name)}</Avatar>
           <span className="font-medium">{employee.employee_name}</span>
         </div>

@@ -13,6 +13,10 @@ import { PageHeader } from '../../../components/molecules/PageHeader';
 import { useToast } from '../../../components/organisms/toast-context';
 import { useAuth } from '../../auth/auth-context';
 import { Card } from '../../../components/molecules/Card';
+import { cn } from '../../../utils/cn';
+
+const cell = 'border-b border-line px-3.5 py-2.5 text-center text-sm';
+const headCell = 'border-b border-line bg-subtle px-3.5 py-2.5 text-center text-xs font-semibold text-muted uppercase first:text-left';
 
 const MODULES = [
   { code: 'dashboard:view', label: 'Dashboard', special: 'Ver estadísticas' },
@@ -91,32 +95,32 @@ export function PermissionsPage() {
     <>
       <PageHeader title="Roles y permisos" subtitle="Matriz de permisos por módulo. Solo el Superusuario puede modificarla." />
       {!canEdit && (
-        <Card style={{ marginBottom: 16, display: 'flex', gap: 10, alignItems: 'center' }}>
-          <span data-icon="alert-circle">
-            <Icon name="alert-circle" />
-          </span>
+        <Card className="mb-4 flex items-center gap-2.5">
+          <Icon name="alert-circle" />
           <span className="text-[12.5px] text-muted">Estás viendo esta matriz en modo solo lectura con el rol actual ({roleLabel}).</span>
         </Card>
       )}
       {!matrix ? (
         <EmptyState message={error ?? 'Cargando...'} />
       ) : (
-        <div className="matrix-wrap">
-          <table className="matrix">
+        <div className="overflow-x-auto rounded-lg border border-line bg-surface">
+          <table className="w-full min-w-[760px] border-collapse">
             <thead>
               <tr>
-                <th>Módulo</th>
+                <th className={headCell}>Módulo</th>
                 {matrix.roles.map((role) => (
-                  <th key={role.role_id}>{ROLE_LABELS[role.role_code] ?? role.role_code}</th>
+                  <th key={role.role_id} className={headCell}>
+                    {ROLE_LABELS[role.role_code] ?? role.role_code}
+                  </th>
                 ))}
               </tr>
             </thead>
-            <tbody>
+            <tbody className="[&_tr:last-child_td]:border-b-0">
               {MODULES.map((module) => (
                 <tr key={module.code}>
-                  <td>
+                  <td className={cn(cell, 'text-left font-medium text-fg')}>
                     {module.label}
-                    {module.special && <div className="text-[12.5px] text-muted">{module.special}</div>}
+                    {module.special && <div className="text-[12.5px] font-normal text-muted">{module.special}</div>}
                   </td>
                   {matrix.roles.map((role) => {
                     const permissionId = matrix.permissionIds.get(module.code) ?? 0;
@@ -124,10 +128,13 @@ export function PermissionsPage() {
                     const fixed = role.role_code === config.roles.global;
                     const on = fixed || matrix.granted.has(key);
                     return (
-                      <td key={role.role_id}>
+                      <td key={role.role_id} className={cell}>
                         <button
                           type="button"
-                          className={`chk ${on ? 'on' : ''}`}
+                          className={cn(
+                            'inline-flex size-[18px] cursor-pointer items-center justify-center rounded-[5px] border border-line bg-surface text-white [&_svg]:size-3 [&_svg]:stroke-[3]',
+                            on && 'border-fg bg-fg',
+                          )}
                           disabled={fixed || !canEdit || saving === key}
                           onClick={() => toggle(role, module)}
                           aria-label={`${module.label} para ${ROLE_LABELS[role.role_code] ?? role.role_code}`}

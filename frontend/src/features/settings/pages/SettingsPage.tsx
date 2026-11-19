@@ -17,40 +17,7 @@ import {
 import { Button } from '../../../components/atoms/Button';
 import { Card, CardTitle } from '../../../components/molecules/Card';
 import { Divider } from '../../../components/atoms/Divider';
-
-const sameColor = (a: string, b: string) => a.trim().toLowerCase() === b.trim().toLowerCase();
-
-interface SwatchesProps {
-  colors: string[];
-  selected: string;
-  onPick: (color: string) => void;
-  onCustom: (color: string) => void;
-}
-
-function Swatches({ colors, selected, onPick, onCustom }: SwatchesProps) {
-  return (
-    <>
-      <div className="swatch-row">
-        {colors.map((color) => (
-          <button
-            key={color}
-            type="button"
-            className={`swatch${sameColor(color, selected) ? ' selected' : ''}`}
-            style={{ background: color }}
-            title={color}
-            aria-label={color}
-            aria-pressed={sameColor(color, selected)}
-            onClick={() => onPick(color)}
-          />
-        ))}
-      </div>
-      <div className="custom-color-row">
-        <input type="color" value={selected} aria-label="Color personalizado" onChange={(e) => onCustom(e.target.value)} />
-        <span className="text-[12.5px] text-muted">Personalizado</span>
-      </div>
-    </>
-  );
-}
+import { SwatchPicker } from '../../../components/molecules/SwatchPicker';
 
 export function SettingsPage() {
   const showToast = useToast();
@@ -82,31 +49,23 @@ export function SettingsPage() {
     <>
       <PageHeader title="Configuración" subtitle="Preferencias de apariencia de tu sesión." />
 
-      <Card style={{ maxWidth: 480, marginBottom: 16 }}>
+      <Card className="mb-4 max-w-[480px]">
         <CardTitle>Tema</CardTitle>
         <p className="text-[12.5px] text-muted">Elige el modo de color de la interfaz.</p>
-        <div style={{ display: 'flex', gap: 10, marginTop: 12 }}>
-          <button
-            type="button"
-            className={`btn ${theme === 'light' ? 'btn-primary' : 'btn-secondary'}`}
-            onClick={() => chooseTheme('light')}
-          >
+        <div className="mt-3 flex gap-2.5">
+          <Button variant={theme === 'light' ? 'primary' : 'secondary'} onClick={() => chooseTheme('light')}>
             <Icon name="sun" /> Claro
-          </button>
-          <button
-            type="button"
-            className={`btn ${theme === 'dark' ? 'btn-primary' : 'btn-secondary'}`}
-            onClick={() => chooseTheme('dark')}
-          >
+          </Button>
+          <Button variant={theme === 'dark' ? 'primary' : 'secondary'} onClick={() => chooseTheme('dark')}>
             <Icon name="moon" /> Oscuro
-          </button>
+          </Button>
         </div>
       </Card>
 
-      <Card style={{ maxWidth: 480, marginBottom: 16 }}>
+      <Card className="mb-4 max-w-[480px]">
         <CardTitle>Color de fondo</CardTitle>
         <p className="text-[12.5px] text-muted">Se aplica al área alrededor de la ventana del sistema.</p>
-        <Swatches
+        <SwatchPicker
           colors={BACKDROP_PRESETS}
           selected={appearance.backdrop}
           onPick={(color) => {
@@ -117,10 +76,10 @@ export function SettingsPage() {
         />
       </Card>
 
-      <Card style={{ maxWidth: 480, marginBottom: 16 }}>
+      <Card className="mb-4 max-w-[480px]">
         <CardTitle>Color de botones</CardTitle>
         <p className="text-[12.5px] text-muted">Color del botón primario (acciones principales).</p>
-        <Swatches
+        <SwatchPicker
           colors={BUTTON_COLOR_PRESETS}
           selected={appearance.buttonColor}
           onPick={(color) => {
@@ -130,15 +89,13 @@ export function SettingsPage() {
           onCustom={changeButtonColor}
         />
         <Divider />
-        <Button size="sm">
-          Vista previa del botón
-        </Button>
+        <Button size="sm">Vista previa del botón</Button>
       </Card>
 
-      <Card style={{ maxWidth: 480 }}>
+      <Card className="max-w-[480px]">
         <CardTitle>Transparencia del contenedor</CardTitle>
         <p className="text-[12.5px] text-muted">Qué tan transparente se ve la ventana del sistema sobre el fondo.</p>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 12 }}>
+        <div className="mt-3 flex items-center gap-3">
           <input
             type="range"
             min={40}
@@ -146,11 +103,9 @@ export function SettingsPage() {
             value={alphaPercent}
             aria-label="Transparencia del contenedor"
             onChange={(e) => changeWindowAlpha(Number(e.target.value))}
-            style={{ flex: 1 }}
+            className="flex-1"
           />
-          <span className="w-10 text-[12.5px] text-muted">
-            {alphaPercent}%
-          </span>
+          <span className="w-10 text-[12.5px] text-muted">{alphaPercent}%</span>
         </div>
       </Card>
     </>

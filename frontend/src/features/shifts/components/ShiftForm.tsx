@@ -4,6 +4,7 @@ import { sdk } from '../../../api/sdk';
 import { useFormSubmit } from '../../../hooks/use-form-submit';
 import { FormDrawer } from '../../../components/organisms/FormDrawer';
 import { Input } from '../../../components/atoms/Input';
+import { cn } from '../../../utils/cn';
 import { FormField, TextField } from '../../../components/molecules/FormField';
 import { Icon } from '../../../components/atoms/Icon';
 import { DAY_LETTERS, WEEK, toBlocks, toSchedule, type ScheduleBlock } from '../schedule-blocks';
@@ -78,26 +79,26 @@ export function ShiftForm({ shift, onClose, onSaved }: ShiftFormProps) {
     >
       <TextField id="s-name" label="Nombre del turno" value={name} onChange={setName} placeholder="Ej. Turno Vespertino" />
       <TextField id="s-code" label="Código" value={code} onChange={setCode} placeholder="Ej. VESPERTINO" maxLength={20} />
-      <label style={{ fontSize: 13, fontWeight: 500, display: 'block', marginBottom: 6 }}>Horario semanal</label>
+      <label className="mb-1.5 block text-sm font-medium">Horario semanal</label>
       <div id="s-blocks">
         {blocks.map((block, index) => (
-          <div key={index} className="shift-block">
-            <IconButton title="Quitar horario" onClick={() => setBlocks((prev) => prev.filter((_, i) => i !== index))} className="shift-block-remove">
+          <div key={index} className="relative mb-2.5 rounded-md border border-line p-3">
+            <IconButton title="Quitar horario" onClick={() => setBlocks((prev) => prev.filter((_, i) => i !== index))} className="absolute top-2 right-2 size-7">
               <Icon name="x" />
             </IconButton>
-            <div className="weekday-toggle-row">
+            <div className="mt-0.5 mb-3 flex gap-1.5 pr-8">
               {WEEK.map((day) => (
                 <button
                   key={day}
                   type="button"
-                  className={`weekday-toggle ${block.days.includes(day) ? 'active' : ''}`}
+                  className={cn('inline-flex size-8 cursor-pointer items-center justify-center rounded-full border border-line bg-surface text-xs font-semibold text-muted', block.days.includes(day) && 'border-primary bg-primary text-primary-fg')}
                   onClick={() => toggleDay(index, day)}
                 >
                   {DAY_LETTERS[day]}
                 </button>
               ))}
             </div>
-            <div style={{ display: 'flex', gap: 12 }}>
+            <div className="flex gap-3">
               <FormField label="Hora entrada" className="mb-0 flex-1">
                 <Input type="time" value={block.start} onChange={(e) => changeBlock(index, { start: e.target.value })} />
               </FormField>
@@ -108,7 +109,7 @@ export function ShiftForm({ shift, onClose, onSaved }: ShiftFormProps) {
           </div>
         ))}
       </div>
-      <Button variant="secondary" size="sm" style={{ marginBottom: 16 }} onClick={() => setBlocks((prev) => [...prev, { ...NEW_BLOCK, days: [] }])}>
+      <Button variant="secondary" size="sm" className="mb-4" onClick={() => setBlocks((prev) => [...prev, { ...NEW_BLOCK, days: [] }])}>
         <Icon name="plus" /> Agregar horario
       </Button>
     </FormDrawer>

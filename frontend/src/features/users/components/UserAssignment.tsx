@@ -82,7 +82,7 @@ export function UserAssignment({ user, branches, companies, onClose, onSaved }: 
       <div className="mb-[18px] flex items-center gap-3.5">
         <Avatar size="lg">{initials(name)}</Avatar>
         <div>
-          <h2 style={{ fontSize: 16 }}>{name}</h2>
+          <h2 className="text-lg">{name}</h2>
           <p className="text-[12.5px] text-muted">{ROLE_LABELS[user.role_code ?? ''] ?? user.role_code}</p>
         </div>
       </div>

@@ -19,6 +19,8 @@ import { Button } from '../../../components/atoms/Button';
 import { KeyValue, KeyValueGrid } from '../../../components/molecules/KeyValue';
 import { Avatar } from '../../../components/atoms/Avatar';
 import { Divider } from '../../../components/atoms/Divider';
+import { ListRow } from '../../../components/molecules/ListRow';
+import { ProgressBar } from '../../../components/atoms/ProgressBar';
 import { CardTitle } from '../../../components/molecules/Card';
 
 interface EmployeeProfileProps {
@@ -109,7 +111,7 @@ export function EmployeeProfile({ employee, departmentName, shiftName, onClose }
         <div className="mb-[18px] flex items-center gap-3.5">
           <Avatar size="lg">{initials(employee.employee_name)}</Avatar>
           <div>
-            <h2 style={{ fontSize: 16 }}>{employee.employee_name}</h2>
+            <h2 className="text-lg">{employee.employee_name}</h2>
             <p className="text-[12.5px] text-muted">
               {employee.employee_number} · {employee.folio}
             </p>
@@ -123,7 +125,7 @@ export function EmployeeProfile({ employee, departmentName, shiftName, onClose }
           <KeyValue label="Antigüedad">{years} año{years === 1 ? '' : 's'}</KeyValue>
         </KeyValueGrid>
         <Divider />
-        <CardTitle style={{ marginBottom: 10 }}>
+        <CardTitle className="mb-2.5">
           Acceso al sistema
         </CardTitle>
         {account ? (
@@ -147,12 +149,12 @@ export function EmployeeProfile({ employee, departmentName, shiftName, onClose }
           <p className="text-[12.5px] text-muted">{data ? 'Sin cuenta en el sistema.' : 'Cargando...'}</p>
         )}
         {canGrant && (
-          <Button variant="secondary" size="sm" style={{ marginTop: 10 }} onClick={() => (account ? setConfirming(true) : grant())} disabled={working || (!account && !email.trim())}>
+          <Button variant="secondary" size="sm" className="mt-2.5" onClick={() => (account ? setConfirming(true) : grant())} disabled={working || (!account && !email.trim())}>
             <Icon name="mail" /> {account ? 'Reenviar acceso' : 'Crear acceso'}
           </Button>
         )}
         <Divider />
-        <CardTitle style={{ marginBottom: 10 }}>
+        <CardTitle className="mb-2.5">
           Saldo de vacaciones{' '}
           {balance ? `${formatDate(balance.period_start)} – ${formatDate(balance.period_end)}` : ''}
         </CardTitle>
@@ -163,31 +165,18 @@ export function EmployeeProfile({ employee, departmentName, shiftName, onClose }
               <KeyValue label="Usados">{balance.used_days}</KeyValue>
               <KeyValue label="Disponibles">{balance.available.days}</KeyValue>
             </KeyValueGrid>
-            <div className="progress-track" style={{ marginTop: 10 }}>
-              <div
-                className="progress-fill"
-                style={{ width: `${balance.total_days ? (balance.used_days / balance.total_days) * 100 : 0}%` }}
-              />
-            </div>
+            <ProgressBar percent={balance.total_days ? (balance.used_days / balance.total_days) * 100 : 0} className="mt-2.5" />
           </>
         ) : (
           <p className="text-[12.5px] text-muted">{data ? 'Sin saldo registrado todavía.' : 'Cargando...'}</p>
         )}
         <Divider />
-        <CardTitle style={{ marginBottom: 10 }}>
+        <CardTitle className="mb-2.5">
           Historial de movimientos
         </CardTitle>
         {data?.history.length ? (
           data.history.map((notice) => (
-            <div key={notice.notice_id} className="list-row">
-              <div className="info">
-                <div className="name">{formatAbsenceRange(notice)}</div>
-                <div className="sub">{notice.reason_description}</div>
-              </div>
-              <div className="meta">
-                <StatusBadge status={notice.status} />
-              </div>
-            </div>
+            <ListRow key={notice.notice_id} title={formatAbsenceRange(notice)} subtitle={notice.reason_description} meta={<StatusBadge status={notice.status} />} />
           ))
         ) : (
           <EmptyState message={data ? 'Sin movimientos registrados.' : 'Cargando...'} />

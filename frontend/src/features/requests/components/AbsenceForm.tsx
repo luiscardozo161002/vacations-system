@@ -167,7 +167,7 @@ export function AbsenceForm({ title, submitLabel, reasons, employee, employees =
         min={form.start}
         required
       />
-      <div style={{ display: 'flex', gap: 12 }}>
+      <div className="flex gap-3">
         <FormField label="Hora de inicio" htmlFor="af-start-hour" className="flex-1">
           <Input id="af-start-hour" type="number" min={0} max={23} value={form.startHour} onChange={setField('startHour')} />
         </FormField>

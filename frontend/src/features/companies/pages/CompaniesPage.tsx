@@ -13,6 +13,8 @@ import { PageHeader } from '../../../components/molecules/PageHeader';
 import { KeyValue, KeyValueGrid } from '../../../components/molecules/KeyValue';
 import { Card, CardHeader, CardTitle } from '../../../components/molecules/Card';
 import { Toolbar } from '../../../components/molecules/Toolbar';
+import { Grid } from '../../../components/molecules/Grid';
+import { Tab, TabList } from '../../../components/molecules/Tabs';
 
 const TABS = [
   { id: 'datos', label: 'Datos de empresa' },
@@ -24,7 +26,7 @@ const FILTERS = { empresa: '', pestana: 'datos' };
 
 function CompanyData({ company }: { company: Company }) {
   return (
-    <Card style={{ maxWidth: 520 }}>
+    <Card className="max-w-[520px]">
       <KeyValueGrid>
         <KeyValue label="Razón social">{company.company_name}</KeyValue>
         <KeyValue label="RFC">{company.rfc ?? '—'}</KeyValue>
@@ -43,7 +45,7 @@ function CompanyBranches({ companyId }: { companyId: number }) {
   if (!branches) return <EmptyState message="Cargando..." />;
 
   return (
-    <div className="grid grid-3">
+    <Grid cols={3}>
       {branches.map((branch) => (
         <Card key={branch.branch_id}>
           <CardHeader>
@@ -55,7 +57,7 @@ function CompanyBranches({ companyId }: { companyId: number }) {
           <KeyValue label="Empleados">{branch.active_employees}</KeyValue>
         </Card>
       ))}
-    </div>
+    </Grid>
   );
 }
 
@@ -117,18 +119,13 @@ export function CompaniesPage() {
         </Toolbar>
       )}
 
-      <div className="tabs">
+      <TabList>
         {TABS.map((tab) => (
-          <button
-            key={tab.id}
-            type="button"
-            className={`tab ${filters.pestana === tab.id ? 'active' : ''}`}
-            onClick={() => setFilters({ pestana: tab.id })}
-          >
+          <Tab key={tab.id} active={filters.pestana === tab.id} onClick={() => setFilters({ pestana: tab.id })}>
             {tab.label}
-          </button>
+          </Tab>
         ))}
-      </div>
+      </TabList>
 
       {!company ? (
         <EmptyState message={error ?? (companies ? 'No hay empresas.' : 'Cargando...')} />

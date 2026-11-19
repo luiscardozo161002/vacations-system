@@ -1,4 +1,6 @@
+import type { ReactNode } from 'react';
 import type { NoticePreview } from '@vacations/sdk';
+import { cva } from 'class-variance-authority';
 import { formatDaysHours } from '../../../utils/format';
 
 interface BreakdownBoxProps {
@@ -6,6 +8,16 @@ interface BreakdownBoxProps {
   verb?: string;
   placeholder?: string;
 }
+
+const box = cva('-mt-1.5 mb-4 rounded-md border border-line p-3 text-[12.5px] leading-[1.6] [&_strong]:font-semibold', {
+  variants: {
+    tone: {
+      neutral: 'bg-subtle text-fg',
+      danger: 'bg-danger text-danger-fg',
+    },
+  },
+  defaultVariants: { tone: 'neutral' },
+});
 
 const restNote = (restDays: number, holidays: number): string => {
   const parts = [];
@@ -16,13 +28,19 @@ const restNote = (restDays: number, holidays: number): string => {
   return ` (${parts.join(' y ')} en el rango no se descuenta${plural ? 'n' : ''})`;
 };
 
+const Box = ({ tone, children }: { tone?: 'neutral' | 'danger'; children: ReactNode }) => (
+  <div role={tone === 'danger' ? 'alert' : 'status'} className={box({ tone })}>
+    {children}
+  </div>
+);
+
 export function BreakdownBox({ preview, verb = 'Vas a tomar', placeholder }: BreakdownBoxProps) {
-  if (!preview) return <div className="request-breakdown">{placeholder}</div>;
+  if (!preview) return <Box>{placeholder}</Box>;
 
   const { breakdown, balance, error } = preview;
 
   if (!breakdown) {
-    return <div className="request-breakdown danger">{error?.message}</div>;
+    return <Box tone="danger">{error?.message}</Box>;
   }
 
   const taken = formatDaysHours(breakdown.days, breakdown.hours);
@@ -30,30 +48,30 @@ export function BreakdownBox({ preview, verb = 'Vas a tomar', placeholder }: Bre
 
   if (error?.code === 'INSUFFICIENT_BALANCE' && balance) {
     return (
-      <div className="request-breakdown danger">
+      <Box tone="danger">
         <strong>Esta solicitud excede el saldo disponible.</strong>
         <br />
         {verb}: {taken}
         {note}.
         <br />
         Saldo actual: {formatDaysHours(balance.available.days, balance.available.hours)} (turno {breakdown.daily_hours}h/día).
-      </div>
+      </Box>
     );
   }
 
   if (error) {
     return (
-      <div className="request-breakdown danger">
+      <Box tone="danger">
         <strong>{error.message}.</strong>
         <br />
         {verb}: {taken}
         {note}.
-      </div>
+      </Box>
     );
   }
 
   return (
-    <div className="request-breakdown">
+    <Box>
       {verb}: <strong>{taken}</strong>
       {note}.
       {balance && (
@@ -63,6 +81,6 @@ export function BreakdownBox({ preview, verb = 'Vas a tomar', placeholder }: Bre
           <strong>{formatDaysHours(balance.remaining.days, balance.remaining.hours)}</strong>.
         </>
       )}
-    </div>
+    </Box>
   );
 }

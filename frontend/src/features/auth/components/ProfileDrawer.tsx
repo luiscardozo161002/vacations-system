@@ -74,7 +74,7 @@ export function ProfileDrawer({ user, roleLabel, onClose }: ProfileDrawerProps) 
       <div className="mb-[18px] flex items-center gap-3.5">
         <Avatar size="lg">{initials(displayName)}</Avatar>
         <div>
-          <h2 style={{ fontSize: 16 }}>{displayName}</h2>
+          <h2 className="text-lg">{displayName}</h2>
           <p className="text-[12.5px] text-muted">{roleLabel}</p>
         </div>
       </div>

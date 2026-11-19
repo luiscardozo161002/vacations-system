@@ -7,6 +7,7 @@ import { useRecordForm } from '../../../hooks/use-record-form';
 import { EmptyState } from '../../../components/atoms/EmptyState';
 import { Icon } from '../../../components/atoms/Icon';
 import { PageHeader } from '../../../components/molecules/PageHeader';
+import { Grid } from '../../../components/molecules/Grid';
 import { useAuth } from '../../auth/auth-context';
 import { useActiveEmployees } from '../../employees/hooks/useActiveEmployees';
 import { DepartmentForm } from '../components/DepartmentForm';
@@ -45,7 +46,7 @@ export function DepartmentsPage() {
       {departments.length === 0 ? (
         <EmptyState message={loading ? 'Cargando...' : (error ?? 'No hay departamentos.')} />
       ) : (
-        <div className="grid grid-3">
+        <Grid cols={3}>
           {departments.map((department) => (
             <Card key={department.department_id}>
               <CardHeader>
@@ -66,7 +67,7 @@ export function DepartmentsPage() {
               </KeyValueGrid>
             </Card>
           ))}
-        </div>
+        </Grid>
       )}
 
       {form.isOpen && (

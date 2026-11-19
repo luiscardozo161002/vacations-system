@@ -39,12 +39,7 @@ export function AccessDialog({ access, onClose }: AccessDialogProps) {
       <KeyValueGrid className="mt-3.5">
         <KeyValue label="Correo">{access.account.email}</KeyValue>
         <KeyValue label="Usuario">{access.account.username}</KeyValue>
-        <div className="kv-item">
-          <div className="k">Contraseña temporal</div>
-          <div className="v" style={{ fontFamily: 'monospace', fontSize: 15, letterSpacing: 1 }}>
-            {access.temporary_password}
-          </div>
-        </div>
+        <KeyValue label="Contraseña temporal" valueClassName="font-mono text-[15px] tracking-[1px]">{access.temporary_password}</KeyValue>
       </KeyValueGrid>
     </Dialog>
   );

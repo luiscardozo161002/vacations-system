@@ -59,7 +59,7 @@ describe('Solicitud que excede el saldo', () => {
     ));
     const submit = screen.getByRole('button', { name: 'Enviar solicitud' }) as HTMLButtonElement;
     await waitFor(() => expect(submit.disabled).toBe(true));
-    const breakdown = document.querySelector('.request-breakdown.danger')?.textContent ?? '';
+    const breakdown = screen.getByRole('alert').textContent ?? '';
     expect(breakdown).toContain('Esta solicitud excede el saldo disponible.');
     expect(breakdown).toContain('Saldo actual: 2 días');
 

@@ -144,7 +144,7 @@ export function AbsenceDetail({ notice, user, can, onClose, onChanged }: Absence
           <div className="mb-[18px] flex items-center gap-3.5">
             <Avatar size="lg">{initials(notice.employee_name ?? '')}</Avatar>
             <div>
-              <h2 style={{ fontSize: 16 }}>{notice.employee_name}</h2>
+              <h2 className="text-lg">{notice.employee_name}</h2>
               <p className="text-[12.5px] text-muted">{notice.department_name}</p>
             </div>
           </div>
@@ -167,7 +167,7 @@ export function AbsenceDetail({ notice, user, can, onClose, onChanged }: Absence
         {preview && (
           <>
             <Divider />
-            <div style={{ marginTop: 12 }}>
+            <div className="mt-3">
               <BreakdownBox preview={preview} verb="Consume" />
             </div>
           </>

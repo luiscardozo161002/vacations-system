@@ -48,6 +48,9 @@ Los radios compartidos son de 8, 10 y 12 px, con un radio independiente para con
 | --- | --- |
 | `Button`, `IconButton` | Acciones con variantes `primary`, `secondary`, `outline` y `ghost` |
 | `Badge` | Etiqueta con tono semántico |
+| `Avatar`, `Divider`, `ProgressBar`, `LinkButton`, `BrandMark` | Iniciales, separador, barra de avance, enlace y logotipo |
+| `Card`, `CardHeader`, `CardTitle`, `KeyValue`, `KeyValueGrid` | Tarjeta y pares etiqueta-valor |
+| `Grid`, `ListRow`, `Tabs`, `SwatchPicker` | Rejilla de 2, 3 o 4 columnas, fila de lista, pestañas y selector de color |
 | `DataTable` | Tablas con carga, estado vacío y paginación |
 | `Drawer` | Formularios y detalle en un panel lateral |
 | `Dialog`, `ConfirmDialog` | Confirmaciones y acciones que necesitan contexto |
