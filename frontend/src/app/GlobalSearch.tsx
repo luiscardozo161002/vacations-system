@@ -4,6 +4,7 @@ import type { Employee } from '@vacations/sdk';
 import { sdk } from '../api/sdk';
 import { useApiQuery } from '../hooks/use-api-query';
 import { Icon } from '../components/atoms/Icon';
+import { DropdownEmpty, DropdownItem, DropdownPanel } from '../components/molecules/DropdownPanel';
 import { useDepartments } from '../features/departments/hooks/useDepartments';
 
 const RESULT_LIMIT = 6;
@@ -57,9 +58,14 @@ export function GlobalSearch() {
   };
 
   return (
-    <div className="search-box" id="global-search-wrap" style={{ position: 'relative' }} ref={wrapRef}>
+    <div
+      id="global-search-wrap"
+      ref={wrapRef}
+      className="relative hidden h-9 w-[380px] items-center gap-2 rounded-sm border border-line bg-subtle px-2.5 text-muted focus-within:border-fg focus-within:shadow-[0_0_0_3px_rgba(15,23,42,0.08)] wide:flex"
+    >
       <Icon name="search" />
       <input
+        className="flex-1 border-none bg-transparent text-fg outline-none"
         type="text"
         id="global-search-input"
         aria-label="Buscar empleados"
@@ -73,25 +79,22 @@ export function GlobalSearch() {
           if (e.key === 'Enter' && results?.[0]) pick(results[0]);
         }}
       />
-      <div className="notif-dropdown" id="global-search-dropdown" style={{ width: '100%' }} hidden={!open}>
+      <DropdownPanel id="global-search-dropdown" className="w-full" hidden={!open}>
         {results === null ? (
-          <div className="notif-empty">Buscando...</div>
+          <DropdownEmpty>Buscando...</DropdownEmpty>
         ) : results.length ? (
           results.map((employee) => (
-            <div key={employee.employee_id} className="notif-item" onClick={() => pick(employee)}>
-              <span className="dot" />
-              <div className="notif-text">
-                {employee.employee_name}
-                <div className="sub">
-                  {departmentNames.get(employee.department_id) ?? ''} · {employee.employee_number}
-                </div>
-              </div>
-            </div>
+            <DropdownItem
+              key={employee.employee_id}
+              title={employee.employee_name}
+              subtitle={`${departmentNames.get(employee.department_id) ?? ''} · ${employee.employee_number}`}
+              onClick={() => pick(employee)}
+            />
           ))
         ) : (
-          <div className="notif-empty">Sin resultados para "{text}".</div>
+          <DropdownEmpty>Sin resultados para "{text}".</DropdownEmpty>
         )}
-      </div>
+      </DropdownPanel>
     </div>
   );
 }

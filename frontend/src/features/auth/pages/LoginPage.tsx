@@ -1,12 +1,13 @@
-import { useState, type FormEvent, type ReactNode } from 'react';
+import { useState, type FormEvent } from 'react';
 import { SdkHttpError } from '@vacations/sdk';
 import { sdk } from '../../../api/sdk';
 import { getErrorMessage } from '../../../utils/get-error-message';
-import { Icon } from '../../../components/atoms/Icon';
 import { TextField } from '../../../components/molecules/FormField';
 import { useAuth } from '../auth-context';
 import { DevAccounts } from '../components/DevAccounts';
 import { Button } from '../../../components/atoms/Button';
+import { LinkButton } from '../../../components/atoms/LinkButton';
+import { LoginCard } from '../../../components/templates/LoginCard';
 
 type View = 'login' | 'request' | 'confirm';
 
@@ -19,24 +20,6 @@ const LOGIN_ERRORS: Record<string, string> = {
 
 const loginErrorMessage = (err: unknown): string =>
   (err instanceof SdkHttpError && LOGIN_ERRORS[err.code]) || getErrorMessage(err);
-
-export function LoginCard({ title, subtitle, children }: { title: string; subtitle: string; children: ReactNode }) {
-  return (
-    <div id="login-screen">
-      <div className="login-card">
-        <div className="login-logo">
-          <div className="mark">
-            <Icon name="calendar-check" />
-          </div>
-          <strong>Vacation Manager</strong>
-        </div>
-        <h1>{title}</h1>
-        <p className="login-sub">{subtitle}</p>
-        {children}
-      </div>
-    </div>
-  );
-}
 
 export function LoginPage() {
   const { login, notice } = useAuth();
@@ -106,12 +89,10 @@ export function LoginPage() {
             required
           />
           {error && <p className="field-error" role="alert">{error}</p>}
-          <div className="login-foot">
-            <button type="button" className="link" onClick={() => goTo('login')}>
-              Volver a iniciar sesión
-            </button>
+          <div className="mt-1 mb-5 flex items-center justify-between text-sm">
+            <LinkButton onClick={() => goTo('login')}>Volver a iniciar sesión</LinkButton>
           </div>
-          <Button type="submit" style={{ width: '100%' }} disabled={submitting}>
+          <Button type="submit" className="w-full" disabled={submitting}>
             Generar código
           </Button>
         </form>
@@ -123,7 +104,7 @@ export function LoginPage() {
     return (
       <LoginCard title="Nueva contraseña" subtitle="Escribe el código de restablecimiento y tu nueva contraseña.">
         <form onSubmit={handleConfirm}>
-          {message && <p className="field-hint" role="status" style={{ marginBottom: 16 }}>{message}</p>}
+          {message && <p className="field-hint mb-4" role="status">{message}</p>}
           <TextField id="reset-token" label="Código" value={token} onChange={setToken} required />
           <TextField
             id="reset-password"
@@ -147,12 +128,10 @@ export function LoginPage() {
             required
           />
           {error && <p className="field-error" role="alert">{error}</p>}
-          <div className="login-foot">
-            <button type="button" className="link" onClick={() => goTo('login')}>
-              Volver a iniciar sesión
-            </button>
+          <div className="mt-1 mb-5 flex items-center justify-between text-sm">
+            <LinkButton onClick={() => goTo('login')}>Volver a iniciar sesión</LinkButton>
           </div>
-          <Button type="submit" style={{ width: '100%' }} disabled={submitting}>
+          <Button type="submit" className="w-full" disabled={submitting}>
             Guardar contraseña
           </Button>
         </form>
@@ -163,7 +142,7 @@ export function LoginPage() {
   return (
     <LoginCard title="Inicia sesión" subtitle="Sistema de vacaciones y avisos de ausencia">
       <form onSubmit={handleLogin}>
-        {message && <p className="field-hint" role="status" style={{ marginBottom: 16 }}>{message}</p>}
+        {message && <p className="field-hint mb-4" role="status">{message}</p>}
         <TextField
           id="login-email"
           label="Correo electrónico"
@@ -185,15 +164,13 @@ export function LoginPage() {
           required
         />
         {error && <p className="field-error" role="alert">{error}</p>}
-        <div className="login-foot">
-          <label style={{ display: 'flex', alignItems: 'center', gap: 6, color: 'var(--text-muted)' }}>
+        <div className="mt-1 mb-5 flex items-center justify-between text-sm">
+          <label className="flex items-center gap-1.5 text-muted">
             <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} /> Recordarme
           </label>
-          <button type="button" className="link" onClick={() => goTo('request')}>
-            ¿Olvidaste tu contraseña?
-          </button>
+          <LinkButton onClick={() => goTo('request')}>¿Olvidaste tu contraseña?</LinkButton>
         </div>
-        <Button type="submit" style={{ width: '100%' }} disabled={submitting}>
+        <Button type="submit" className="w-full" disabled={submitting}>
           Entrar
         </Button>
       </form>

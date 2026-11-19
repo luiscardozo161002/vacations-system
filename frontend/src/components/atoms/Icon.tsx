@@ -48,7 +48,7 @@ const ICONS: Record<string, string> = {
 export function Icon({ name }: { name: string }) {
   return (
     <svg
-      className="icon"
+      className="size-[18px] shrink-0 fill-none stroke-current stroke-2 [stroke-linecap:round] [stroke-linejoin:round]"
       viewBox="0 0 24 24"
       aria-hidden="true"
       dangerouslySetInnerHTML={{ __html: ICONS[name] ?? ICONS['alert-circle'] }}

@@ -7,6 +7,7 @@ import { Icon } from '../components/atoms/Icon';
 import { formatDaysHours } from '../utils/format';
 import { queryClient } from '../api/query-client';
 import { IconButton } from '../components/atoms/IconButton';
+import { DropdownEmpty, DropdownItem, DropdownPanel, DropdownTitle } from '../components/molecules/DropdownPanel';
 
 const REFRESH_MS = 5 * 60 * 1000;
 const QUERY_KEY = ['notifications'];
@@ -70,47 +71,40 @@ export function NotificationBell() {
   const isEmpty = !notifications.data.length && !notifications.pending.data.length;
 
   return (
-    <div className="notif-wrap" id="notif-wrap" ref={wrapRef}>
+    <div id="notif-wrap" ref={wrapRef} className="relative">
       <IconButton id="notif-btn" title="Notificaciones" onClick={toggle} className="rounded-full">
         <Icon name="bell" />
       </IconButton>
       <span
-        className="notif-badge"
         id="notif-badge"
+        className="absolute top-1 right-1 size-2 rounded-full border-[1.5px] border-surface bg-[#ef4444]"
         hidden={notifications.unread === 0 && notifications.pending.total === 0}
       />
-      <div className="notif-dropdown" id="notif-dropdown" hidden={!open}>
-        <div className="notif-dropdown-head">Notificaciones{count ? ` (${count})` : ''}</div>
+      <DropdownPanel id="notif-dropdown" hidden={!open}>
+        <DropdownTitle>Notificaciones{count ? ` (${count})` : ''}</DropdownTitle>
         {notifications.pending.data.map((notice) => {
           const text = pendingText(notice);
           return (
-            <div key={`pending-${notice.notice_id}`} className="notif-item" onClick={() => go(text.link)}>
-              <span className="dot" />
-              <div className="notif-text">
-                {text.title}
-                <div className="sub">{text.sub}</div>
-              </div>
-            </div>
+            <DropdownItem
+              key={`pending-${notice.notice_id}`}
+              title={text.title}
+              subtitle={text.sub}
+              onClick={() => go(text.link)}
+            />
           );
         })}
         {isEmpty ? (
-          <div className="notif-empty">
+          <DropdownEmpty>
             <Icon name="bell" />
             <br />
             No tienes notificaciones nuevas.
-          </div>
+          </DropdownEmpty>
         ) : (
           notifications.data.map((item) => (
-            <div key={item.notification_id} className="notif-item" onClick={() => go(item.link)}>
-              <span className="dot" />
-              <div className="notif-text">
-                {item.title}
-                <div className="sub">{item.body}</div>
-              </div>
-            </div>
+            <DropdownItem key={item.notification_id} title={item.title} subtitle={item.body} onClick={() => go(item.link)} />
           ))
         )}
-      </div>
+      </DropdownPanel>
     </div>
   );
 }

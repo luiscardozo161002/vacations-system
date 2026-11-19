@@ -3,6 +3,23 @@
 @import 'tailwindcss/utilities.css' layer(utilities);
 
 @custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
+@custom-variant collapsed (&:where([data-collapsed='true'], [data-collapsed='true'] *));
+@custom-variant mobile (@media (max-width: 959px));
+@custom-variant wide (@media (min-width: 900px));
+
+@layer base {
+  [hidden]:where(:not([hidden='until-found'])) {
+    display: none !important;
+  }
+
+  button {
+    border: 0 solid;
+    background-color: transparent;
+    padding: 0;
+    color: inherit;
+    font: inherit;
+  }
+}
 
 @theme inline {
   --color-*: initial;

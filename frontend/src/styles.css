@@ -74,6 +74,7 @@
   --divider: rgba(255, 255, 255, 0.07);
 }
 
+@layer base {
 * {
   box-sizing: border-box;
   scrollbar-width: none;
@@ -126,6 +127,7 @@ svg.icon {
   stroke-linecap: round;
   stroke-linejoin: round;
   flex-shrink: 0;
+}
 }
 
 [hidden] {

@@ -8,18 +8,18 @@ const DEV_ACCOUNTS = [
 
 export function DevAccounts({ onPick }: { onPick: (email: string, password: string) => void }) {
   return (
-    <div className="login-demo-roles">
-      <p>Cuentas de prueba — clic para autocompletar:</p>
-      <div className="role-pills">
+    <div className="mt-5 border-t border-line pt-4">
+      <p className="mb-2 text-xs text-muted">Cuentas de prueba — clic para autocompletar:</p>
+      <div className="flex flex-wrap gap-1.5">
         {DEV_ACCOUNTS.map((account) => (
           <button
             key={account.email}
             type="button"
-            className="role-pill"
+            className="cursor-pointer rounded-full border border-line bg-subtle px-3 py-1.5 text-xs text-fg hover:border-fg"
             onClick={() => onPick(account.email, DEV_PASSWORD)}
           >
             {account.role}
-            <span className="pill-sub">{account.email}</span>
+            <span className="mt-px block text-[10.5px] text-muted">{account.email}</span>
           </button>
         ))}
       </div>

@@ -5,7 +5,8 @@ import { getErrorMessage } from '../../../utils/get-error-message';
 import { formatDate } from '../../../utils/format';
 import { TextField } from '../../../components/molecules/FormField';
 import { useAuth } from '../auth-context';
-import { LoginCard } from './LoginPage';
+import { LoginCard } from '../../../components/templates/LoginCard';
+import { LinkButton } from '../../../components/atoms/LinkButton';
 import { Button } from '../../../components/atoms/Button';
 
 export function ChangePasswordPage() {
@@ -76,12 +77,10 @@ export function ChangePasswordPage() {
           required
         />
         {error && <p className="field-error" role="alert">{error}</p>}
-        <div className="login-foot">
-          <button type="button" className="link" onClick={logout}>
-            Cerrar sesión
-          </button>
+        <div className="mt-1 mb-5 flex items-center justify-between text-sm">
+          <LinkButton onClick={logout}>Cerrar sesión</LinkButton>
         </div>
-        <Button type="submit" style={{ width: '100%' }} disabled={submitting}>
+        <Button type="submit" className="w-full" disabled={submitting}>
           Guardar contraseña
         </Button>
       </form>

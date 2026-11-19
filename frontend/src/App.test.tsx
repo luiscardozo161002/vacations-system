@@ -28,7 +28,7 @@ const renderApp = (path = '/') => {
   );
 };
 
-const menu = () => [...document.querySelectorAll('.sidebar .nav-item')].map((item) => item.textContent?.trim());
+const menu = () => [...document.querySelectorAll('aside nav button')].map((item) => item.textContent?.trim());
 
 const signIn = () => {
   fireEvent.change(screen.getByLabelText('Correo electrónico'), { target: { value: 'j.perez@jo.com.mx' } });

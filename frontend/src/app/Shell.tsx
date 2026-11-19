@@ -1,28 +1,22 @@
-import { useEffect, useState, useSyncExternalStore } from 'react';
-import { Outlet, useLocation, useNavigate } from 'react-router';
-import { Icon } from '../components/atoms/Icon';
+import { useEffect, useState } from 'react';
+import { Outlet, useNavigate } from 'react-router';
+import { cn } from '../utils/cn';
+import { config } from '../config';
 import { ToastProvider } from '../components/organisms/ToastProvider';
 import { useAuth } from '../features/auth/auth-context';
 import { ProfileDrawer } from '../features/auth/components/ProfileDrawer';
-import { NotificationBell } from './NotificationBell';
-import { GlobalSearch } from './GlobalSearch';
-import { config } from '../config';
-import { initials } from '../utils/format';
-import { getTheme, subscribeTheme, toggleTheme } from '../utils/appearance';
-import { ROLE_LABELS, findNavItem, visibleGroups } from './navigation';
-import { IconButton } from '../components/atoms/IconButton';
-import { Avatar } from '../components/atoms/Avatar';
+import { ROLE_LABELS } from './navigation';
+import { Sidebar } from './Sidebar';
+import { Topbar } from './Topbar';
 
 const COLLAPSED_KEY = 'vm_sidebar_collapsed';
 
 export function Shell() {
-  const { user, logout, can } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
-  const { pathname } = useLocation();
   const [collapsed, setCollapsed] = useState(() => localStorage.getItem(COLLAPSED_KEY) === '1');
   const [mobileOpen, setMobileOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
-  const theme = useSyncExternalStore(subscribeTheme, getTheme);
 
   const displayName = user?.employee?.employee_name ?? user?.username ?? '';
   const roleLabel = user ? (ROLE_LABELS[user.role.role_code] ?? user.role.description) : '';
@@ -40,91 +34,29 @@ export function Shell() {
   };
 
   return (
-    <div id="app-backdrop">
-      <div id="app-shell">
+    <div id="app-backdrop" className="flex min-h-screen bg-backdrop p-[var(--window-margin)] mobile:p-0">
+      <div
+        id="app-shell"
+        className="relative flex h-[calc(100vh-var(--window-margin)*2)] w-full overflow-hidden rounded-[var(--window-radius)] border border-line bg-[var(--surface)] shadow-[0_24px_60px_rgba(15,23,42,0.14),0_2px_8px_rgba(15,23,42,0.06)] [--surface:rgba(var(--window-bg-rgb,255,255,255),var(--window-bg-alpha,1))] mobile:h-screen mobile:rounded-none mobile:border-0 mobile:shadow-none"
+      >
         <ToastProvider>
-          <div className={`sidebar-scrim${mobileOpen ? ' show' : ''}`} onClick={() => setMobileOpen(false)} />
-          <aside className={`sidebar${collapsed ? ' collapsed' : ''}${mobileOpen ? ' open' : ''}`}>
-            <div className="sidebar-brand">
-              <div className="mark">
-                <Icon name="calendar-check" />
-              </div>
-              <span className="brand-label">Vacation Manager</span>
-            </div>
+          <div
+            className={cn('fixed inset-0 z-[45] hidden bg-[rgba(15,23,42,0.35)]', mobileOpen && 'mobile:block')}
+            onClick={() => setMobileOpen(false)}
+          />
+          <Sidebar
+            collapsed={collapsed}
+            mobileOpen={mobileOpen}
+            displayName={displayName}
+            roleLabel={roleLabel}
+            onNavigate={goTo}
+            onToggleCollapsed={() => setCollapsed((value) => !value)}
+            onOpenProfile={() => setProfileOpen(true)}
+          />
 
-            <nav className="sidebar-nav">
-              {visibleGroups(can).map((group) => (
-                <div key={group.title} className="nav-group">
-                  <div className="nav-group-title">{group.title}</div>
-                  {group.items.map((item) => (
-                    <button
-                      key={item.path}
-                      type="button"
-                      className={`nav-item${pathname === item.path ? ' active' : ''}`}
-                      title={item.label}
-                      onClick={() => goTo(item.path)}
-                    >
-                      <span data-icon={item.icon}>
-                        <Icon name={item.icon} />
-                      </span>
-                      <span>{item.label}</span>
-                    </button>
-                  ))}
-                </div>
-              ))}
-            </nav>
-
-            <div className="sidebar-user">
-              <button type="button" className="sidebar-user-main" title="Editar perfil" onClick={() => setProfileOpen(true)}>
-                <Avatar>{initials(displayName)}</Avatar>
-                <div className="sidebar-user-info">
-                  <div className="name">{displayName}</div>
-                  <div className="role">{roleLabel}</div>
-                </div>
-              </button>
-              <IconButton id="logout-btn" title="Cerrar sesión" onClick={logout}>
-                <Icon name="log-out" />
-              </IconButton>
-            </div>
-
-            <button
-              type="button"
-              className="sidebar-collapse-btn"
-              title={collapsed ? 'Expandir menú' : 'Colapsar menú'}
-              onClick={() => setCollapsed((value) => !value)}
-            >
-              <Icon name="chevrons-left" />
-            </button>
-          </aside>
-
-          <div className="main-col">
-            <header className="topbar">
-              <div className="topbar-left">
-                <IconButton title="Mostrar menú" onClick={() => setMobileOpen((open) => !open)} className="menu-btn">
-                  <Icon name="menu" />
-                </IconButton>
-                <strong className="brand-mini">Vacation Manager</strong>
-                <span className="topbar-sep">/</span>
-                <strong id="breadcrumb-current">{findNavItem(pathname)?.title ?? 'Resumen'}</strong>
-              </div>
-              <div className="topbar-right">
-                {can('employees:view') && <GlobalSearch />}
-                {companyLabel && (
-                  <div className="company-select" id="company-select">
-                    <span data-icon="building-2" style={{ width: 15, height: 15 }}>
-                      <Icon name="building-2" />
-                    </span>
-                    <span id="company-select-name">{companyLabel}</span>
-                  </div>
-                )}
-                <IconButton id="theme-toggle-btn" title="Cambiar tema" onClick={toggleTheme} className="rounded-full">
-                  <Icon name={theme === 'dark' ? 'moon' : 'sun'} />
-                </IconButton>
-                <NotificationBell />
-              </div>
-            </header>
-
-            <main className="page-content">
+          <div className="flex h-full min-w-0 flex-1 flex-col">
+            <Topbar companyLabel={companyLabel} onToggleMenu={() => setMobileOpen((open) => !open)} />
+            <main className="mx-auto min-h-0 w-full max-w-[1280px] flex-1 overflow-y-auto p-6 mobile:p-4">
               <Outlet />
             </main>
           </div>
