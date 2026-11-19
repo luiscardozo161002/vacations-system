@@ -15,6 +15,11 @@ import { StatusBadge } from '../../../components/atoms/StatusBadge';
 import { useToast } from '../../../components/organisms/toast-context';
 import { useAuth } from '../../auth/auth-context';
 import { AccessDialog, type GrantedAccess } from './AccessDialog';
+import { Button } from '../../../components/atoms/Button';
+import { KeyValue, KeyValueGrid } from '../../../components/molecules/KeyValue';
+import { Avatar } from '../../../components/atoms/Avatar';
+import { Divider } from '../../../components/atoms/Divider';
+import { CardTitle } from '../../../components/molecules/Card';
 
 interface EmployeeProfileProps {
   employee: Employee;
@@ -96,13 +101,13 @@ export function EmployeeProfile({ employee, departmentName, shiftName, onClose }
         title="Perfil del empleado"
         onClose={onClose}
         footer={
-          <button type="button" className="btn btn-secondary" onClick={onClose}>
+          <Button variant="secondary" onClick={onClose}>
             Cerrar
-          </button>
+          </Button>
         }
       >
-        <div className="profile-head">
-          <div className="avatar">{initials(employee.employee_name)}</div>
+        <div className="mb-[18px] flex items-center gap-3.5">
+          <Avatar size="lg">{initials(employee.employee_name)}</Avatar>
           <div>
             <h2 style={{ fontSize: 16 }}>{employee.employee_name}</h2>
             <p className="cell-sub">
@@ -110,51 +115,23 @@ export function EmployeeProfile({ employee, departmentName, shiftName, onClose }
             </p>
           </div>
         </div>
-        <div className="kv-grid">
-          <div className="kv-item">
-            <div className="k">Departamento</div>
-            <div className="v">{departmentName}</div>
-          </div>
-          <div className="kv-item">
-            <div className="k">Turno</div>
-            <div className="v">{shiftName}</div>
-          </div>
-          <div className="kv-item">
-            <div className="k">Fecha de ingreso</div>
-            <div className="v">{formatDate(employee.start_date)}</div>
-          </div>
-          <div className="kv-item">
-            <div className="k">Estado</div>
-            <div className="v">
-              <StatusBadge status={employee.status} />
-            </div>
-          </div>
-          <div className="kv-item">
-            <div className="k">Antigüedad</div>
-            <div className="v">
-              {years} año{years === 1 ? '' : 's'}
-            </div>
-          </div>
-        </div>
-        <div className="divider" />
-        <h3 className="section-title" style={{ marginBottom: 10 }}>
+        <KeyValueGrid>
+          <KeyValue label="Departamento">{departmentName}</KeyValue>
+          <KeyValue label="Turno">{shiftName}</KeyValue>
+          <KeyValue label="Fecha de ingreso">{formatDate(employee.start_date)}</KeyValue>
+          <KeyValue label="Estado"><StatusBadge status={employee.status} /></KeyValue>
+          <KeyValue label="Antigüedad">{years} año{years === 1 ? '' : 's'}</KeyValue>
+        </KeyValueGrid>
+        <Divider />
+        <CardTitle style={{ marginBottom: 10 }}>
           Acceso al sistema
-        </h3>
+        </CardTitle>
         {account ? (
-          <div className="kv-grid">
-            <div className="kv-item">
-              <div className="k">Usuario</div>
-              <div className="v">{account.username}</div>
-            </div>
-            <div className="kv-item">
-              <div className="k">Correo</div>
-              <div className="v">{account.email}</div>
-            </div>
-            <div className="kv-item">
-              <div className="k">Contraseña</div>
-              <div className="v">{account.role_code === config.roles.employee ? passwordState(account) : 'Cuenta administrativa'}</div>
-            </div>
-          </div>
+          <KeyValueGrid>
+            <KeyValue label="Usuario">{account.username}</KeyValue>
+            <KeyValue label="Correo">{account.email}</KeyValue>
+            <KeyValue label="Contraseña">{account.role_code === config.roles.employee ? passwordState(account) : 'Cuenta administrativa'}</KeyValue>
+          </KeyValueGrid>
         ) : canGrant ? (
           <TextField
             id="ep-email"
@@ -170,37 +147,22 @@ export function EmployeeProfile({ employee, departmentName, shiftName, onClose }
           <p className="cell-sub">{data ? 'Sin cuenta en el sistema.' : 'Cargando...'}</p>
         )}
         {canGrant && (
-          <button
-            type="button"
-            className="btn btn-secondary btn-sm"
-            style={{ marginTop: 10 }}
-            onClick={() => (account ? setConfirming(true) : grant())}
-            disabled={working || (!account && !email.trim())}
-          >
+          <Button variant="secondary" size="sm" style={{ marginTop: 10 }} onClick={() => (account ? setConfirming(true) : grant())} disabled={working || (!account && !email.trim())}>
             <Icon name="mail" /> {account ? 'Reenviar acceso' : 'Crear acceso'}
-          </button>
+          </Button>
         )}
-        <div className="divider" />
-        <h3 className="section-title" style={{ marginBottom: 10 }}>
+        <Divider />
+        <CardTitle style={{ marginBottom: 10 }}>
           Saldo de vacaciones{' '}
           {balance ? `${formatDate(balance.period_start)} – ${formatDate(balance.period_end)}` : ''}
-        </h3>
+        </CardTitle>
         {balance ? (
           <>
-            <div className="kv-grid">
-              <div className="kv-item">
-                <div className="k">Otorgados</div>
-                <div className="v">{balance.total_days}</div>
-              </div>
-              <div className="kv-item">
-                <div className="k">Usados</div>
-                <div className="v">{balance.used_days}</div>
-              </div>
-              <div className="kv-item">
-                <div className="k">Disponibles</div>
-                <div className="v">{balance.available.days}</div>
-              </div>
-            </div>
+            <KeyValueGrid>
+              <KeyValue label="Otorgados">{balance.total_days}</KeyValue>
+              <KeyValue label="Usados">{balance.used_days}</KeyValue>
+              <KeyValue label="Disponibles">{balance.available.days}</KeyValue>
+            </KeyValueGrid>
             <div className="progress-track" style={{ marginTop: 10 }}>
               <div
                 className="progress-fill"
@@ -211,10 +173,10 @@ export function EmployeeProfile({ employee, departmentName, shiftName, onClose }
         ) : (
           <p className="cell-sub">{data ? 'Sin saldo registrado todavía.' : 'Cargando...'}</p>
         )}
-        <div className="divider" />
-        <h3 className="section-title" style={{ marginBottom: 10 }}>
+        <Divider />
+        <CardTitle style={{ marginBottom: 10 }}>
           Historial de movimientos
-        </h3>
+        </CardTitle>
         {data?.history.length ? (
           data.history.map((notice) => (
             <div key={notice.notice_id} className="list-row">

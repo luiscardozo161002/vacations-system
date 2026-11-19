@@ -1,6 +1,7 @@
 import type { FormEvent, ReactNode } from 'react';
 import { Icon } from '../atoms/Icon';
 import { Overlay } from './Overlay';
+import { IconButton } from '../atoms/IconButton';
 
 interface DrawerProps {
   title: string;
@@ -15,9 +16,9 @@ export function Drawer({ title, onClose, onSubmit, footer, children }: DrawerPro
     <>
       <div className="drawer-head">
         <h2>{title}</h2>
-        <button type="button" className="icon-btn" title="Cerrar" onClick={onClose}>
+        <IconButton title="Cerrar" onClick={onClose}>
           <Icon name="x" />
-        </button>
+        </IconButton>
       </div>
       <div className="drawer-body">{children}</div>
       {footer && <div className="drawer-foot">{footer}</div>}

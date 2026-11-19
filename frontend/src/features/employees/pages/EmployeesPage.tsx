@@ -23,6 +23,9 @@ import { EmployeeForm } from '../components/EmployeeForm';
 import { EmployeeProfile } from '../components/EmployeeProfile';
 import { AccessDialog, type GrantedAccess } from '../components/AccessDialog';
 import { useAuth } from '../../auth/auth-context';
+import { IconButton } from '../../../components/atoms/IconButton';
+import { Button } from '../../../components/atoms/Button';
+import { Avatar } from '../../../components/atoms/Avatar';
 
 const FILTERS = { q: '', departamento: '', estado: '', perfil: '' };
 
@@ -115,7 +118,7 @@ export function EmployeesPage() {
       header: 'Nombre',
       render: (employee) => (
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div className="avatar">{initials(employee.employee_name)}</div>
+          <Avatar>{initials(employee.employee_name)}</Avatar>
           <span className="cell-main">{employee.employee_name}</span>
         </div>
       ),
@@ -130,23 +133,18 @@ export function EmployeesPage() {
       header: '',
       render: (employee) => (
         <div className="row-actions">
-          <button type="button" className="icon-btn" title="Ver perfil" onClick={() => setProfileEmployee(employee)}>
+          <IconButton title="Ver perfil" onClick={() => setProfileEmployee(employee)}>
             <Icon name="eye" />
-          </button>
+          </IconButton>
           {can('employees:update') && (
-            <button type="button" className="icon-btn" title="Editar" onClick={() => form.open(employee)}>
+            <IconButton title="Editar" onClick={() => form.open(employee)}>
               <Icon name="edit" />
-            </button>
+            </IconButton>
           )}
           {can('employees:delete') && (
-            <button
-              type="button"
-              className="icon-btn"
-              title={employee.status === 'active' ? 'Dar de baja' : 'Reactivar'}
-              onClick={() => setStatusTarget(employee)}
-            >
+            <IconButton title={employee.status === 'active' ? 'Dar de baja' : 'Reactivar'} onClick={() => setStatusTarget(employee)}>
               <Icon name={employee.status === 'active' ? 'user-x' : 'user-check'} />
-            </button>
+            </IconButton>
           )}
         </div>
       ),
@@ -157,9 +155,9 @@ export function EmployeesPage() {
     <>
       <PageHeader title="Empleados" subtitle="Catálogo de personal, departamentos y turnos.">
         {can('employees:create') && (
-          <button type="button" className="btn btn-primary" onClick={() => form.open()} disabled={departments.length === 0}>
+          <Button onClick={() => form.open()} disabled={departments.length === 0}>
             <Icon name="plus" /> Nuevo empleado
-          </button>
+          </Button>
         )}
       </PageHeader>
 
@@ -183,9 +181,9 @@ export function EmployeesPage() {
           <option value="inactive">Inactivo</option>
         </select>
         <div className="toolbar-spacer" />
-        <button type="button" className="icon-btn" title="Exportar" onClick={exportCsv} disabled={exporting}>
+        <IconButton title="Exportar" onClick={exportCsv} disabled={exporting}>
           <Icon name="download" />
-        </button>
+        </IconButton>
       </div>
 
       <DataTable

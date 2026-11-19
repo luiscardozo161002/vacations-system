@@ -19,6 +19,8 @@ import { useAuth } from '../../auth/auth-context';
 import { useActiveEmployees } from '../../employees/hooks/useActiveEmployees';
 import { UserForm } from '../components/UserForm';
 import { UserAssignment } from '../components/UserAssignment';
+import { IconButton } from '../../../components/atoms/IconButton';
+import { Button } from '../../../components/atoms/Button';
 
 const FILTERS = {};
 
@@ -77,19 +79,14 @@ export function UsersPage() {
       render: (user) => (
         <div className="row-actions">
           {can('users:update') && (
-            <button type="button" className="icon-btn" title="Asignación" onClick={() => assignment.open(user)}>
+            <IconButton title="Asignación" onClick={() => assignment.open(user)}>
               <Icon name="edit" />
-            </button>
+            </IconButton>
           )}
           {can('users:delete') && (
-            <button
-              type="button"
-              className="icon-btn"
-              title={user.status === 'inactive' ? 'Reactivar' : 'Desactivar'}
-              onClick={() => setStatusTarget(user)}
-            >
+            <IconButton title={user.status === 'inactive' ? 'Reactivar' : 'Desactivar'} onClick={() => setStatusTarget(user)}>
               <Icon name={user.status === 'inactive' ? 'user-check' : 'user-x'} />
-            </button>
+            </IconButton>
           )}
         </div>
       ),
@@ -100,9 +97,9 @@ export function UsersPage() {
     <>
       <PageHeader title="Usuarios" subtitle="Cuentas con acceso al sistema, su empresa y sedes asignadas.">
         {can('users:create') && (
-          <button type="button" className="btn btn-primary" onClick={() => createForm.open()} disabled={!catalogs.roles.length}>
+          <Button onClick={() => createForm.open()} disabled={!catalogs.roles.length}>
             <Icon name="plus" /> Nuevo usuario
-          </button>
+          </Button>
         )}
       </PageHeader>
 

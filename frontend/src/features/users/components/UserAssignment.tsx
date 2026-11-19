@@ -7,6 +7,8 @@ import { initials } from '../../../utils/format';
 import { ROLE_LABELS } from '../../../app/navigation';
 import { Drawer } from '../../../components/organisms/Drawer';
 import { FormField } from '../../../components/molecules/FormField';
+import { Button } from '../../../components/atoms/Button';
+import { Avatar } from '../../../components/atoms/Avatar';
 
 interface UserAssignmentProps {
   user: User;
@@ -60,24 +62,24 @@ export function UserAssignment({ user, branches, companies, onClose, onSaved }: 
       footer={
         isHr ? (
           <>
-            <button type="button" className="btn btn-secondary" onClick={onClose} disabled={submitting}>
+            <Button variant="secondary" onClick={onClose} disabled={submitting}>
               Cancelar
-            </button>
-            <button type="submit" className="btn btn-primary" disabled={submitting}>
+            </Button>
+            <Button type="submit" disabled={submitting}>
               Guardar asignación
-            </button>
+            </Button>
           </>
         ) : (
-          <button type="button" className="btn btn-secondary" onClick={onClose}>
+          <Button variant="secondary" onClick={onClose}>
             Cerrar
-          </button>
+          </Button>
         )
       }
     >
       {error && <p className="field-error" role="alert">{error}</p>}
 
-      <div className="profile-head">
-        <div className="avatar">{initials(name)}</div>
+      <div className="mb-[18px] flex items-center gap-3.5">
+        <Avatar size="lg">{initials(name)}</Avatar>
         <div>
           <h2 style={{ fontSize: 16 }}>{name}</h2>
           <p className="cell-sub">{ROLE_LABELS[user.role_code ?? ''] ?? user.role_code}</p>

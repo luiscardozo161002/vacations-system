@@ -14,6 +14,9 @@ import {
   subscribeTheme,
   type Theme,
 } from '../../../utils/appearance';
+import { Button } from '../../../components/atoms/Button';
+import { Card, CardTitle } from '../../../components/molecules/Card';
+import { Divider } from '../../../components/atoms/Divider';
 
 const sameColor = (a: string, b: string) => a.trim().toLowerCase() === b.trim().toLowerCase();
 
@@ -79,8 +82,8 @@ export function SettingsPage() {
     <>
       <PageHeader title="Configuración" subtitle="Preferencias de apariencia de tu sesión." />
 
-      <div className="card" style={{ maxWidth: 480, marginBottom: 16 }}>
-        <h3 className="section-title">Tema</h3>
+      <Card style={{ maxWidth: 480, marginBottom: 16 }}>
+        <CardTitle>Tema</CardTitle>
         <p className="cell-sub">Elige el modo de color de la interfaz.</p>
         <div style={{ display: 'flex', gap: 10, marginTop: 12 }}>
           <button
@@ -98,10 +101,10 @@ export function SettingsPage() {
             <Icon name="moon" /> Oscuro
           </button>
         </div>
-      </div>
+      </Card>
 
-      <div className="card" style={{ maxWidth: 480, marginBottom: 16 }}>
-        <h3 className="section-title">Color de fondo</h3>
+      <Card style={{ maxWidth: 480, marginBottom: 16 }}>
+        <CardTitle>Color de fondo</CardTitle>
         <p className="cell-sub">Se aplica al área alrededor de la ventana del sistema.</p>
         <Swatches
           colors={BACKDROP_PRESETS}
@@ -112,10 +115,10 @@ export function SettingsPage() {
           }}
           onCustom={changeBackdrop}
         />
-      </div>
+      </Card>
 
-      <div className="card" style={{ maxWidth: 480, marginBottom: 16 }}>
-        <h3 className="section-title">Color de botones</h3>
+      <Card style={{ maxWidth: 480, marginBottom: 16 }}>
+        <CardTitle>Color de botones</CardTitle>
         <p className="cell-sub">Color del botón primario (acciones principales).</p>
         <Swatches
           colors={BUTTON_COLOR_PRESETS}
@@ -126,14 +129,14 @@ export function SettingsPage() {
           }}
           onCustom={changeButtonColor}
         />
-        <div className="divider" />
-        <button type="button" className="btn btn-primary btn-sm">
+        <Divider />
+        <Button size="sm">
           Vista previa del botón
-        </button>
-      </div>
+        </Button>
+      </Card>
 
-      <div className="card" style={{ maxWidth: 480 }}>
-        <h3 className="section-title">Transparencia del contenedor</h3>
+      <Card style={{ maxWidth: 480 }}>
+        <CardTitle>Transparencia del contenedor</CardTitle>
         <p className="cell-sub">Qué tan transparente se ve la ventana del sistema sobre el fondo.</p>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 12 }}>
           <input
@@ -149,7 +152,7 @@ export function SettingsPage() {
             {alphaPercent}%
           </span>
         </div>
-      </div>
+      </Card>
     </>
   );
 }

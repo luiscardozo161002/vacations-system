@@ -12,6 +12,7 @@ import { Icon } from '../../../components/atoms/Icon';
 import { PageHeader } from '../../../components/molecules/PageHeader';
 import { useToast } from '../../../components/organisms/toast-context';
 import { useAuth } from '../../auth/auth-context';
+import { Card } from '../../../components/molecules/Card';
 
 const MODULES = [
   { code: 'dashboard:view', label: 'Dashboard', special: 'Ver estadísticas' },
@@ -90,12 +91,12 @@ export function PermissionsPage() {
     <>
       <PageHeader title="Roles y permisos" subtitle="Matriz de permisos por módulo. Solo el Superusuario puede modificarla." />
       {!canEdit && (
-        <div className="card" style={{ marginBottom: 16, display: 'flex', gap: 10, alignItems: 'center' }}>
+        <Card style={{ marginBottom: 16, display: 'flex', gap: 10, alignItems: 'center' }}>
           <span data-icon="alert-circle">
             <Icon name="alert-circle" />
           </span>
           <span className="cell-sub">Estás viendo esta matriz en modo solo lectura con el rol actual ({roleLabel}).</span>
-        </div>
+        </Card>
       )}
       {!matrix ? (
         <EmptyState message={error ?? 'Cargando...'} />

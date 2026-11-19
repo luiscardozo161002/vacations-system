@@ -6,6 +6,7 @@ import { sdk } from '../api/sdk';
 import { Icon } from '../components/atoms/Icon';
 import { formatDaysHours } from '../utils/format';
 import { queryClient } from '../api/query-client';
+import { IconButton } from '../components/atoms/IconButton';
 
 const REFRESH_MS = 5 * 60 * 1000;
 const QUERY_KEY = ['notifications'];
@@ -70,9 +71,9 @@ export function NotificationBell() {
 
   return (
     <div className="notif-wrap" id="notif-wrap" ref={wrapRef}>
-      <button type="button" className="icon-btn" id="notif-btn" title="Notificaciones" onClick={toggle}>
+      <IconButton id="notif-btn" title="Notificaciones" onClick={toggle} className="rounded-full">
         <Icon name="bell" />
-      </button>
+      </IconButton>
       <span
         className="notif-badge"
         id="notif-badge"

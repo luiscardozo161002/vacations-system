@@ -6,6 +6,9 @@ import { useUrlFilters } from '../../../hooks/use-url-filters';
 import { todayIso } from '../../../utils/format';
 import { Icon } from '../../../components/atoms/Icon';
 import { PageHeader } from '../../../components/molecules/PageHeader';
+import { Button } from '../../../components/atoms/Button';
+import { IconButton } from '../../../components/atoms/IconButton';
+import { Card, CardTitle } from '../../../components/molecules/Card';
 
 const MONTH_NAMES = [
   'Enero',
@@ -83,21 +86,21 @@ export function CalendarPage() {
     <>
       <PageHeader title="Calendario de vacaciones" subtitle="Vista mensual de ausencias aprobadas y pendientes." />
       {error && <p className="field-error" role="alert">{error}</p>}
-      <div className="card">
+      <Card>
         <div className="calendar-head">
-          <h3 className="section-title">
+          <CardTitle>
             {MONTH_NAMES[view.month]} {view.year}
-          </h3>
+          </CardTitle>
           <div style={{ display: 'flex', gap: 8 }}>
-            <button type="button" className="btn btn-secondary btn-sm" onClick={goToday}>
+            <Button variant="secondary" size="sm" onClick={goToday}>
               Hoy
-            </button>
-            <button type="button" className="icon-btn" title="Mes anterior" onClick={() => moveMonth(-1)}>
+            </Button>
+            <IconButton title="Mes anterior" onClick={() => moveMonth(-1)}>
               <Icon name="chevron-left" />
-            </button>
-            <button type="button" className="icon-btn" title="Mes siguiente" onClick={() => moveMonth(1)}>
+            </IconButton>
+            <IconButton title="Mes siguiente" onClick={() => moveMonth(1)}>
               <Icon name="chevron-right" />
-            </button>
+            </IconButton>
           </div>
         </div>
         <div style={{ overflowX: 'auto' }}>
@@ -135,7 +138,7 @@ export function CalendarPage() {
             })}
           </div>
         </div>
-      </div>
+      </Card>
     </>
   );
 }

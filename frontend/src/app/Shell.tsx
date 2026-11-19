@@ -10,6 +10,8 @@ import { config } from '../config';
 import { initials } from '../utils/format';
 import { getTheme, subscribeTheme, toggleTheme } from '../utils/appearance';
 import { ROLE_LABELS, findNavItem, visibleGroups } from './navigation';
+import { IconButton } from '../components/atoms/IconButton';
+import { Avatar } from '../components/atoms/Avatar';
 
 const COLLAPSED_KEY = 'vm_sidebar_collapsed';
 
@@ -74,15 +76,15 @@ export function Shell() {
 
             <div className="sidebar-user">
               <button type="button" className="sidebar-user-main" title="Editar perfil" onClick={() => setProfileOpen(true)}>
-                <div className="avatar">{initials(displayName)}</div>
+                <Avatar>{initials(displayName)}</Avatar>
                 <div className="sidebar-user-info">
                   <div className="name">{displayName}</div>
                   <div className="role">{roleLabel}</div>
                 </div>
               </button>
-              <button type="button" className="icon-btn" id="logout-btn" title="Cerrar sesión" onClick={logout}>
+              <IconButton id="logout-btn" title="Cerrar sesión" onClick={logout}>
                 <Icon name="log-out" />
-              </button>
+              </IconButton>
             </div>
 
             <button
@@ -98,14 +100,9 @@ export function Shell() {
           <div className="main-col">
             <header className="topbar">
               <div className="topbar-left">
-                <button
-                  type="button"
-                  className="icon-btn menu-btn"
-                  title="Mostrar menú"
-                  onClick={() => setMobileOpen((open) => !open)}
-                >
+                <IconButton title="Mostrar menú" onClick={() => setMobileOpen((open) => !open)} className="menu-btn">
                   <Icon name="menu" />
-                </button>
+                </IconButton>
                 <strong className="brand-mini">Vacation Manager</strong>
                 <span className="topbar-sep">/</span>
                 <strong id="breadcrumb-current">{findNavItem(pathname)?.title ?? 'Resumen'}</strong>
@@ -120,15 +117,9 @@ export function Shell() {
                     <span id="company-select-name">{companyLabel}</span>
                   </div>
                 )}
-                <button
-                  type="button"
-                  className="icon-btn"
-                  id="theme-toggle-btn"
-                  title="Cambiar tema"
-                  onClick={toggleTheme}
-                >
+                <IconButton id="theme-toggle-btn" title="Cambiar tema" onClick={toggleTheme} className="rounded-full">
                   <Icon name={theme === 'dark' ? 'moon' : 'sun'} />
-                </button>
+                </IconButton>
                 <NotificationBell />
               </div>
             </header>

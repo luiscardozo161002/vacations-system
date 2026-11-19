@@ -10,6 +10,10 @@ import { PageHeader } from '../../../components/molecules/PageHeader';
 import { useAuth } from '../../auth/auth-context';
 import { ShiftForm } from '../components/ShiftForm';
 import { formatBlocks, toBlocks } from '../schedule-blocks';
+import { Button } from '../../../components/atoms/Button';
+import { IconButton } from '../../../components/atoms/IconButton';
+import { Card, CardHeader, CardTitle } from '../../../components/molecules/Card';
+import { Divider } from '../../../components/atoms/Divider';
 
 export function ShiftsPage() {
   const { can } = useAuth();
@@ -23,9 +27,9 @@ export function ShiftsPage() {
     <>
       <PageHeader title="Turnos y horarios" subtitle="Catálogo de turnos asignables a empleados.">
         {can('shifts:create') && (
-          <button type="button" className="btn btn-primary" onClick={() => form.open()}>
+          <Button onClick={() => form.open()}>
             <Icon name="plus" /> Nuevo turno
-          </button>
+          </Button>
         )}
       </PageHeader>
 
@@ -34,23 +38,23 @@ export function ShiftsPage() {
       ) : (
         <div className="grid grid-2">
           {shifts.map((shift) => (
-            <div key={shift.shift_id} className="card">
-              <div className="card-head">
-                <h3 className="section-title">{shift.shift_name}</h3>
+            <Card key={shift.shift_id}>
+              <CardHeader>
+                <CardTitle>{shift.shift_name}</CardTitle>
                 {can('shifts:update') ? (
-                  <button type="button" className="icon-btn" title="Editar" onClick={() => form.open(shift)}>
+                  <IconButton title="Editar" onClick={() => form.open(shift)}>
                     <Icon name="edit" />
-                  </button>
+                  </IconButton>
                 ) : (
                   <span data-icon="clock">
                     <Icon name="clock" />
                   </span>
                 )}
-              </div>
+              </CardHeader>
               <p className="cell-sub">{formatBlocks(toBlocks(shift.schedule)) || 'Sin horario definido'}</p>
-              <div className="divider" />
+              <Divider />
               <p className="cell-sub">{shift.active_employees} empleados asignados</p>
-            </div>
+            </Card>
           ))}
         </div>
       )}

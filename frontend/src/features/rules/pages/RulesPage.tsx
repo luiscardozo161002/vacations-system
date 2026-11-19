@@ -11,6 +11,8 @@ import { PageHeader } from '../../../components/molecules/PageHeader';
 import { StatusBadge } from '../../../components/atoms/StatusBadge';
 import { useAuth } from '../../auth/auth-context';
 import { RuleForm } from '../components/RuleForm';
+import { IconButton } from '../../../components/atoms/IconButton';
+import { Button } from '../../../components/atoms/Button';
 
 const FILTERS = {};
 
@@ -37,9 +39,9 @@ export function RulesPage() {
       header: '',
       render: (rule) =>
         can('rules:update') && (
-          <button type="button" className="icon-btn" title="Editar" onClick={() => form.open(rule)}>
+          <IconButton title="Editar" onClick={() => form.open(rule)}>
             <Icon name="edit" />
-          </button>
+          </IconButton>
         ),
     },
   ];
@@ -48,9 +50,9 @@ export function RulesPage() {
     <>
       <PageHeader title="Reglas de acumulación" subtitle='Días de vacaciones por antigüedad — reforma "vacaciones dignas" (Art. 76 LFT).'>
         {can('rules:create') && (
-          <button type="button" className="btn btn-primary" onClick={() => form.open()}>
+          <Button onClick={() => form.open()}>
             <Icon name="plus" /> Nueva regla
-          </button>
+          </Button>
         )}
       </PageHeader>
 

@@ -6,6 +6,9 @@ import { EmptyState } from '../../../components/atoms/EmptyState';
 import { Icon } from '../../../components/atoms/Icon';
 import { PageHeader } from '../../../components/molecules/PageHeader';
 import { StatCard } from '../../../components/molecules/StatCard';
+import { Button } from '../../../components/atoms/Button';
+import { Card, CardHeader, CardTitle } from '../../../components/molecules/Card';
+import { Avatar } from '../../../components/atoms/Avatar';
 
 const ACTIVITY_LABELS = {
   request: { pending: 'Solicitud pendiente', approved: 'Solicitud aprobada', rejected: 'Solicitud rechazada', cancelled: 'Solicitud cancelada' },
@@ -29,9 +32,9 @@ export function TeamDashboard({ firstName, allBranches }: TeamDashboardProps) {
   return (
     <>
       <PageHeader title={`Buenos días, ${firstName}`} subtitle="Este es el panorama de tu equipo hoy.">
-        <button type="button" className="btn btn-secondary" onClick={() => navigate('/calendario')}>
+        <Button variant="secondary" onClick={() => navigate('/calendario')}>
           <Icon name="calendar" /> Ver quién falta
-        </button>
+        </Button>
       </PageHeader>
 
       {error && <p className="field-error" role="alert">{error}</p>}
@@ -54,17 +57,17 @@ export function TeamDashboard({ firstName, allBranches }: TeamDashboardProps) {
       </div>
 
       <div className="grid grid-3">
-        <div className="card" style={{ gridColumn: 'span 2' }}>
-          <div className="card-head">
-            <h3 className="section-title">Próximas ausencias</h3>
-            <button type="button" className="btn btn-ghost btn-sm" onClick={() => navigate('/calendario')}>
+        <Card style={{ gridColumn: 'span 2' }}>
+          <CardHeader>
+            <CardTitle>Próximas ausencias</CardTitle>
+            <Button variant="ghost" size="sm" onClick={() => navigate('/calendario')}>
               Ver calendario <Icon name="arrow-right" />
-            </button>
-          </div>
+            </Button>
+          </CardHeader>
           {summary?.upcoming_absences.length ? (
             summary.upcoming_absences.map((absence) => (
               <div key={absence.notice_id} className="list-row">
-                <div className="avatar">{initials(absence.employee_name)}</div>
+                <Avatar>{initials(absence.employee_name)}</Avatar>
                 <div className="info">
                   <div className="name">{absence.employee_name}</div>
                   <div className="sub">{absence.department_name}</div>
@@ -80,12 +83,12 @@ export function TeamDashboard({ firstName, allBranches }: TeamDashboardProps) {
           ) : (
             <EmptyState message={summary ? 'No hay ausencias próximas.' : 'Cargando...'} />
           )}
-        </div>
+        </Card>
 
-        <div className="card">
-          <div className="card-head">
-            <h3 className="section-title">Por departamento</h3>
-          </div>
+        <Card>
+          <CardHeader>
+            <CardTitle>Por departamento</CardTitle>
+          </CardHeader>
           {departments.map((department) => (
             <div key={department.department_id} style={{ marginBottom: 12 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12.5, marginBottom: 6 }}>
@@ -100,17 +103,17 @@ export function TeamDashboard({ firstName, allBranches }: TeamDashboardProps) {
               </div>
             </div>
           ))}
-        </div>
+        </Card>
       </div>
 
-      <div className="card" style={{ marginTop: 16 }}>
-        <h3 className="section-title" style={{ marginBottom: 12 }}>
+      <Card style={{ marginTop: 16 }}>
+        <CardTitle style={{ marginBottom: 12 }}>
           Actividad reciente
-        </h3>
+        </CardTitle>
         {summary?.recent_activity.length ? (
           summary.recent_activity.map((activity) => (
             <div key={activity.notice_id} className="list-row">
-              <div className="avatar">{initials(activity.employee_name)}</div>
+              <Avatar>{initials(activity.employee_name)}</Avatar>
               <div className="info">
                 <div className="name">
                   {ACTIVITY_LABELS[activity.kind][activity.status]} · {activity.reason_description}
@@ -123,7 +126,7 @@ export function TeamDashboard({ firstName, allBranches }: TeamDashboardProps) {
         ) : (
           <EmptyState message={summary ? 'Sin actividad reciente.' : 'Cargando...'} />
         )}
-      </div>
+      </Card>
     </>
   );
 }

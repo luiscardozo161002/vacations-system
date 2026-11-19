@@ -2,6 +2,8 @@ import { useState } from 'react';
 import type { EmployeeAccess } from '@vacations/sdk';
 import { formatDate } from '../../../utils/format';
 import { Dialog } from '../../../components/organisms/Dialog';
+import { Button } from '../../../components/atoms/Button';
+import { KeyValue, KeyValueGrid } from '../../../components/molecules/KeyValue';
 
 export interface GrantedAccess extends EmployeeAccess {
   employee_name: string;
@@ -25,31 +27,25 @@ export function AccessDialog({ access, onClose }: AccessDialogProps) {
       title="Acceso del empleado"
       onClose={onClose}
       footer={
-        <button type="button" className="btn btn-primary" onClick={copy} autoFocus>
+        <Button onClick={copy} autoFocus>
           {copied ? 'Copiada' : 'Copiar contraseña'}
-        </button>
+        </Button>
       }
     >
       <p>
         Entrega a <strong>{access.employee_name}</strong> estos datos. Deberá cambiar la contraseña al entrar; si no lo hace antes
         del {formatDate(access.account.temporary_password_expires_at ?? '')}, vencerá y tendrás que reenviarle el acceso.
       </p>
-      <div className="kv-grid" style={{ marginTop: 14 }}>
-        <div className="kv-item">
-          <div className="k">Correo</div>
-          <div className="v">{access.account.email}</div>
-        </div>
-        <div className="kv-item">
-          <div className="k">Usuario</div>
-          <div className="v">{access.account.username}</div>
-        </div>
+      <KeyValueGrid className="mt-3.5">
+        <KeyValue label="Correo">{access.account.email}</KeyValue>
+        <KeyValue label="Usuario">{access.account.username}</KeyValue>
         <div className="kv-item">
           <div className="k">Contraseña temporal</div>
           <div className="v" style={{ fontFamily: 'monospace', fontSize: 15, letterSpacing: 1 }}>
             {access.temporary_password}
           </div>
         </div>
-      </div>
+      </KeyValueGrid>
     </Dialog>
   );
 }

@@ -1,6 +1,8 @@
 import type { ReactNode } from 'react';
 import { Icon } from '../atoms/Icon';
 import { Overlay } from './Overlay';
+import { IconButton } from '../atoms/IconButton';
+import { Button } from '../atoms/Button';
 
 interface DialogProps {
   title: string;
@@ -15,9 +17,9 @@ export function Dialog({ title, onClose, footer, children }: DialogProps) {
       <div className="dialog" role="dialog" aria-modal="true" aria-label={title}>
         <div className="dialog-head">
           <h2>{title}</h2>
-          <button type="button" className="icon-btn" title="Cerrar" onClick={onClose}>
+          <IconButton title="Cerrar" onClick={onClose}>
             <Icon name="x" />
-          </button>
+          </IconButton>
         </div>
         <div className="dialog-body">{children}</div>
         {footer && <div className="dialog-foot">{footer}</div>}
@@ -40,9 +42,9 @@ export function ConfirmDialog({ title, message, confirmLabel = 'Confirmar', onCo
       title={title}
       onClose={onCancel}
       footer={
-        <button type="button" className="btn btn-primary" onClick={onConfirm} autoFocus>
+        <Button onClick={onConfirm} autoFocus>
           {confirmLabel}
-        </button>
+        </Button>
       }
     >
       <p>{message}</p>

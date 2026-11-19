@@ -13,6 +13,7 @@ import { PageHeader } from '../../../components/molecules/PageHeader';
 import { useToast } from '../../../components/organisms/toast-context';
 import { useAuth } from '../../auth/auth-context';
 import { EmployeeDashboard } from '../../dashboard/components/EmployeeDashboard';
+import { Button } from '../../../components/atoms/Button';
 
 const FILTERS = {};
 
@@ -69,9 +70,9 @@ function BalancesTable({ canGenerate }: { canGenerate: boolean }) {
         subtitle="Saldo por empleado: días y horas otorgados, usados y disponibles, por periodo."
       >
         {canGenerate && (
-          <button type="button" className="btn btn-secondary" onClick={generate} disabled={generating}>
+          <Button variant="secondary" onClick={generate} disabled={generating}>
             <Icon name="calendar-check" /> Generar periodos
-          </button>
+          </Button>
         )}
       </PageHeader>
 

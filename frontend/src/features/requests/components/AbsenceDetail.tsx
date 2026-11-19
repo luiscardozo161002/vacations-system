@@ -11,6 +11,10 @@ import { Icon } from '../../../components/atoms/Icon';
 import { StatusBadge } from '../../../components/atoms/StatusBadge';
 import { useToast } from '../../../components/organisms/toast-context';
 import { BreakdownBox } from './BreakdownBox';
+import { Button } from '../../../components/atoms/Button';
+import { KeyValue, KeyValueGrid } from '../../../components/molecules/KeyValue';
+import { Avatar } from '../../../components/atoms/Avatar';
+import { Divider } from '../../../components/atoms/Divider';
 
 type Action = 'approve' | 'reject' | 'cancel';
 
@@ -109,77 +113,60 @@ export function AbsenceDetail({ notice, user, can, onClose, onChanged }: Absence
           hasActions ? (
             <>
               {canDownload && (
-                <button type="button" className="btn btn-secondary" onClick={downloadPdf} disabled={working}>
+                <Button variant="secondary" onClick={downloadPdf} disabled={working}>
                   <Icon name="download" /> Descargar PDF
-                </button>
+                </Button>
               )}
               {canCancel && (
-                <button type="button" className="btn btn-secondary" onClick={() => setConfirming('cancel')} disabled={working}>
+                <Button variant="secondary" onClick={() => setConfirming('cancel')} disabled={working}>
                   Cancelar
-                </button>
+                </Button>
               )}
               {canReject && (
-                <button type="button" className="btn btn-secondary" onClick={() => setConfirming('reject')} disabled={working}>
+                <Button variant="secondary" onClick={() => setConfirming('reject')} disabled={working}>
                   <Icon name="x" /> Rechazar
-                </button>
+                </Button>
               )}
               {canApprove && (
-                <button type="button" className="btn btn-primary" onClick={() => run('approve')} disabled={working}>
+                <Button onClick={() => run('approve')} disabled={working}>
                   <Icon name="check" /> Aprobar
-                </button>
+                </Button>
               )}
             </>
           ) : (
-            <button type="button" className="btn btn-secondary" onClick={onClose}>
+            <Button variant="secondary" onClick={onClose}>
               Cerrar
-            </button>
+            </Button>
           )
         }
       >
         {notice.kind === 'request' && (
-          <div className="profile-head">
-            <div className="avatar">{initials(notice.employee_name ?? '')}</div>
+          <div className="mb-[18px] flex items-center gap-3.5">
+            <Avatar size="lg">{initials(notice.employee_name ?? '')}</Avatar>
             <div>
               <h2 style={{ fontSize: 16 }}>{notice.employee_name}</h2>
               <p className="cell-sub">{notice.department_name}</p>
             </div>
           </div>
         )}
-        <div className="kv-grid">
+        <KeyValueGrid>
           {notice.kind === 'notice' && (
-            <div className="kv-item">
-              <div className="k">Empleado</div>
-              <div className="v">{notice.employee_name}</div>
-            </div>
+            <KeyValue label="Empleado">{notice.employee_name}</KeyValue>
           )}
-          <div className="kv-item">
-            <div className="k">Fecha y horario</div>
-            <div className="v">{formatAbsenceRange(notice)}</div>
-          </div>
-          <div className="kv-item">
-            <div className="k">{labels.days}</div>
-            <div className="v">{formatDaysHours(notice.days_taken, notice.hours_taken)}</div>
-          </div>
-          <div className="kv-item">
-            <div className="k">Motivo</div>
-            <div className="v">{notice.reason_description}</div>
-          </div>
-          <div className="kv-item">
-            <div className="k">Estado</div>
-            <div className="v">
-              <StatusBadge status={notice.status} />
-            </div>
-          </div>
-        </div>
+          <KeyValue label="Fecha y horario">{formatAbsenceRange(notice)}</KeyValue>
+          <KeyValue label={labels.days}>{formatDaysHours(notice.days_taken, notice.hours_taken)}</KeyValue>
+          <KeyValue label="Motivo">{notice.reason_description}</KeyValue>
+          <KeyValue label="Estado"><StatusBadge status={notice.status} /></KeyValue>
+        </KeyValueGrid>
         {notice.remarks && (
           <>
-            <div className="divider" />
+            <Divider />
             <p className="cell-sub">{notice.remarks}</p>
           </>
         )}
         {preview && (
           <>
-            <div className="divider" />
+            <Divider />
             <div style={{ marginTop: 12 }}>
               <BreakdownBox preview={preview} verb="Consume" />
             </div>

@@ -6,6 +6,10 @@ import { EmptyState } from '../../../components/atoms/EmptyState';
 import { Icon } from '../../../components/atoms/Icon';
 import { PageHeader } from '../../../components/molecules/PageHeader';
 import { StatusBadge } from '../../../components/atoms/StatusBadge';
+import { Button } from '../../../components/atoms/Button';
+import { KeyValue, KeyValueGrid } from '../../../components/molecules/KeyValue';
+import { Card, CardHeader, CardTitle } from '../../../components/molecules/Card';
+import { Divider } from '../../../components/atoms/Divider';
 
 export function EmployeeDashboard() {
   const navigate = useNavigate();
@@ -23,87 +27,58 @@ export function EmployeeDashboard() {
         title={`Hola, ${profile.employee_name.split(' ')[0]}`}
         subtitle={`${profile.department_name} · ${profile.shift_name}`}
       >
-        <button type="button" className="btn btn-primary" onClick={() => navigate('/solicitudes')}>
+        <Button onClick={() => navigate('/solicitudes')}>
           <Icon name="plus" /> Nueva solicitud
-        </button>
+        </Button>
       </PageHeader>
 
-      <div className="card" style={{ marginBottom: 16 }}>
-        <div className="card-head">
-          <h3 className="section-title">Mi perfil</h3>
-        </div>
-        <div className="kv-grid">
-          <div className="kv-item">
-            <div className="k">Departamento</div>
-            <div className="v">{profile.department_name}</div>
-          </div>
-          <div className="kv-item">
-            <div className="k">Turno</div>
-            <div className="v">{profile.shift_name}</div>
-          </div>
-          <div className="kv-item">
-            <div className="k">Fecha de ingreso</div>
-            <div className="v">{formatDate(profile.start_date)}</div>
-          </div>
-          <div className="kv-item">
-            <div className="k">Antigüedad</div>
-            <div className="v">
-              {profile.years_of_service} año{profile.years_of_service === 1 ? '' : 's'}
-            </div>
-          </div>
-        </div>
-      </div>
+      <Card style={{ marginBottom: 16 }}>
+        <CardHeader>
+          <CardTitle>Mi perfil</CardTitle>
+        </CardHeader>
+        <KeyValueGrid>
+          <KeyValue label="Departamento">{profile.department_name}</KeyValue>
+          <KeyValue label="Turno">{profile.shift_name}</KeyValue>
+          <KeyValue label="Fecha de ingreso">{formatDate(profile.start_date)}</KeyValue>
+          <KeyValue label="Antigüedad">{profile.years_of_service} año{profile.years_of_service === 1 ? '' : 's'}</KeyValue>
+        </KeyValueGrid>
+      </Card>
 
       {balance && (
-        <div className="card" style={{ marginBottom: 16 }}>
-          <div className="card-head">
-            <h3 className="section-title">
+        <Card style={{ marginBottom: 16 }}>
+          <CardHeader>
+            <CardTitle>
               Mis días de vacaciones — periodo {formatDate(balance.period_start)} – {formatDate(balance.period_end)}
-            </h3>
-          </div>
-          <div className="kv-grid" style={{ marginBottom: 12 }}>
-            <div className="kv-item">
-              <div className="k">Otorgados</div>
-              <div className="v">{balance.total_days} días</div>
-            </div>
-            <div className="kv-item">
-              <div className="k">Usados</div>
-              <div className="v">{balance.used_days} días</div>
-            </div>
-            <div className="kv-item">
-              <div className="k">Disponibles</div>
-              <div className="v">{balance.available.days} días</div>
-            </div>
-          </div>
+            </CardTitle>
+          </CardHeader>
+          <KeyValueGrid className="mb-3">
+            <KeyValue label="Otorgados">{balance.total_days} días</KeyValue>
+            <KeyValue label="Usados">{balance.used_days} días</KeyValue>
+            <KeyValue label="Disponibles">{balance.available.days} días</KeyValue>
+          </KeyValueGrid>
           <div className="progress-track" style={{ marginBottom: 16 }}>
             <div className="progress-fill" style={{ width: `${usedShare}%` }} />
           </div>
-          <div className="divider" />
-          <h3 className="section-title" style={{ margin: '14px 0 10px' }}>
+          <Divider />
+          <CardTitle style={{ margin: '14px 0 10px' }}>
             Horas de permisos (dentro del día en curso)
-          </h3>
+          </CardTitle>
           <p className="cell-sub" style={{ marginBottom: 10 }}>
             Tu turno equivale a {balance.daily_hours}h al día. Las horas de permiso ya tomadas se descuentan de ese día antes de
             consumir un día completo.
           </p>
-          <div className="kv-grid">
-            <div className="kv-item">
-              <div className="k">Horas usadas</div>
-              <div className="v">{balance.used_hours} h</div>
-            </div>
-            <div className="kv-item">
-              <div className="k">Horas restantes hoy</div>
-              <div className="v">{balance.available.hours} h</div>
-            </div>
-          </div>
-        </div>
+          <KeyValueGrid>
+            <KeyValue label="Horas usadas">{balance.used_hours} h</KeyValue>
+            <KeyValue label="Horas restantes hoy">{balance.available.hours} h</KeyValue>
+          </KeyValueGrid>
+        </Card>
       )}
 
       <div className="grid grid-2">
-        <div className="card">
-          <div className="card-head">
-            <h3 className="section-title">Mis solicitudes</h3>
-          </div>
+        <Card>
+          <CardHeader>
+            <CardTitle>Mis solicitudes</CardTitle>
+          </CardHeader>
           {requests.length ? (
             requests.map((request) => (
               <div key={request.notice_id} className="list-row">
@@ -124,11 +99,11 @@ export function EmployeeDashboard() {
           ) : (
             <EmptyState message="Aún no tienes solicitudes." />
           )}
-        </div>
-        <div className="card">
-          <div className="card-head">
-            <h3 className="section-title">Mis avisos</h3>
-          </div>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>Mis avisos</CardTitle>
+          </CardHeader>
           {notices.length ? (
             notices.map((notice) => (
               <div key={notice.notice_id} className="list-row">
@@ -147,7 +122,7 @@ export function EmployeeDashboard() {
           ) : (
             <EmptyState message="Aún no tienes avisos." />
           )}
-        </div>
+        </Card>
       </div>
     </>
   );

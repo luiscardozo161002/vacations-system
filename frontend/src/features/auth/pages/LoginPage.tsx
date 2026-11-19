@@ -6,6 +6,7 @@ import { Icon } from '../../../components/atoms/Icon';
 import { TextField } from '../../../components/molecules/FormField';
 import { useAuth } from '../auth-context';
 import { DevAccounts } from '../components/DevAccounts';
+import { Button } from '../../../components/atoms/Button';
 
 type View = 'login' | 'request' | 'confirm';
 
@@ -110,9 +111,9 @@ export function LoginPage() {
               Volver a iniciar sesión
             </button>
           </div>
-          <button type="submit" className="btn btn-primary" style={{ width: '100%' }} disabled={submitting}>
+          <Button type="submit" style={{ width: '100%' }} disabled={submitting}>
             Generar código
-          </button>
+          </Button>
         </form>
       </LoginCard>
     );
@@ -151,9 +152,9 @@ export function LoginPage() {
               Volver a iniciar sesión
             </button>
           </div>
-          <button type="submit" className="btn btn-primary" style={{ width: '100%' }} disabled={submitting}>
+          <Button type="submit" style={{ width: '100%' }} disabled={submitting}>
             Guardar contraseña
-          </button>
+          </Button>
         </form>
       </LoginCard>
     );
@@ -192,9 +193,9 @@ export function LoginPage() {
             ¿Olvidaste tu contraseña?
           </button>
         </div>
-        <button type="submit" className="btn btn-primary" style={{ width: '100%' }} disabled={submitting}>
+        <Button type="submit" style={{ width: '100%' }} disabled={submitting}>
           Entrar
-        </button>
+        </Button>
       </form>
 
       {import.meta.env.DEV && (

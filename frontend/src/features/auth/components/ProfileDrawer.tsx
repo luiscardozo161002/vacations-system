@@ -8,6 +8,8 @@ import { FormDrawer } from '../../../components/organisms/FormDrawer';
 import { TextField } from '../../../components/molecules/FormField';
 import { useToast } from '../../../components/organisms/toast-context';
 import { useAuth } from '../auth-context';
+import { Avatar } from '../../../components/atoms/Avatar';
+import { Divider } from '../../../components/atoms/Divider';
 
 interface ProfileDrawerProps {
   user: CurrentUser;
@@ -69,8 +71,8 @@ export function ProfileDrawer({ user, roleLabel, onClose }: ProfileDrawerProps) 
       onClose={onClose}
       onSubmit={handleSubmit}
     >
-      <div className="profile-head">
-        <div className="avatar">{initials(displayName)}</div>
+      <div className="mb-[18px] flex items-center gap-3.5">
+        <Avatar size="lg">{initials(displayName)}</Avatar>
         <div>
           <h2 style={{ fontSize: 16 }}>{displayName}</h2>
           <p className="cell-sub">{roleLabel}</p>
@@ -85,7 +87,7 @@ export function ProfileDrawer({ user, roleLabel, onClose }: ProfileDrawerProps) 
         onChange={setEmail}
         maxLength={120}
       />
-      <div className="divider" />
+      <Divider />
       <p className="cell-sub" style={{ marginBottom: 10 }}>
         Deja la contraseña en blanco si no quieres cambiarla.
       </p>

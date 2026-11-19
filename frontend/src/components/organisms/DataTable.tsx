@@ -27,7 +27,7 @@ export function DataTable<T>({ columns, data, rowKey, page, onPageChange, loadin
 
   return (
     <div className="overflow-x-auto rounded-lg border border-line bg-surface">
-      <table className="w-full min-w-[640px] border-collapse" aria-busy={loading}>
+      <table className="w-full min-w-[640px] border-collapse max-sm:min-w-[560px]" aria-busy={loading}>
         <thead>
           <tr>
             {columns.map((column, index) => (

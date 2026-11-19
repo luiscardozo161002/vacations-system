@@ -9,6 +9,8 @@ import { useDepartments } from '../../departments/hooks/useDepartments';
 import { DataTable, type Column } from '../../../components/organisms/DataTable';
 import { EmptyState } from '../../../components/atoms/EmptyState';
 import { PageHeader } from '../../../components/molecules/PageHeader';
+import { KeyValue, KeyValueGrid } from '../../../components/molecules/KeyValue';
+import { Card, CardHeader, CardTitle } from '../../../components/molecules/Card';
 
 const TABS = [
   { id: 'datos', label: 'Datos de empresa' },
@@ -20,26 +22,14 @@ const FILTERS = { empresa: '', pestana: 'datos' };
 
 function CompanyData({ company }: { company: Company }) {
   return (
-    <div className="card" style={{ maxWidth: 520 }}>
-      <div className="kv-grid">
-        <div className="kv-item">
-          <div className="k">Razón social</div>
-          <div className="v">{company.company_name}</div>
-        </div>
-        <div className="kv-item">
-          <div className="k">RFC</div>
-          <div className="v">{company.rfc ?? '—'}</div>
-        </div>
-        <div className="kv-item">
-          <div className="k">Teléfono</div>
-          <div className="v">{company.phone_number ?? '—'}</div>
-        </div>
-        <div className="kv-item">
-          <div className="k">Dirección</div>
-          <div className="v">{company.location ?? '—'}</div>
-        </div>
-      </div>
-    </div>
+    <Card style={{ maxWidth: 520 }}>
+      <KeyValueGrid>
+        <KeyValue label="Razón social">{company.company_name}</KeyValue>
+        <KeyValue label="RFC">{company.rfc ?? '—'}</KeyValue>
+        <KeyValue label="Teléfono">{company.phone_number ?? '—'}</KeyValue>
+        <KeyValue label="Dirección">{company.location ?? '—'}</KeyValue>
+      </KeyValueGrid>
+    </Card>
   );
 }
 
@@ -53,18 +43,15 @@ function CompanyBranches({ companyId }: { companyId: number }) {
   return (
     <div className="grid grid-3">
       {branches.map((branch) => (
-        <div key={branch.branch_id} className="card">
-          <div className="card-head">
-            <h3 className="section-title">{branch.branch_name}</h3>
-          </div>
+        <Card key={branch.branch_id}>
+          <CardHeader>
+            <CardTitle>{branch.branch_name}</CardTitle>
+          </CardHeader>
           <p className="cell-sub" style={{ marginBottom: 10 }}>
             {branch.code}
           </p>
-          <div className="kv-item">
-            <div className="k">Empleados</div>
-            <div className="v">{branch.active_employees}</div>
-          </div>
-        </div>
+          <KeyValue label="Empleados">{branch.active_employees}</KeyValue>
+        </Card>
       ))}
     </div>
   );

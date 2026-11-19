@@ -6,6 +6,7 @@ import { formatDate } from '../../../utils/format';
 import { TextField } from '../../../components/molecules/FormField';
 import { useAuth } from '../auth-context';
 import { LoginCard } from './LoginPage';
+import { Button } from '../../../components/atoms/Button';
 
 export function ChangePasswordPage() {
   const { user, updateUser, logout } = useAuth();
@@ -80,9 +81,9 @@ export function ChangePasswordPage() {
             Cerrar sesión
           </button>
         </div>
-        <button type="submit" className="btn btn-primary" style={{ width: '100%' }} disabled={submitting}>
+        <Button type="submit" style={{ width: '100%' }} disabled={submitting}>
           Guardar contraseña
-        </button>
+        </Button>
       </form>
     </LoginCard>
   );

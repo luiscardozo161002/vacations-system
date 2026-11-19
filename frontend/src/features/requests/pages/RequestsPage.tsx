@@ -17,6 +17,8 @@ import { useDepartments } from '../../departments/hooks/useDepartments';
 import { useReasons } from '../../reasons/hooks/useReasons';
 import { AbsenceForm } from '../components/AbsenceForm';
 import { AbsenceDetail } from '../components/AbsenceDetail';
+import { IconButton } from '../../../components/atoms/IconButton';
+import { Button } from '../../../components/atoms/Button';
 
 const FILTERS = { estado: '', departamento: '' };
 
@@ -62,9 +64,9 @@ export function RequestsPage() {
       header: '',
       render: (notice) => (
         <div className="row-actions">
-          <button type="button" className="icon-btn" title="Ver detalle" onClick={() => setSelected(notice)}>
+          <IconButton title="Ver detalle" onClick={() => setSelected(notice)}>
             <Icon name="eye" />
-          </button>
+          </IconButton>
         </div>
       ),
     },
@@ -86,9 +88,9 @@ export function RequestsPage() {
         }
       >
         {canCreate && (
-          <button type="button" className="btn btn-primary" onClick={() => form.open()} disabled={reasons.length === 0}>
+          <Button onClick={() => form.open()} disabled={reasons.length === 0}>
             <Icon name="plus" /> Nueva solicitud
-          </button>
+          </Button>
         )}
       </PageHeader>
 

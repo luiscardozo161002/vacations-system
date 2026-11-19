@@ -11,6 +11,10 @@ import { useAuth } from '../../auth/auth-context';
 import { useActiveEmployees } from '../../employees/hooks/useActiveEmployees';
 import { DepartmentForm } from '../components/DepartmentForm';
 import { useBranches } from '../../branches/hooks/useBranches';
+import { Button } from '../../../components/atoms/Button';
+import { IconButton } from '../../../components/atoms/IconButton';
+import { KeyValue, KeyValueGrid } from '../../../components/molecules/KeyValue';
+import { Card, CardHeader, CardTitle } from '../../../components/molecules/Card';
 
 export function DepartmentsPage() {
   const { can } = useAuth();
@@ -32,9 +36,9 @@ export function DepartmentsPage() {
     <>
       <PageHeader title="Departamentos" subtitle="Áreas de la organización y sus responsables.">
         {can('departments:create') && (
-          <button type="button" className="btn btn-primary" onClick={() => form.open()} disabled={branches.length === 0}>
+          <Button onClick={() => form.open()} disabled={branches.length === 0}>
             <Icon name="plus" /> Nuevo departamento
-          </button>
+          </Button>
         )}
       </PageHeader>
 
@@ -43,33 +47,24 @@ export function DepartmentsPage() {
       ) : (
         <div className="grid grid-3">
           {departments.map((department) => (
-            <div key={department.department_id} className="card">
-              <div className="card-head">
-                <h3 className="section-title">
+            <Card key={department.department_id}>
+              <CardHeader>
+                <CardTitle>
                   {department.department_name}
                   {repeatedNames && <span className="cell-sub"> · {department.branch_code}</span>}
-                </h3>
+                </CardTitle>
                 {canEdit && (
-                  <button type="button" className="icon-btn" title="Editar" onClick={() => form.open(department)}>
+                  <IconButton title="Editar" onClick={() => form.open(department)}>
                     <Icon name="edit" />
-                  </button>
+                  </IconButton>
                 )}
-              </div>
-              <div className="kv-grid">
-                <div className="kv-item">
-                  <div className="k">Responsable</div>
-                  <div className="v">{department.manager_name ?? '—'}</div>
-                </div>
-                <div className="kv-item">
-                  <div className="k">Empleados activos</div>
-                  <div className="v">{department.active_employees}</div>
-                </div>
-                <div className="kv-item">
-                  <div className="k">Calendario compartido</div>
-                  <div className="v">{department.calendar_shared ? 'Sí' : 'No'}</div>
-                </div>
-              </div>
-            </div>
+              </CardHeader>
+              <KeyValueGrid>
+                <KeyValue label="Responsable">{department.manager_name ?? '—'}</KeyValue>
+                <KeyValue label="Empleados activos">{department.active_employees}</KeyValue>
+                <KeyValue label="Calendario compartido">{department.calendar_shared ? 'Sí' : 'No'}</KeyValue>
+              </KeyValueGrid>
+            </Card>
           ))}
         </div>
       )}

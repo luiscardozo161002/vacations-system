@@ -6,6 +6,8 @@ import { FormDrawer } from '../../../components/organisms/FormDrawer';
 import { FormField, TextField } from '../../../components/molecules/FormField';
 import { Icon } from '../../../components/atoms/Icon';
 import { DAY_LETTERS, WEEK, toBlocks, toSchedule, type ScheduleBlock } from '../schedule-blocks';
+import { IconButton } from '../../../components/atoms/IconButton';
+import { Button } from '../../../components/atoms/Button';
 
 interface ShiftFormProps {
   shift: Shift | null;
@@ -79,14 +81,9 @@ export function ShiftForm({ shift, onClose, onSaved }: ShiftFormProps) {
       <div id="s-blocks">
         {blocks.map((block, index) => (
           <div key={index} className="shift-block">
-            <button
-              type="button"
-              className="icon-btn shift-block-remove"
-              title="Quitar horario"
-              onClick={() => setBlocks((prev) => prev.filter((_, i) => i !== index))}
-            >
+            <IconButton title="Quitar horario" onClick={() => setBlocks((prev) => prev.filter((_, i) => i !== index))} className="shift-block-remove">
               <Icon name="x" />
-            </button>
+            </IconButton>
             <div className="weekday-toggle-row">
               {WEEK.map((day) => (
                 <button
@@ -110,14 +107,9 @@ export function ShiftForm({ shift, onClose, onSaved }: ShiftFormProps) {
           </div>
         ))}
       </div>
-      <button
-        type="button"
-        className="btn btn-secondary btn-sm"
-        style={{ marginBottom: 16 }}
-        onClick={() => setBlocks((prev) => [...prev, { ...NEW_BLOCK, days: [] }])}
-      >
+      <Button variant="secondary" size="sm" style={{ marginBottom: 16 }} onClick={() => setBlocks((prev) => [...prev, { ...NEW_BLOCK, days: [] }])}>
         <Icon name="plus" /> Agregar horario
-      </button>
+      </Button>
     </FormDrawer>
   );
 }
