@@ -5,6 +5,7 @@ import { useApiQuery } from '../../../lib/use-api-query';
 import { useUrlFilters } from '../../../lib/use-url-filters';
 import { todayIso } from '../../../lib/format';
 import { Icon } from '../../../components/Icon';
+import { PageHeader } from '../../../components/PageHeader';
 
 const MONTH_NAMES = [
   'Enero',
@@ -80,12 +81,7 @@ export function CalendarPage() {
 
   return (
     <>
-      <div className="page-header">
-        <div>
-          <h1>Calendario de vacaciones</h1>
-          <p className="page-sub">Vista mensual de ausencias aprobadas y pendientes.</p>
-        </div>
-      </div>
+      <PageHeader title="Calendario de vacaciones" subtitle="Vista mensual de ausencias aprobadas y pendientes." />
       {error && <p className="field-error" role="alert">{error}</p>}
       <div className="card">
         <div className="calendar-head">

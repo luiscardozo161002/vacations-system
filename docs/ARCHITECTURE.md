@@ -102,11 +102,40 @@ TanStack Query mantiene los datos remotos. Los filtros y la paginación se guard
 
 Al guardar cambios, el frontend invalida las consultas para actualizar listas, saldos, calendario e indicadores. Los permisos determinan las opciones del menú y las rutas disponibles. [Navegación](../frontend/src/app/navigation.ts)
 
+Las pantallas comparten estas piezas:
+
+| Pieza | Función |
+|---|---|
+| `lib/config.ts` | Valores configurables leídos de `VITE_*`, con su valor por defecto; ver `frontend/.env.example` |
+| `usePageFilters` | Filtros y página en la URL; cambiar un filtro vuelve a la primera página |
+| `usePagedList` y `useCatalog` | Listados paginados y catálogos completos a partir de un recurso del SDK |
+| `useRecordForm` | Estado del formulario de alta y edición; al guardar cierra, avisa y refresca |
+| `useFormSubmit` y `FormDrawer` | Envío, error y botones comunes de los formularios |
+| `DataTable` y `PageHeader` | Tabla con paginación y encabezado de página |
+
 La API usa el prefijo `/api/v1`. Los listados CRUD exponen paginación, orden y filtros propios. Swagger y Bruno contienen el detalle de los endpoints. [Registro de la API](../backend/src/server.js), [colección Bruno](../backend/src/doc/bruno)
 
 ## Ejecución y calidad
 
-En desarrollo, Vite sirve la interfaz. NGINX puede reenviar las llamadas de la API a Hapi. PostgreSQL puede ejecutarse localmente o con Docker Compose. Las variables y los comandos de arranque están en el [README](../README.md#arranque-rápido).
+El proxy o balanceador va **delante de la API**. El SDK corre en el navegador y solo conoce una URL base; no sabe si hay un proxy detrás.
+
+```mermaid
+flowchart LR
+  B[Navegador con el SDK] -->|VITE_API_BASE_URL| P[Proxy o balanceador]
+  P -->|X-Forwarded-For| A[API Hapi]
+  A --> D[(PostgreSQL)]
+```
+
+| Entorno | `VITE_API_BASE_URL` | Backend |
+|---|---|---|
+| Desarrollo sin proxy | `http://localhost:3000` | `TRUSTED_PROXIES` vacío |
+| Desarrollo con proxy | `http://127.0.0.1:8080` (NGINX local) | `HOST=127.0.0.1`, `TRUSTED_PROXIES=127.0.0.2` |
+| Producción con el proxy sirviendo la interfaz y `/api` | vacía, mismo origen | `TRUSTED_PROXIES` con la IP del proxy |
+
+- `CORS_ORIGINS` lleva el origen de la interfaz, no el del proxy: el navegador envía como `Origin` la página que hace la llamada.
+- El proxy solo se necesita para probar `X-Forwarded-For` o para producción; en desarrollo se puede ir directo a la API.
+
+PostgreSQL puede ejecutarse localmente o con Docker Compose. Las variables y los comandos de arranque están en el [README](../README.md#arranque-rápido).
 
 El backend genera periodos al arrancar y en el intervalo configurado. El proceso es repetible y reporta los empleados omitidos. La ejecución manual requiere permisos administrativos. [Generación de periodos](../backend/src/plugins/vacation-entitlements/rollover.js)
 

@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { sdk } from '../../../lib/sdk';
+import { config } from '../../../lib/config';
 import { getErrorMessage } from '../../../lib/get-error-message';
 import { formatDate } from '../../../lib/format';
 import { TextField } from '../../../components/FormField';
@@ -57,12 +58,12 @@ export function ChangePasswordPage() {
           label="Nueva contraseña"
           type="password"
           autoComplete="new-password"
-          minLength={8}
+          minLength={config.passwordMinLength}
           maxLength={100}
           value={newPassword}
           onChange={setNewPassword}
           required
-          hint="Mínimo 8 caracteres."
+          hint={`Mínimo ${config.passwordMinLength} caracteres.`}
         />
         <TextField
           id="cp-confirm"

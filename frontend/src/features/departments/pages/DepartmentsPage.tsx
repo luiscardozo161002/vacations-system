@@ -1,59 +1,42 @@
-import { useMemo, useState } from 'react';
-import type { CallOptions, Department, ListDepartmentsParams } from '@vacations/sdk';
+import { useMemo } from 'react';
+import type { Department } from '@vacations/sdk';
 import { sdk } from '../../../lib/sdk';
+import { config } from '../../../lib/config';
 import { usePagedList } from '../../../lib/use-paged-list';
-import { refreshData } from '../../../lib/query-client';
+import { useRecordForm } from '../../../lib/use-record-form';
 import { EmptyState } from '../../../components/EmptyState';
 import { Icon } from '../../../components/Icon';
-import { useToast } from '../../../components/toast-context';
+import { PageHeader } from '../../../components/PageHeader';
 import { useAuth } from '../../auth/auth-context';
 import { useActiveEmployees } from '../../employees/hooks/useActiveEmployees';
 import { DepartmentForm } from '../components/DepartmentForm';
 import { useBranches } from '../../branches/hooks/useBranches';
 
-const listDepartments = (params: ListDepartmentsParams, options: CallOptions) => sdk.departments.list(params, options);
-
 export function DepartmentsPage() {
-  const showToast = useToast();
   const { can } = useAuth();
   const canEdit = can('departments:update');
 
-  const params = useMemo(() => ({ status: 'active' as const, pageSize: 100, sort: 'department_name' }), []);
-  const { data, loading, error } = usePagedList('departments', listDepartments, params);
+  const params = useMemo(
+    () => ({ status: 'active' as const, pageSize: config.catalogPageSize, sort: 'department_name' }),
+    [],
+  );
+  const { data, loading, error } = usePagedList('departments', sdk.departments, params);
   const { employees } = useActiveEmployees(canEdit);
   const { branches } = useBranches(canEdit);
-  const [editing, setEditing] = useState<Department | null>(null);
-  const [formOpen, setFormOpen] = useState(false);
+  const form = useRecordForm<Department>();
 
   const departments = data?.data ?? [];
   const repeatedNames = new Set(departments.map((department) => department.department_name)).size < departments.length;
 
-  const openForm = (department: Department | null) => {
-    setEditing(department);
-    setFormOpen(true);
-  };
-
-  const handleSaved = (message: string) => {
-    setFormOpen(false);
-    showToast(message);
-    refreshData();
-  };
-
   return (
     <>
-      <div className="page-header">
-        <div>
-          <h1>Departamentos</h1>
-          <p className="page-sub">Áreas de la organización y sus responsables.</p>
-        </div>
+      <PageHeader title="Departamentos" subtitle="Áreas de la organización y sus responsables.">
         {can('departments:create') && (
-          <div className="page-actions">
-            <button type="button" className="btn btn-primary" onClick={() => openForm(null)} disabled={branches.length === 0}>
-              <Icon name="plus" /> Nuevo departamento
-            </button>
-          </div>
+          <button type="button" className="btn btn-primary" onClick={() => form.open()} disabled={branches.length === 0}>
+            <Icon name="plus" /> Nuevo departamento
+          </button>
         )}
-      </div>
+      </PageHeader>
 
       {departments.length === 0 ? (
         <EmptyState message={loading ? 'Cargando...' : (error ?? 'No hay departamentos.')} />
@@ -67,7 +50,7 @@ export function DepartmentsPage() {
                   {repeatedNames && <span className="cell-sub"> · {department.branch_code}</span>}
                 </h3>
                 {canEdit && (
-                  <button type="button" className="icon-btn" title="Editar" onClick={() => openForm(department)}>
+                  <button type="button" className="icon-btn" title="Editar" onClick={() => form.open(department)}>
                     <Icon name="edit" />
                   </button>
                 )}
@@ -91,14 +74,14 @@ export function DepartmentsPage() {
         </div>
       )}
 
-      {formOpen && (
+      {form.isOpen && (
         <DepartmentForm
-          key={editing?.department_id ?? 'new'}
-          department={editing}
+          key={form.record?.department_id ?? 'new'}
+          department={form.record}
           branches={branches}
           employees={employees}
-          onClose={() => setFormOpen(false)}
-          onSaved={handleSaved}
+          onClose={form.close}
+          onSaved={form.saved}
         />
       )}
     </>

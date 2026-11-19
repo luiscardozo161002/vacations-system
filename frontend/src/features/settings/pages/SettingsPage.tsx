@@ -1,5 +1,6 @@
 import { useState, useSyncExternalStore } from 'react';
 import { Icon } from '../../../components/Icon';
+import { PageHeader } from '../../../components/PageHeader';
 import { useToast } from '../../../components/toast-context';
 import {
   BACKDROP_PRESETS,
@@ -76,12 +77,7 @@ export function SettingsPage() {
 
   return (
     <>
-      <div className="page-header">
-        <div>
-          <h1>Configuración</h1>
-          <p className="page-sub">Preferencias de apariencia de tu sesión.</p>
-        </div>
-      </div>
+      <PageHeader title="Configuración" subtitle="Preferencias de apariencia de tu sesión." />
 
       <div className="card" style={{ maxWidth: 480, marginBottom: 16 }}>
         <h3 className="section-title">Tema</h3>

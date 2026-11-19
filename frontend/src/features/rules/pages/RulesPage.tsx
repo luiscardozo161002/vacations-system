@@ -1,21 +1,18 @@
-import { useMemo, useState } from 'react';
-import type { AccrualRule, CallOptions, ListAccrualRulesParams } from '@vacations/sdk';
+import { useMemo } from 'react';
+import type { AccrualRule } from '@vacations/sdk';
 import { sdk } from '../../../lib/sdk';
+import { config } from '../../../lib/config';
 import { usePagedList } from '../../../lib/use-paged-list';
-import { refreshData } from '../../../lib/query-client';
-import { useUrlFilters } from '../../../lib/use-url-filters';
+import { usePageFilters } from '../../../lib/use-page-filters';
+import { useRecordForm } from '../../../lib/use-record-form';
 import { DataTable, type Column } from '../../../components/DataTable';
 import { Icon } from '../../../components/Icon';
+import { PageHeader } from '../../../components/PageHeader';
 import { StatusBadge } from '../../../components/StatusBadge';
-import { useToast } from '../../../components/toast-context';
 import { useAuth } from '../../auth/auth-context';
 import { RuleForm } from '../components/RuleForm';
 
-const PAGE_SIZE = 10;
-const LFT_REFORM_YEAR = 2023;
-const FILTERS = { pagina: '1' };
-
-const listRules = (params: ListAccrualRulesParams, options: CallOptions) => sdk.accrualRules.list(params, options);
+const FILTERS = {};
 
 const seniority = (rule: AccrualRule): string => {
   if (rule.years_to === rule.years_from) return `${rule.years_from} año${rule.years_from === 1 ? '' : 's'}`;
@@ -23,27 +20,13 @@ const seniority = (rule: AccrualRule): string => {
 };
 
 export function RulesPage() {
-  const showToast = useToast();
   const { can } = useAuth();
-  const [filters, setFilters] = useUrlFilters(FILTERS);
-  const page = Number(filters.pagina);
-  const params = useMemo(() => ({ page, pageSize: PAGE_SIZE, sort: 'years_from' }), [page]);
-  const { data, loading, error } = usePagedList('accrual-rules', listRules, params);
-  const [editing, setEditing] = useState<AccrualRule | null>(null);
-  const [formOpen, setFormOpen] = useState(false);
+  const { page, setPage } = usePageFilters(FILTERS);
+  const params = useMemo(() => ({ page, pageSize: config.pageSize, sort: 'years_from' }), [page]);
+  const { data, loading, error } = usePagedList('accrual-rules', sdk.accrualRules, params);
+  const form = useRecordForm<AccrualRule>();
 
-  const effectiveYear = Math.max(LFT_REFORM_YEAR, ...(data?.data.map((rule) => rule.effective_year) ?? []));
-
-  const openForm = (rule: AccrualRule | null) => {
-    setEditing(rule);
-    setFormOpen(true);
-  };
-
-  const handleSaved = (message: string) => {
-    setFormOpen(false);
-    showToast(message);
-    refreshData();
-  };
+  const effectiveYear = Math.max(config.lftReformYear, ...(data?.data.map((rule) => rule.effective_year) ?? []));
 
   const columns: Column<AccrualRule>[] = [
     { header: 'Antigüedad', render: seniority, className: 'cell-main' },
@@ -54,7 +37,7 @@ export function RulesPage() {
       header: '',
       render: (rule) =>
         can('rules:update') && (
-          <button type="button" className="icon-btn" title="Editar" onClick={() => openForm(rule)}>
+          <button type="button" className="icon-btn" title="Editar" onClick={() => form.open(rule)}>
             <Icon name="edit" />
           </button>
         ),
@@ -63,41 +46,31 @@ export function RulesPage() {
 
   return (
     <>
-      <div className="page-header">
-        <div>
-          <h1>Reglas de acumulación</h1>
-          <p className="page-sub">Días de vacaciones por antigüedad — reforma "vacaciones dignas" (Art. 76 LFT).</p>
-        </div>
+      <PageHeader title="Reglas de acumulación" subtitle='Días de vacaciones por antigüedad — reforma "vacaciones dignas" (Art. 76 LFT).'>
         {can('rules:create') && (
-          <div className="page-actions">
-            <button type="button" className="btn btn-primary" onClick={() => openForm(null)}>
-              <Icon name="plus" /> Nueva regla
-            </button>
-          </div>
+          <button type="button" className="btn btn-primary" onClick={() => form.open()}>
+            <Icon name="plus" /> Nueva regla
+          </button>
         )}
-      </div>
+      </PageHeader>
 
       <DataTable
         columns={columns}
-        rows={data?.data ?? []}
+        data={data}
         rowKey={(rule) => rule.rule_id}
+        page={page}
+        onPageChange={setPage}
         loading={loading}
         emptyMessage={error ?? 'No hay reglas registradas.'}
-        pagination={{
-          page,
-          totalPages: data?.pagination.totalPages ?? 1,
-          total: data?.pagination.total ?? 0,
-          onPageChange: (next) => setFilters({ pagina: String(next) }),
-        }}
       />
 
-      {formOpen && (
+      {form.isOpen && (
         <RuleForm
-          key={editing?.rule_id ?? 'new'}
-          rule={editing}
+          key={form.record?.rule_id ?? 'new'}
+          rule={form.record}
           effectiveYear={effectiveYear}
-          onClose={() => setFormOpen(false)}
-          onSaved={handleSaved}
+          onClose={form.close}
+          onSaved={form.saved}
         />
       )}
     </>

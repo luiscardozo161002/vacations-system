@@ -48,7 +48,7 @@ npm run dev --workspace=frontend
 
 ## Configuración
 
-Todas las variables están en [`backend/.env.example`](backend/.env.example), cada una con su descripción y valor por defecto. Los schemas se validan al arrancar en [`config/index.js`](backend/src/config/index.js).
+Todas las variables del backend están en [`backend/.env.example`](backend/.env.example), cada una con su descripción y valor por defecto. Los schemas se validan al arrancar en [`config/index.js`](backend/src/config/index.js). Las del frontend (`VITE_*`) están en [`frontend/.env.example`](frontend/.env.example).
 
 | Variable | Regla |
 |---|---|
@@ -145,7 +145,9 @@ const page = await sdk.employees.list({ status: ['active'], page: 1 });
 
 ## Proxy local con NGINX (Windows)
 
-[`nginx/development.conf`](nginx/development.conf) publica la API en `127.0.0.1:8080` y la reenvía a Hapi en `127.0.0.1:3000`. NGINX reemplaza `X-Forwarded-For` y se conecta desde `127.0.0.2`.
+Es opcional: sirve para probar `X-Forwarded-For` y `TRUSTED_PROXIES`. Sin proxy, deja `VITE_API_BASE_URL=http://localhost:3000` y `TRUSTED_PROXIES` vacío.
+
+[`nginx/development.conf`](nginx/development.conf) publica la API en `127.0.0.1:8080` y la reenvía a Hapi en `127.0.0.1:3000`. NGINX reemplaza `X-Forwarded-For` y se conecta desde `127.0.0.2`. Inícialo con esa configuración, como en el comando de abajo; un NGINX con su configuración por defecto escucha en el puerto 80 y no reenvía a la API.
 
 | Archivo | Valores |
 |---|---|

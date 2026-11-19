@@ -1,30 +1,30 @@
 import { useMemo, useState } from 'react';
 import type { Notice, NoticeStatus } from '@vacations/sdk';
+import { sdk } from '../../../lib/sdk';
+import { config } from '../../../lib/config';
 import { refreshData } from '../../../lib/query-client';
-import { useUrlFilters } from '../../../lib/use-url-filters';
+import { usePageFilters } from '../../../lib/use-page-filters';
+import { usePagedList } from '../../../lib/use-paged-list';
+import { useRecordForm } from '../../../lib/use-record-form';
 import { formatAbsenceRange } from '../../../lib/format';
 import { Icon } from '../../../components/Icon';
 import { DataTable, type Column } from '../../../components/DataTable';
+import { PageHeader } from '../../../components/PageHeader';
 import { StatusBadge } from '../../../components/StatusBadge';
-import { useToast } from '../../../components/toast-context';
 import { useAuth } from '../../auth/auth-context';
 import { useActiveEmployees } from '../../employees/hooks/useActiveEmployees';
 import { useReasons } from '../../reasons/hooks/useReasons';
-import { useNotices } from '../hooks/useNotices';
 import { AbsenceForm } from '../components/AbsenceForm';
 import { AbsenceDetail } from '../components/AbsenceDetail';
 
-const PAGE_SIZE = 10;
-const FILTERS = { estado: '', pagina: '1' };
+const FILTERS = { estado: '' };
 
 export function NoticesPage() {
-  const showToast = useToast();
   const { user, can } = useAuth();
   const canRegister = can('notices:create');
 
-  const [filters, setFilters] = useUrlFilters(FILTERS);
-  const page = Number(filters.pagina);
-  const [formOpen, setFormOpen] = useState(false);
+  const { filters, page, setFilter, setPage } = usePageFilters(FILTERS);
+  const form = useRecordForm();
   const [selected, setSelected] = useState<Notice | null>(null);
 
   const { reasons } = useReasons();
@@ -34,14 +34,14 @@ export function NoticesPage() {
     () => ({
       kind: 'notice' as const,
       page,
-      pageSize: PAGE_SIZE,
+      pageSize: config.pageSize,
       status: filters.estado ? (filters.estado as NoticeStatus) : undefined,
       sort: '-request_date',
     }),
     [page, filters.estado],
   );
 
-  const { data, loading, error } = useNotices(params);
+  const { data, loading, error } = usePagedList('notices', sdk.notices, params);
 
   const columns: Column<Notice>[] = [
     { header: 'Empleado', render: (notice) => notice.employee_name, className: 'cell-main' },
@@ -60,12 +60,6 @@ export function NoticesPage() {
     },
   ];
 
-  const handleSaved = () => {
-    setFormOpen(false);
-    showToast('Aviso registrado.');
-    refreshData();
-  };
-
   const handleChanged = () => {
     setSelected(null);
     refreshData();
@@ -73,35 +67,28 @@ export function NoticesPage() {
 
   return (
     <>
-      <div className="page-header">
-        <div>
-          <h1>{canRegister ? 'Avisos' : 'Mis avisos'}</h1>
-          <p className="page-sub">
-            {canRegister
-              ? 'Avisos de ausencia que Recursos Humanos registra para los empleados de sus sedes.'
-              : 'Tus avisos de ausencia registrados por Recursos Humanos.'}
-          </p>
-        </div>
+      <PageHeader
+        title={canRegister ? 'Avisos' : 'Mis avisos'}
+        subtitle={
+          canRegister
+            ? 'Avisos de ausencia que Recursos Humanos registra para los empleados de sus sedes.'
+            : 'Tus avisos de ausencia registrados por Recursos Humanos.'
+        }
+      >
         {canRegister && (
-          <div className="page-actions">
-            <button
-              type="button"
-              className="btn btn-primary"
-              onClick={() => setFormOpen(true)}
-              disabled={reasons.length === 0 || employees.length === 0}
-            >
-              <Icon name="plus" /> Nuevo aviso
-            </button>
-          </div>
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={() => form.open()}
+            disabled={reasons.length === 0 || employees.length === 0}
+          >
+            <Icon name="plus" /> Nuevo aviso
+          </button>
         )}
-      </div>
+      </PageHeader>
 
       <div className="toolbar">
-        <select
-          aria-label="Estado"
-          value={filters.estado}
-          onChange={(e) => setFilters({ estado: e.target.value, pagina: '1' })}
-        >
+        <select aria-label="Estado" value={filters.estado} onChange={(e) => setFilter({ estado: e.target.value })}>
           <option value="">Todos los estados</option>
           <option value="approved">Aprobado</option>
           <option value="cancelled">Cancelado</option>
@@ -111,26 +98,22 @@ export function NoticesPage() {
 
       <DataTable
         columns={columns}
-        rows={data?.data ?? []}
+        data={data}
         rowKey={(notice) => notice.notice_id}
+        page={page}
+        onPageChange={setPage}
         loading={loading}
         emptyMessage={error ?? 'No hay avisos registrados.'}
-        pagination={{
-          page,
-          totalPages: data?.pagination.totalPages ?? 1,
-          total: data?.pagination.total ?? 0,
-          onPageChange: (next) => setFilters({ pagina: String(next) }),
-        }}
       />
 
-      {formOpen && (
+      {form.isOpen && (
         <AbsenceForm
           title="Nuevo aviso"
           submitLabel="Registrar aviso"
           reasons={reasons}
           employees={employees}
-          onClose={() => setFormOpen(false)}
-          onSaved={handleSaved}
+          onClose={form.close}
+          onSaved={() => form.saved('Aviso registrado.')}
         />
       )}
 

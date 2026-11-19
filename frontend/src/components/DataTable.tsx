@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import type { Paginated } from '@vacations/sdk';
 import { EmptyState } from './EmptyState';
 import { Icon } from './Icon';
 
@@ -8,23 +9,18 @@ export interface Column<T> {
   className?: string;
 }
 
-export interface TablePagination {
-  page: number;
-  totalPages: number;
-  total: number;
-  onPageChange: (page: number) => void;
-}
-
 interface DataTableProps<T> {
   columns: Column<T>[];
-  rows: T[];
+  data: Paginated<T> | null;
   rowKey: (row: T) => string | number;
+  page: number;
+  onPageChange: (page: number) => void;
   loading?: boolean;
   emptyMessage: string;
-  pagination?: TablePagination;
 }
 
-export function DataTable<T>({ columns, rows, rowKey, loading = false, emptyMessage, pagination }: DataTableProps<T>) {
+export function DataTable<T>({ columns, data, rowKey, page, onPageChange, loading = false, emptyMessage }: DataTableProps<T>) {
+  const rows = data?.data ?? [];
   const showEmpty = loading || rows.length === 0;
 
   return (
@@ -57,12 +53,19 @@ export function DataTable<T>({ columns, rows, rowKey, loading = false, emptyMess
           )}
         </tbody>
       </table>
-      {pagination && <TableFoot {...pagination} />}
+      <TableFoot page={page} totalPages={data?.pagination.totalPages ?? 1} total={data?.pagination.total ?? 0} onPageChange={onPageChange} />
     </div>
   );
 }
 
-function TableFoot({ page, totalPages, total, onPageChange }: TablePagination) {
+interface TableFootProps {
+  page: number;
+  totalPages: number;
+  total: number;
+  onPageChange: (page: number) => void;
+}
+
+function TableFoot({ page, totalPages, total, onPageChange }: TableFootProps) {
   const lastPage = Math.max(1, totalPages);
 
   return (

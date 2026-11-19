@@ -2,14 +2,14 @@ import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import type { CallOptions, Paginated } from '@vacations/sdk';
 import { getErrorMessage } from './get-error-message';
 
-export function usePagedList<T, P>(
-  key: string,
-  load: (params: P, options: CallOptions) => Promise<Paginated<T>>,
-  params: P,
-) {
+export interface Listable<T, P> {
+  list(params: P, options: CallOptions): Promise<Paginated<T>>;
+}
+
+export function usePagedList<T, P>(key: string, resource: Listable<T, P>, params: P) {
   const query = useQuery({
     queryKey: [key, params],
-    queryFn: ({ signal }) => load(params, { signal }),
+    queryFn: ({ signal }) => resource.list(params, { signal }),
     placeholderData: keepPreviousData,
   });
 

@@ -1,8 +1,8 @@
-import { useState, type FormEvent } from 'react';
+import { useState } from 'react';
 import type { AccrualRule } from '@vacations/sdk';
 import { sdk } from '../../../lib/sdk';
-import { getErrorMessage } from '../../../lib/get-error-message';
-import { Drawer } from '../../../components/Drawer';
+import { useFormSubmit } from '../../../lib/use-form-submit';
+import { FormDrawer } from '../../../components/FormDrawer';
 import { TextField } from '../../../components/FormField';
 
 interface RuleFormProps {
@@ -16,24 +16,20 @@ export function RuleForm({ rule, effectiveYear, onClose, onSaved }: RuleFormProp
   const [yearsFrom, setYearsFrom] = useState(rule ? String(rule.years_from) : '');
   const [yearsTo, setYearsTo] = useState(rule?.years_to != null ? String(rule.years_to) : '');
   const [days, setDays] = useState(rule ? String(rule.vacation_days) : '');
-  const [submitting, setSubmitting] = useState(false);
-  const [formError, setFormError] = useState<string | null>(null);
+  const { submitting, error, setError, submit } = useFormSubmit();
 
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = () => {
     if (!yearsFrom || !yearsTo || !days) {
-      setFormError('Completa los tres campos con valores numéricos.');
+      setError('Completa los tres campos con valores numéricos.');
       return;
     }
     if (Number(yearsTo) < Number(yearsFrom)) {
-      setFormError('"Hasta" no puede ser menor que "desde".');
+      setError('"Hasta" no puede ser menor que "desde".');
       return;
     }
 
-    setSubmitting(true);
-    setFormError(null);
     const payload = { years_from: Number(yearsFrom), years_to: Number(yearsTo), vacation_days: Number(days) };
-    try {
+    submit(async () => {
       if (rule) {
         await sdk.accrualRules.update(rule.rule_id, payload);
         onSaved('Regla actualizada.');
@@ -41,34 +37,21 @@ export function RuleForm({ rule, effectiveYear, onClose, onSaved }: RuleFormProp
         await sdk.accrualRules.create({ ...payload, effective_year: effectiveYear });
         onSaved('Regla creada.');
       }
-    } catch (err) {
-      setFormError(getErrorMessage(err));
-    } finally {
-      setSubmitting(false);
-    }
+    });
   };
 
   return (
-    <Drawer
+    <FormDrawer
       title={rule ? 'Editar regla de acumulación' : 'Nueva regla de acumulación'}
+      submitLabel={rule ? 'Guardar cambios' : 'Crear regla'}
+      submitting={submitting}
+      error={error}
       onClose={onClose}
       onSubmit={handleSubmit}
-      footer={
-        <>
-          <button type="button" className="btn btn-secondary" onClick={onClose} disabled={submitting}>
-            Cancelar
-          </button>
-          <button type="submit" className="btn btn-primary" disabled={submitting}>
-            {rule ? 'Guardar cambios' : 'Crear regla'}
-          </button>
-        </>
-      }
     >
-      {formError && <p className="field-error" role="alert">{formError}</p>}
-
       <TextField id="r-from" label="Antigüedad desde (años)" type="number" min={0} value={yearsFrom} onChange={setYearsFrom} />
       <TextField id="r-to" label="Antigüedad hasta (años)" type="number" min={0} value={yearsTo} onChange={setYearsTo} />
       <TextField id="r-days" label="Días otorgados" type="number" min={1} value={days} onChange={setDays} />
-    </Drawer>
+    </FormDrawer>
   );
 }

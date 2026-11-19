@@ -1,7 +1,7 @@
 import { sdk } from '../../../lib/sdk';
-import { useApiQuery } from '../../../lib/use-api-query';
+import { useCatalog } from '../../../lib/use-catalog';
 
 export function useShifts() {
-  const { data, error } = useApiQuery(['shifts', 'all'], (signal) => sdk.shifts.list({ pageSize: 100 }, { signal }));
-  return { shifts: data?.data ?? [], error };
+  const { items, error } = useCatalog('shifts', sdk.shifts, {});
+  return { shifts: items, error };
 }

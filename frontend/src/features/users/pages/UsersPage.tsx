@@ -1,15 +1,18 @@
 import { useMemo, useState } from 'react';
-import type { CallOptions, ListUsersParams, User } from '@vacations/sdk';
+import type { User } from '@vacations/sdk';
 import { sdk } from '../../../lib/sdk';
+import { config } from '../../../lib/config';
 import { getErrorMessage } from '../../../lib/get-error-message';
 import { usePagedList } from '../../../lib/use-paged-list';
 import { useApiQuery } from '../../../lib/use-api-query';
 import { refreshData } from '../../../lib/query-client';
-import { useUrlFilters } from '../../../lib/use-url-filters';
+import { usePageFilters } from '../../../lib/use-page-filters';
+import { useRecordForm } from '../../../lib/use-record-form';
 import { ROLE_LABELS } from '../../../app/navigation';
 import { DataTable, type Column } from '../../../components/DataTable';
 import { ConfirmDialog } from '../../../components/Dialog';
 import { Icon } from '../../../components/Icon';
+import { PageHeader } from '../../../components/PageHeader';
 import { StatusBadge } from '../../../components/StatusBadge';
 import { useToast } from '../../../components/toast-context';
 import { useAuth } from '../../auth/auth-context';
@@ -17,16 +20,14 @@ import { useActiveEmployees } from '../../employees/hooks/useActiveEmployees';
 import { UserForm } from '../components/UserForm';
 import { UserAssignment } from '../components/UserAssignment';
 
-const PAGE_SIZE = 10;
-const FILTERS = { pagina: '1' };
-
-const listUsers = (params: ListUsersParams, options: CallOptions) => sdk.users.list(params, options);
+const FILTERS = {};
 
 const loadCatalogs = async (signal: AbortSignal) => {
+  const params = { status: 'active' as const, pageSize: config.catalogPageSize };
   const [roles, branches, companies] = await Promise.all([
     sdk.roles.list({ status: 'active' }, { signal }),
-    sdk.branches.list({ status: 'active', pageSize: 100 }, { signal }),
-    sdk.companies.list({ status: 'active', pageSize: 100 }, { signal }),
+    sdk.branches.list(params, { signal }),
+    sdk.companies.list(params, { signal }),
   ]);
   return { roles: roles.data, branches: branches.data, companies: companies.data };
 };
@@ -34,29 +35,21 @@ const loadCatalogs = async (signal: AbortSignal) => {
 const NO_CATALOGS = { roles: [], branches: [], companies: [] };
 
 const branchesLabel = (user: User): string => {
-  if (user.role_code === 'SUPERUSER') return 'Todas';
+  if (user.role_code === config.roles.global) return 'Todas';
   return user.branch_codes.join(', ') || '—';
 };
 
 export function UsersPage() {
   const showToast = useToast();
   const { can } = useAuth();
-  const [filters, setFilters] = useUrlFilters(FILTERS);
-  const page = Number(filters.pagina);
-  const params = useMemo(() => ({ page, pageSize: PAGE_SIZE, sort: 'username' }), [page]);
-  const { data, loading, error } = usePagedList('users', listUsers, params);
+  const { page, setPage } = usePageFilters(FILTERS);
+  const params = useMemo(() => ({ page, pageSize: config.pageSize, sort: 'username' }), [page]);
+  const { data, loading, error } = usePagedList('users', sdk.users, params);
   const { employees } = useActiveEmployees(can('users:create'));
   const catalogs = useApiQuery(['users', 'catalogs'], loadCatalogs).data ?? NO_CATALOGS;
-  const [formOpen, setFormOpen] = useState(false);
-  const [assigning, setAssigning] = useState<User | null>(null);
+  const createForm = useRecordForm();
+  const assignment = useRecordForm<User>();
   const [statusTarget, setStatusTarget] = useState<User | null>(null);
-
-  const handleSaved = (message: string) => {
-    setFormOpen(false);
-    setAssigning(null);
-    showToast(message);
-    refreshData();
-  };
 
   const confirmStatusChange = async () => {
     if (!statusTarget) return;
@@ -84,7 +77,7 @@ export function UsersPage() {
       render: (user) => (
         <div className="row-actions">
           {can('users:update') && (
-            <button type="button" className="icon-btn" title="Asignación" onClick={() => setAssigning(user)}>
+            <button type="button" className="icon-btn" title="Asignación" onClick={() => assignment.open(user)}>
               <Icon name="edit" />
             </button>
           )}
@@ -105,46 +98,36 @@ export function UsersPage() {
 
   return (
     <>
-      <div className="page-header">
-        <div>
-          <h1>Usuarios</h1>
-          <p className="page-sub">Cuentas con acceso al sistema, su empresa y sedes asignadas.</p>
-        </div>
+      <PageHeader title="Usuarios" subtitle="Cuentas con acceso al sistema, su empresa y sedes asignadas.">
         {can('users:create') && (
-          <div className="page-actions">
-            <button type="button" className="btn btn-primary" onClick={() => setFormOpen(true)} disabled={!catalogs.roles.length}>
-              <Icon name="plus" /> Nuevo usuario
-            </button>
-          </div>
+          <button type="button" className="btn btn-primary" onClick={() => createForm.open()} disabled={!catalogs.roles.length}>
+            <Icon name="plus" /> Nuevo usuario
+          </button>
         )}
-      </div>
+      </PageHeader>
 
       <DataTable
         columns={columns}
-        rows={data?.data ?? []}
+        data={data}
         rowKey={(user) => user.user_id}
+        page={page}
+        onPageChange={setPage}
         loading={loading}
         emptyMessage={error ?? 'No hay usuarios.'}
-        pagination={{
-          page,
-          totalPages: data?.pagination.totalPages ?? 1,
-          total: data?.pagination.total ?? 0,
-          onPageChange: (next) => setFilters({ pagina: String(next) }),
-        }}
       />
 
-      {formOpen && (
-        <UserForm roles={catalogs.roles} employees={employees} onClose={() => setFormOpen(false)} onSaved={handleSaved} />
+      {createForm.isOpen && (
+        <UserForm roles={catalogs.roles} employees={employees} onClose={createForm.close} onSaved={createForm.saved} />
       )}
 
-      {assigning && (
+      {assignment.record && (
         <UserAssignment
-          key={assigning.user_id}
-          user={assigning}
+          key={assignment.record.user_id}
+          user={assignment.record}
           branches={catalogs.branches}
           companies={catalogs.companies}
-          onClose={() => setAssigning(null)}
-          onSaved={handleSaved}
+          onClose={assignment.close}
+          onSaved={assignment.saved}
         />
       )}
 

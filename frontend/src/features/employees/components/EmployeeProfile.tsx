@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { Employee, EmployeeAccount, Notice, VacationEntitlement } from '@vacations/sdk';
 import { sdk } from '../../../lib/sdk';
+import { config } from '../../../lib/config';
 import { getErrorMessage } from '../../../lib/get-error-message';
 import { useApiQuery } from '../../../lib/use-api-query';
 import { refreshData } from '../../../lib/query-client';
@@ -72,7 +73,7 @@ export function EmployeeProfile({ employee, departmentName, shiftName, onClose }
   const balance = data?.balance;
   const account = data?.account ?? null;
   const canGrant =
-    Boolean(data) && can('employees:update') && employee.status === 'active' && (!account || account.role_code === 'EMPLOYEE');
+    Boolean(data) && can('employees:update') && employee.status === 'active' && (!account || account.role_code === config.roles.employee);
 
   const grant = async () => {
     setConfirming(false);
@@ -151,7 +152,7 @@ export function EmployeeProfile({ employee, departmentName, shiftName, onClose }
             </div>
             <div className="kv-item">
               <div className="k">Contraseña</div>
-              <div className="v">{account.role_code === 'EMPLOYEE' ? passwordState(account) : 'Cuenta administrativa'}</div>
+              <div className="v">{account.role_code === config.roles.employee ? passwordState(account) : 'Cuenta administrativa'}</div>
             </div>
           </div>
         ) : canGrant ? (

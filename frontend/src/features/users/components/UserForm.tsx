@@ -1,9 +1,10 @@
-import { useMemo, useState, type FormEvent } from 'react';
+import { useMemo, useState } from 'react';
 import type { Employee, Role } from '@vacations/sdk';
 import { sdk } from '../../../lib/sdk';
-import { getErrorMessage } from '../../../lib/get-error-message';
+import { config } from '../../../lib/config';
+import { useFormSubmit } from '../../../lib/use-form-submit';
 import { ROLE_LABELS } from '../../../app/navigation';
-import { Drawer } from '../../../components/Drawer';
+import { FormDrawer } from '../../../components/FormDrawer';
 import { SearchSelect } from '../../../components/SearchSelect';
 import { FormField, SelectField, TextField } from '../../../components/FormField';
 
@@ -14,16 +15,13 @@ interface UserFormProps {
   onSaved: (message: string) => void;
 }
 
-const MIN_PASSWORD = 8;
-
 export function UserForm({ roles, employees, onClose, onSaved }: UserFormProps) {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [roleId, setRoleId] = useState(String(roles.find((role) => role.role_code === 'EMPLOYEE')?.role_id ?? ''));
+  const [roleId, setRoleId] = useState(String(roles.find((role) => role.role_code === config.roles.employee)?.role_id ?? ''));
   const [employeeId, setEmployeeId] = useState('');
-  const [submitting, setSubmitting] = useState(false);
-  const [formError, setFormError] = useState<string | null>(null);
+  const { submitting, error, setError, submit } = useFormSubmit();
 
   const employeeOptions = useMemo(
     () =>
@@ -34,16 +32,13 @@ export function UserForm({ roles, employees, onClose, onSaved }: UserFormProps) 
     [employees],
   );
 
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    if (password.length < MIN_PASSWORD) {
-      setFormError(`La contraseña inicial necesita al menos ${MIN_PASSWORD} caracteres.`);
+  const handleSubmit = () => {
+    if (password.length < config.passwordMinLength) {
+      setError(`La contraseña inicial necesita al menos ${config.passwordMinLength} caracteres.`);
       return;
     }
 
-    setSubmitting(true);
-    setFormError(null);
-    try {
+    submit(async () => {
       await sdk.users.create({
         username: username.trim(),
         email: email.trim(),
@@ -52,31 +47,18 @@ export function UserForm({ roles, employees, onClose, onSaved }: UserFormProps) 
         employee_id: employeeId ? Number(employeeId) : null,
       });
       onSaved('Usuario creado.');
-    } catch (err) {
-      setFormError(getErrorMessage(err));
-    } finally {
-      setSubmitting(false);
-    }
+    });
   };
 
   return (
-    <Drawer
+    <FormDrawer
       title="Nuevo usuario"
+      submitLabel="Crear usuario"
+      submitting={submitting}
+      error={error}
       onClose={onClose}
       onSubmit={handleSubmit}
-      footer={
-        <>
-          <button type="button" className="btn btn-secondary" onClick={onClose} disabled={submitting}>
-            Cancelar
-          </button>
-          <button type="submit" className="btn btn-primary" disabled={submitting}>
-            Crear usuario
-          </button>
-        </>
-      }
     >
-      {formError && <p className="field-error" role="alert">{formError}</p>}
-
       <TextField id="u-username" label="Usuario" value={username} onChange={setUsername} maxLength={50} required />
       <TextField id="u-email" label="Correo" type="email" value={email} onChange={setEmail} maxLength={120} required />
       <TextField
@@ -106,6 +88,6 @@ export function UserForm({ roles, employees, onClose, onSaved }: UserFormProps) 
           fullWidth
         />
       </FormField>
-    </Drawer>
+    </FormDrawer>
   );
 }

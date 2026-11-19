@@ -1,11 +1,7 @@
 import { sdk } from '../../../lib/sdk';
-import { useApiQuery } from '../../../lib/use-api-query';
+import { useCatalog } from '../../../lib/use-catalog';
 
 export function useDepartments(enabled = true) {
-  const { data, error } = useApiQuery(
-    ['departments', 'all'],
-    (signal) => sdk.departments.list({ pageSize: 100 }, { signal }),
-    enabled,
-  );
-  return { departments: data?.data ?? [], error };
+  const { items, error } = useCatalog('departments', sdk.departments, {}, enabled);
+  return { departments: items, error };
 }

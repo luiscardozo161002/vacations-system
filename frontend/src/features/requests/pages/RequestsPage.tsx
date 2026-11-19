@@ -1,32 +1,32 @@
 import { useMemo, useState } from 'react';
 import type { Notice, NoticeStatus } from '@vacations/sdk';
+import { sdk } from '../../../lib/sdk';
+import { config } from '../../../lib/config';
 import { refreshData } from '../../../lib/query-client';
-import { useUrlFilters } from '../../../lib/use-url-filters';
+import { usePageFilters } from '../../../lib/use-page-filters';
+import { usePagedList } from '../../../lib/use-paged-list';
+import { useRecordForm } from '../../../lib/use-record-form';
 import { formatAbsenceRange, formatDaysHours } from '../../../lib/format';
 import { Icon } from '../../../components/Icon';
 import { DataTable, type Column } from '../../../components/DataTable';
+import { PageHeader } from '../../../components/PageHeader';
 import { SearchSelect } from '../../../components/SearchSelect';
 import { StatusBadge } from '../../../components/StatusBadge';
-import { useToast } from '../../../components/toast-context';
 import { useAuth } from '../../auth/auth-context';
 import { useDepartments } from '../../departments/hooks/useDepartments';
 import { useReasons } from '../../reasons/hooks/useReasons';
-import { useNotices } from '../hooks/useNotices';
 import { AbsenceForm } from '../components/AbsenceForm';
 import { AbsenceDetail } from '../components/AbsenceDetail';
 
-const PAGE_SIZE = 10;
-const FILTERS = { estado: '', departamento: '', pagina: '1' };
+const FILTERS = { estado: '', departamento: '' };
 
 export function RequestsPage() {
-  const showToast = useToast();
   const { user, can } = useAuth();
   const isEmployee = !can('departments:view');
   const canCreate = can('requests:create') && Boolean(user?.employee);
 
-  const [filters, setFilters] = useUrlFilters(FILTERS);
-  const page = Number(filters.pagina);
-  const [formOpen, setFormOpen] = useState(false);
+  const { filters, page, setFilter, setPage } = usePageFilters(FILTERS);
+  const form = useRecordForm();
   const [selected, setSelected] = useState<Notice | null>(null);
 
   const { departments } = useDepartments(!isEmployee);
@@ -36,7 +36,7 @@ export function RequestsPage() {
     () => ({
       kind: 'request' as const,
       page,
-      pageSize: PAGE_SIZE,
+      pageSize: config.pageSize,
       status: filters.estado ? (filters.estado as NoticeStatus) : undefined,
       department_id: filters.departamento ? Number(filters.departamento) : undefined,
       sort: '-request_date',
@@ -44,7 +44,7 @@ export function RequestsPage() {
     [page, filters.estado, filters.departamento],
   );
 
-  const { data, loading, error } = useNotices(params);
+  const { data, loading, error } = usePagedList('notices', sdk.notices, params);
 
   const departmentOptions = useMemo(
     () => departments.map((department) => ({ value: String(department.department_id), label: department.department_name })),
@@ -70,12 +70,6 @@ export function RequestsPage() {
     },
   ];
 
-  const handleSaved = () => {
-    setFormOpen(false);
-    showToast('Solicitud enviada, queda pendiente de aprobación.');
-    refreshData();
-  };
-
   const handleChanged = () => {
     setSelected(null);
     refreshData();
@@ -83,30 +77,23 @@ export function RequestsPage() {
 
   return (
     <>
-      <div className="page-header">
-        <div>
-          <h1>{isEmployee ? 'Mis solicitudes de avisos de ausencia' : 'Solicitudes de avisos de ausencia'}</h1>
-          <p className="page-sub">
-            {isEmployee
-              ? 'Tus solicitudes de vacaciones, con fecha y, si aplica, horario de inicio y fin.'
-              : 'Solicitudes de vacaciones de los empleados, con fecha y, si aplica, horario de inicio y fin.'}
-          </p>
-        </div>
+      <PageHeader
+        title={isEmployee ? 'Mis solicitudes de avisos de ausencia' : 'Solicitudes de avisos de ausencia'}
+        subtitle={
+          isEmployee
+            ? 'Tus solicitudes de vacaciones, con fecha y, si aplica, horario de inicio y fin.'
+            : 'Solicitudes de vacaciones de los empleados, con fecha y, si aplica, horario de inicio y fin.'
+        }
+      >
         {canCreate && (
-          <div className="page-actions">
-            <button type="button" className="btn btn-primary" onClick={() => setFormOpen(true)} disabled={reasons.length === 0}>
-              <Icon name="plus" /> Nueva solicitud
-            </button>
-          </div>
+          <button type="button" className="btn btn-primary" onClick={() => form.open()} disabled={reasons.length === 0}>
+            <Icon name="plus" /> Nueva solicitud
+          </button>
         )}
-      </div>
+      </PageHeader>
 
       <div className="toolbar">
-        <select
-          aria-label="Estado"
-          value={filters.estado}
-          onChange={(e) => setFilters({ estado: e.target.value, pagina: '1' })}
-        >
+        <select aria-label="Estado" value={filters.estado} onChange={(e) => setFilter({ estado: e.target.value })}>
           <option value="">Todos los estados</option>
           <option value="pending">Pendiente</option>
           <option value="approved">Aprobada</option>
@@ -118,7 +105,7 @@ export function RequestsPage() {
             id="req-dept-filter"
             options={departmentOptions}
             value={filters.departamento}
-            onChange={(value) => setFilters({ departamento: value, pagina: '1' })}
+            onChange={(value) => setFilter({ departamento: value })}
             placeholder="Todos los departamentos"
           />
         )}
@@ -127,26 +114,22 @@ export function RequestsPage() {
 
       <DataTable
         columns={columns}
-        rows={data?.data ?? []}
+        data={data}
         rowKey={(notice) => notice.notice_id}
+        page={page}
+        onPageChange={setPage}
         loading={loading}
         emptyMessage={error ?? 'No hay solicitudes con estos filtros.'}
-        pagination={{
-          page,
-          totalPages: data?.pagination.totalPages ?? 1,
-          total: data?.pagination.total ?? 0,
-          onPageChange: (next) => setFilters({ pagina: String(next) }),
-        }}
       />
 
-      {formOpen && user?.employee && (
+      {form.isOpen && user?.employee && (
         <AbsenceForm
           title="Nueva solicitud de aviso de ausencia"
           submitLabel="Enviar solicitud"
           reasons={reasons}
           employee={user.employee}
-          onClose={() => setFormOpen(false)}
-          onSaved={handleSaved}
+          onClose={form.close}
+          onSaved={() => form.saved('Solicitud enviada, queda pendiente de aprobación.')}
         />
       )}
 

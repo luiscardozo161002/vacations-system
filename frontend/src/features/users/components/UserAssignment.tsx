@@ -1,7 +1,8 @@
 import { useState, type FormEvent } from 'react';
 import type { Branch, Company, ReviewAction, User } from '@vacations/sdk';
 import { sdk } from '../../../lib/sdk';
-import { getErrorMessage } from '../../../lib/get-error-message';
+import { config } from '../../../lib/config';
+import { useFormSubmit } from '../../../lib/use-form-submit';
 import { initials } from '../../../lib/format';
 import { ROLE_LABELS } from '../../../app/navigation';
 import { Drawer } from '../../../components/Drawer';
@@ -22,8 +23,8 @@ const REVIEW_OPTIONS: [ReviewAction, string][] = [
 ];
 
 const ROLE_NOTES: Record<string, string> = {
-  SUPERUSER: 'El Superusuario ve todas las empresas y sedes.',
-  EMPLOYEE: 'El Empleado solo ve su propia información.',
+  [config.roles.global]: 'El Superusuario ve todas las empresas y sedes.',
+  [config.roles.employee]: 'El Empleado solo ve su propia información.',
 };
 
 const checkboxRow = { display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, marginBottom: 6 } as const;
@@ -35,27 +36,20 @@ export function UserAssignment({ user, branches, companies, onClose, onSaved }: 
     branches.filter((branch) => user.branch_codes.includes(branch.code)).map((branch) => branch.branch_id),
   );
   const [reviewActions, setReviewActions] = useState<ReviewAction[]>(user.review_actions);
-  const [submitting, setSubmitting] = useState(false);
-  const [formError, setFormError] = useState<string | null>(null);
+  const { submitting, error, submit } = useFormSubmit();
 
-  const isHr = user.role_code === 'USER';
+  const isHr = user.role_code === config.roles.scoped;
   const name = user.employee_name ?? user.username;
   const companyIds = new Set(branches.filter((branch) => branchIds.includes(branch.branch_id)).map((branch) => branch.company_id));
   const companyNames = companies.filter((company) => companyIds.has(company.company_id)).map((company) => company.folio);
 
-  const handleSubmit = async (e: FormEvent) => {
+  const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    setSubmitting(true);
-    setFormError(null);
-    try {
+    submit(async () => {
       await sdk.users.replaceBranches(user.user_id, branchIds);
       await sdk.users.update(user.user_id, { review_actions: reviewActions });
       onSaved(`Asignación de ${name} actualizada.`);
-    } catch (err) {
-      setFormError(getErrorMessage(err));
-    } finally {
-      setSubmitting(false);
-    }
+    });
   };
 
   return (
@@ -80,7 +74,7 @@ export function UserAssignment({ user, branches, companies, onClose, onSaved }: 
         )
       }
     >
-      {formError && <p className="field-error" role="alert">{formError}</p>}
+      {error && <p className="field-error" role="alert">{error}</p>}
 
       <div className="profile-head">
         <div className="avatar">{initials(name)}</div>

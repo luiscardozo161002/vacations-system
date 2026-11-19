@@ -1,11 +1,7 @@
 import { sdk } from '../../../lib/sdk';
-import { useApiQuery } from '../../../lib/use-api-query';
+import { useCatalog } from '../../../lib/use-catalog';
 
 export function useBranches(enabled = true) {
-  const { data, error } = useApiQuery(
-    ['branches', 'active'],
-    (signal) => sdk.branches.list({ status: 'active', pageSize: 100 }, { signal }),
-    enabled,
-  );
-  return { branches: data?.data ?? [], error };
+  const { items, error } = useCatalog('branches', sdk.branches, { status: 'active' as const }, enabled);
+  return { branches: items, error };
 }

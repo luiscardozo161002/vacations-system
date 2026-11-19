@@ -1,53 +1,33 @@
-import { useMemo, useState } from 'react';
-import type { CallOptions, ListShiftsParams, Shift } from '@vacations/sdk';
+import { useMemo } from 'react';
+import type { Shift } from '@vacations/sdk';
 import { sdk } from '../../../lib/sdk';
+import { config } from '../../../lib/config';
 import { usePagedList } from '../../../lib/use-paged-list';
-import { refreshData } from '../../../lib/query-client';
+import { useRecordForm } from '../../../lib/use-record-form';
 import { EmptyState } from '../../../components/EmptyState';
 import { Icon } from '../../../components/Icon';
-import { useToast } from '../../../components/toast-context';
+import { PageHeader } from '../../../components/PageHeader';
 import { useAuth } from '../../auth/auth-context';
 import { ShiftForm } from '../components/ShiftForm';
 import { formatBlocks, toBlocks } from '../schedule-blocks';
 
-const listShifts = (params: ListShiftsParams, options: CallOptions) => sdk.shifts.list(params, options);
-
 export function ShiftsPage() {
-  const showToast = useToast();
   const { can } = useAuth();
-  const params = useMemo(() => ({ status: 'active' as const, pageSize: 100 }), []);
-  const { data, loading, error } = usePagedList('shifts', listShifts, params);
-  const [editing, setEditing] = useState<Shift | null>(null);
-  const [formOpen, setFormOpen] = useState(false);
+  const params = useMemo(() => ({ status: 'active' as const, pageSize: config.catalogPageSize }), []);
+  const { data, loading, error } = usePagedList('shifts', sdk.shifts, params);
+  const form = useRecordForm<Shift>();
 
   const shifts = data?.data ?? [];
 
-  const openForm = (shift: Shift | null) => {
-    setEditing(shift);
-    setFormOpen(true);
-  };
-
-  const handleSaved = (message: string) => {
-    setFormOpen(false);
-    showToast(message);
-    refreshData();
-  };
-
   return (
     <>
-      <div className="page-header">
-        <div>
-          <h1>Turnos y horarios</h1>
-          <p className="page-sub">Catálogo de turnos asignables a empleados.</p>
-        </div>
+      <PageHeader title="Turnos y horarios" subtitle="Catálogo de turnos asignables a empleados.">
         {can('shifts:create') && (
-          <div className="page-actions">
-            <button type="button" className="btn btn-primary" onClick={() => openForm(null)}>
-              <Icon name="plus" /> Nuevo turno
-            </button>
-          </div>
+          <button type="button" className="btn btn-primary" onClick={() => form.open()}>
+            <Icon name="plus" /> Nuevo turno
+          </button>
         )}
-      </div>
+      </PageHeader>
 
       {shifts.length === 0 ? (
         <EmptyState message={loading ? 'Cargando...' : (error ?? 'No hay turnos.')} />
@@ -58,7 +38,7 @@ export function ShiftsPage() {
               <div className="card-head">
                 <h3 className="section-title">{shift.shift_name}</h3>
                 {can('shifts:update') ? (
-                  <button type="button" className="icon-btn" title="Editar" onClick={() => openForm(shift)}>
+                  <button type="button" className="icon-btn" title="Editar" onClick={() => form.open(shift)}>
                     <Icon name="edit" />
                   </button>
                 ) : (
@@ -75,8 +55,8 @@ export function ShiftsPage() {
         </div>
       )}
 
-      {formOpen && (
-        <ShiftForm key={editing?.shift_id ?? 'new'} shift={editing} onClose={() => setFormOpen(false)} onSaved={handleSaved} />
+      {form.isOpen && (
+        <ShiftForm key={form.record?.shift_id ?? 'new'} shift={form.record} onClose={form.close} onSaved={form.saved} />
       )}
     </>
   );

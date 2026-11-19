@@ -4,6 +4,7 @@ import { useApiQuery } from '../../../lib/use-api-query';
 import { formatDate, formatDateTime, initials } from '../../../lib/format';
 import { EmptyState } from '../../../components/EmptyState';
 import { Icon } from '../../../components/Icon';
+import { PageHeader } from '../../../components/PageHeader';
 import { StatCard } from '../../../components/StatCard';
 
 const ACTIVITY_LABELS = {
@@ -27,17 +28,11 @@ export function TeamDashboard({ firstName, allBranches }: TeamDashboardProps) {
 
   return (
     <>
-      <div className="page-header">
-        <div>
-          <h1>Buenos días, {firstName}</h1>
-          <p className="page-sub">Este es el panorama de tu equipo hoy.</p>
-        </div>
-        <div className="page-actions">
-          <button type="button" className="btn btn-secondary" onClick={() => navigate('/calendario')}>
-            <Icon name="calendar" /> Ver quién falta
-          </button>
-        </div>
-      </div>
+      <PageHeader title={`Buenos días, ${firstName}`} subtitle="Este es el panorama de tu equipo hoy.">
+        <button type="button" className="btn btn-secondary" onClick={() => navigate('/calendario')}>
+          <Icon name="calendar" /> Ver quién falta
+        </button>
+      </PageHeader>
 
       {error && <p className="field-error" role="alert">{error}</p>}
 

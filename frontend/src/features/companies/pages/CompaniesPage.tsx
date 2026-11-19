@@ -1,12 +1,14 @@
 import { useMemo, useState } from 'react';
-import type { CallOptions, Company, Department, Employee, ListEmployeesParams } from '@vacations/sdk';
+import type { Company, Department, Employee } from '@vacations/sdk';
 import { sdk } from '../../../lib/sdk';
+import { config } from '../../../lib/config';
 import { usePagedList } from '../../../lib/use-paged-list';
 import { useApiQuery } from '../../../lib/use-api-query';
 import { useUrlFilters } from '../../../lib/use-url-filters';
 import { useDepartments } from '../../departments/hooks/useDepartments';
 import { DataTable, type Column } from '../../../components/DataTable';
 import { EmptyState } from '../../../components/EmptyState';
+import { PageHeader } from '../../../components/PageHeader';
 
 const TABS = [
   { id: 'datos', label: 'Datos de empresa' },
@@ -15,10 +17,6 @@ const TABS = [
 ];
 
 const FILTERS = { empresa: '', pestana: 'datos' };
-
-const PAGE_SIZE = 10;
-
-const listEmployees = (params: ListEmployeesParams, options: CallOptions) => sdk.employees.list(params, options);
 
 function CompanyData({ company }: { company: Company }) {
   return (
@@ -47,7 +45,7 @@ function CompanyData({ company }: { company: Company }) {
 
 function CompanyBranches({ companyId }: { companyId: number }) {
   const branches = useApiQuery(['branches', 'company', companyId], (signal) =>
-    sdk.branches.list({ company_id: companyId, status: 'active', pageSize: 100 }, { signal }),
+    sdk.branches.list({ company_id: companyId, status: 'active', pageSize: config.catalogPageSize }, { signal }),
   ).data?.data;
 
   if (!branches) return <EmptyState message="Cargando..." />;
@@ -75,10 +73,10 @@ function CompanyBranches({ companyId }: { companyId: number }) {
 function CompanyEmployees({ companyId, departments }: { companyId: number; departments: Map<number, Department> }) {
   const [page, setPage] = useState(1);
   const params = useMemo(
-    () => ({ company_id: companyId, status: 'active' as const, page, pageSize: PAGE_SIZE, sort: 'employee_name' }),
+    () => ({ company_id: companyId, status: 'active' as const, page, pageSize: config.pageSize, sort: 'employee_name' }),
     [companyId, page],
   );
-  const { data, loading, error } = usePagedList('employees', listEmployees, params);
+  const { data, loading, error } = usePagedList('employees', sdk.employees, params);
 
   const columns: Column<Employee>[] = [
     { header: 'Nombre', render: (employee) => employee.employee_name, className: 'cell-main' },
@@ -89,16 +87,12 @@ function CompanyEmployees({ companyId, departments }: { companyId: number; depar
   return (
     <DataTable
       columns={columns}
-      rows={data?.data ?? []}
+      data={data}
       rowKey={(employee) => employee.employee_id}
+      page={page}
+      onPageChange={setPage}
       loading={loading}
       emptyMessage={error ?? 'No hay empleados en esta empresa.'}
-      pagination={{
-        page,
-        totalPages: data?.pagination.totalPages ?? 1,
-        total: data?.pagination.total ?? 0,
-        onPageChange: setPage,
-      }}
     />
   );
 }
@@ -106,7 +100,7 @@ function CompanyEmployees({ companyId, departments }: { companyId: number; depar
 export function CompaniesPage() {
   const [filters, setFilters] = useUrlFilters(FILTERS);
   const { data, error } = useApiQuery(['companies', 'active'], (signal) =>
-    sdk.companies.list({ status: 'active', pageSize: 100 }, { signal }),
+    sdk.companies.list({ status: 'active', pageSize: config.catalogPageSize }, { signal }),
   );
   const { departments: departmentList } = useDepartments();
   const departments = useMemo(
@@ -120,12 +114,7 @@ export function CompaniesPage() {
 
   return (
     <>
-      <div className="page-header">
-        <div>
-          <h1>Empresas</h1>
-          <p className="page-sub">Información general y sedes de la organización.</p>
-        </div>
-      </div>
+      <PageHeader title="Empresas" subtitle="Información general y sedes de la organización." />
 
       {companies && companies.length > 1 && (
         <div className="toolbar">

@@ -6,6 +6,7 @@ import { useAuth } from '../features/auth/auth-context';
 import { ProfileDrawer } from '../features/auth/components/ProfileDrawer';
 import { NotificationBell } from './NotificationBell';
 import { GlobalSearch } from './GlobalSearch';
+import { config } from '../lib/config';
 import { initials } from '../lib/format';
 import { getTheme, subscribeTheme, toggleTheme } from '../lib/appearance';
 import { ROLE_LABELS, findNavItem, visibleGroups } from './navigation';
@@ -23,7 +24,7 @@ export function Shell() {
 
   const displayName = user?.employee?.employee_name ?? user?.username ?? '';
   const roleLabel = user ? (ROLE_LABELS[user.role.role_code] ?? user.role.description) : '';
-  const branches = user?.role.role_code === 'SUPERUSER' ? [] : (user?.branches ?? []);
+  const branches = user?.role.role_code === config.roles.global ? [] : (user?.branches ?? []);
   const companyLabel =
     branches.length > 1 ? `${branches[0].company_name} · ${branches.length} sedes` : branches[0]?.company_name;
 

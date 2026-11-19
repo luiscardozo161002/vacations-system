@@ -4,6 +4,7 @@ import { useApiQuery } from '../../../lib/use-api-query';
 import { formatAbsenceRange, formatDate, formatDaysHours } from '../../../lib/format';
 import { EmptyState } from '../../../components/EmptyState';
 import { Icon } from '../../../components/Icon';
+import { PageHeader } from '../../../components/PageHeader';
 import { StatusBadge } from '../../../components/StatusBadge';
 
 export function EmployeeDashboard() {
@@ -18,19 +19,14 @@ export function EmployeeDashboard() {
 
   return (
     <>
-      <div className="page-header">
-        <div>
-          <h1>Hola, {profile.employee_name.split(' ')[0]}</h1>
-          <p className="page-sub">
-            {profile.department_name} · {profile.shift_name}
-          </p>
-        </div>
-        <div className="page-actions">
-          <button type="button" className="btn btn-primary" onClick={() => navigate('/solicitudes')}>
-            <Icon name="plus" /> Nueva solicitud
-          </button>
-        </div>
-      </div>
+      <PageHeader
+        title={`Hola, ${profile.employee_name.split(' ')[0]}`}
+        subtitle={`${profile.department_name} · ${profile.shift_name}`}
+      >
+        <button type="button" className="btn btn-primary" onClick={() => navigate('/solicitudes')}>
+          <Icon name="plus" /> Nueva solicitud
+        </button>
+      </PageHeader>
 
       <div className="card" style={{ marginBottom: 16 }}>
         <div className="card-head">

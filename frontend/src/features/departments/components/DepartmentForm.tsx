@@ -1,8 +1,8 @@
-import { useMemo, useState, type FormEvent } from 'react';
+import { useMemo, useState } from 'react';
 import type { Branch, Department, Employee } from '@vacations/sdk';
 import { sdk } from '../../../lib/sdk';
-import { getErrorMessage } from '../../../lib/get-error-message';
-import { Drawer } from '../../../components/Drawer';
+import { useFormSubmit } from '../../../lib/use-form-submit';
+import { FormDrawer } from '../../../components/FormDrawer';
 import { SearchSelect } from '../../../components/SearchSelect';
 import { FormField, SelectField, TextField } from '../../../components/FormField';
 
@@ -20,8 +20,7 @@ export function DepartmentForm({ department, branches, employees, onClose, onSav
   const [branchId, setBranchId] = useState(String(department?.branch_id ?? branches[0]?.branch_id ?? ''));
   const [managerId, setManagerId] = useState(department?.manager_employee_id ? String(department.manager_employee_id) : '');
   const [calendarShared, setCalendarShared] = useState(department?.calendar_shared ?? true);
-  const [submitting, setSubmitting] = useState(false);
-  const [formError, setFormError] = useState<string | null>(null);
+  const { submitting, error, setError, submit } = useFormSubmit();
 
   const managerOptions = useMemo(
     () =>
@@ -32,15 +31,12 @@ export function DepartmentForm({ department, branches, employees, onClose, onSav
     [employees],
   );
 
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = () => {
     if (!name.trim()) {
-      setFormError('El nombre del departamento es obligatorio.');
+      setError('El nombre del departamento es obligatorio.');
       return;
     }
 
-    setSubmitting(true);
-    setFormError(null);
     const payload = {
       department_name: name.trim(),
       code: code.trim(),
@@ -48,7 +44,7 @@ export function DepartmentForm({ department, branches, employees, onClose, onSav
       manager_employee_id: managerId ? Number(managerId) : null,
       calendar_shared: calendarShared,
     };
-    try {
+    submit(async () => {
       if (department) {
         await sdk.departments.update(department.department_id, payload);
         onSaved('Departamento actualizado.');
@@ -56,31 +52,18 @@ export function DepartmentForm({ department, branches, employees, onClose, onSav
         await sdk.departments.create(payload);
         onSaved('Departamento creado.');
       }
-    } catch (err) {
-      setFormError(getErrorMessage(err));
-    } finally {
-      setSubmitting(false);
-    }
+    });
   };
 
   return (
-    <Drawer
+    <FormDrawer
       title={department ? 'Editar departamento' : 'Nuevo departamento'}
+      submitLabel={department ? 'Guardar cambios' : 'Crear departamento'}
+      submitting={submitting}
+      error={error}
       onClose={onClose}
       onSubmit={handleSubmit}
-      footer={
-        <>
-          <button type="button" className="btn btn-secondary" onClick={onClose} disabled={submitting}>
-            Cancelar
-          </button>
-          <button type="submit" className="btn btn-primary" disabled={submitting}>
-            {department ? 'Guardar cambios' : 'Crear departamento'}
-          </button>
-        </>
-      }
     >
-      {formError && <p className="field-error" role="alert">{formError}</p>}
-
       <TextField
         id="d-name"
         label="Nombre del departamento"
@@ -115,6 +98,6 @@ export function DepartmentForm({ department, branches, employees, onClose, onSav
           las ausencias del departamento
         </label>
       </FormField>
-    </Drawer>
+    </FormDrawer>
   );
 }

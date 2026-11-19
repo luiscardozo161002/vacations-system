@@ -1,7 +1,6 @@
 import { useEffect, useEffectEvent, useState } from 'react';
+import { config } from '../lib/config';
 import { Icon } from './Icon';
-
-const SEARCH_DELAY_MS = 300;
 
 interface SearchInputProps {
   value: string;
@@ -17,7 +16,7 @@ export function SearchInput({ value, onSearch, placeholder, id }: SearchInputPro
   useEffect(() => {
     const trimmed = text.trim();
     if (trimmed === value) return;
-    const timer = setTimeout(() => search(trimmed), SEARCH_DELAY_MS);
+    const timer = setTimeout(() => search(trimmed), config.searchDelayMs);
     return () => clearTimeout(timer);
   }, [text, value]);
 

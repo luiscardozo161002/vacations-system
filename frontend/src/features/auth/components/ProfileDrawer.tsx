@@ -1,9 +1,10 @@
-import { useState, type FormEvent } from 'react';
+import { useState } from 'react';
 import type { CurrentUser } from '@vacations/sdk';
 import { sdk } from '../../../lib/sdk';
-import { getErrorMessage } from '../../../lib/get-error-message';
+import { config } from '../../../lib/config';
+import { useFormSubmit } from '../../../lib/use-form-submit';
 import { initials } from '../../../lib/format';
-import { Drawer } from '../../../components/Drawer';
+import { FormDrawer } from '../../../components/FormDrawer';
 import { TextField } from '../../../components/FormField';
 import { useToast } from '../../../components/toast-context';
 import { useAuth } from '../auth-context';
@@ -22,8 +23,7 @@ export function ProfileDrawer({ user, roleLabel, onClose }: ProfileDrawerProps) 
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [error, setError] = useState<string | null>(null);
-  const [submitting, setSubmitting] = useState(false);
+  const { submitting, error, setError, submit } = useFormSubmit();
 
   const displayName = user.employee?.employee_name ?? user.username;
   const changingPassword = Boolean(currentPassword || newPassword || confirmPassword);
@@ -32,19 +32,19 @@ export function ProfileDrawer({ user, roleLabel, onClose }: ProfileDrawerProps) 
     if (!username.trim() || !email.trim()) return 'Nombre y correo son obligatorios.';
     if (!changingPassword) return null;
     if (!currentPassword) return 'Escribe tu contraseña actual para cambiarla.';
-    if (newPassword.length < 8) return 'La nueva contraseña debe tener al menos 8 caracteres.';
+    if (newPassword.length < config.passwordMinLength) {
+      return `La nueva contraseña debe tener al menos ${config.passwordMinLength} caracteres.`;
+    }
     if (newPassword !== confirmPassword) return 'Las contraseñas no coinciden.';
     return null;
   };
 
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = () => {
     const validationError = validate();
     setError(validationError);
     if (validationError) return;
 
-    setSubmitting(true);
-    try {
+    submit(async () => {
       if (changingPassword) {
         await sdk.auth.changePassword({ currentPassword, newPassword });
       }
@@ -57,28 +57,17 @@ export function ProfileDrawer({ user, roleLabel, onClose }: ProfileDrawerProps) 
       }
       showToast('Perfil actualizado.');
       onClose();
-    } catch (err) {
-      setError(getErrorMessage(err));
-    } finally {
-      setSubmitting(false);
-    }
+    });
   };
 
   return (
-    <Drawer
+    <FormDrawer
       title="Editar mi perfil"
+      submitLabel="Guardar cambios"
+      submitting={submitting}
+      error={error}
       onClose={onClose}
       onSubmit={handleSubmit}
-      footer={
-        <>
-          <button type="button" className="btn btn-secondary" onClick={onClose} disabled={submitting}>
-            Cancelar
-          </button>
-          <button type="submit" className="btn btn-primary" disabled={submitting}>
-            Guardar cambios
-          </button>
-        </>
-      }
     >
       <div className="profile-head">
         <div className="avatar">{initials(displayName)}</div>
@@ -127,7 +116,6 @@ export function ProfileDrawer({ user, roleLabel, onClose }: ProfileDrawerProps) 
         value={confirmPassword}
         onChange={setConfirmPassword}
       />
-      {error && <p className="field-error" role="alert">{error}</p>}
-    </Drawer>
+    </FormDrawer>
   );
 }

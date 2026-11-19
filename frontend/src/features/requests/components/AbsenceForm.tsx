@@ -1,9 +1,10 @@
-import { useEffect, useMemo, useState, type FormEvent } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { Employee, NoticePreview, PreviewNoticeInput, Reason } from '@vacations/sdk';
 import { sdk } from '../../../lib/sdk';
 import { getErrorMessage } from '../../../lib/get-error-message';
+import { useFormSubmit } from '../../../lib/use-form-submit';
 import { todayIso } from '../../../lib/format';
-import { Drawer } from '../../../components/Drawer';
+import { FormDrawer } from '../../../components/FormDrawer';
 import { SearchSelect } from '../../../components/SearchSelect';
 import { FormField, SelectField, TextField } from '../../../components/FormField';
 import { BreakdownBox } from './BreakdownBox';
@@ -62,8 +63,7 @@ export function AbsenceForm({ title, submitLabel, reasons, employee, employees =
     remarks: '',
   });
   const [preview, setPreview] = useState<NoticePreview | null>(null);
-  const [submitting, setSubmitting] = useState(false);
-  const [formError, setFormError] = useState<string | null>(null);
+  const { submitting, error, setError, submit } = useFormSubmit();
 
   const employeeOptions = useMemo(
     () =>
@@ -87,7 +87,7 @@ export function AbsenceForm({ title, submitLabel, reasons, employee, employees =
         .preview(previewInput, { signal: controller.signal })
         .then(setPreview)
         .catch((err: unknown) => {
-          if (!controller.signal.aborted) setFormError(getErrorMessage(err));
+          if (!controller.signal.aborted) setError(getErrorMessage(err));
         });
     }, 250);
 
@@ -95,52 +95,37 @@ export function AbsenceForm({ title, submitLabel, reasons, employee, employees =
       clearTimeout(timer);
       controller.abort();
     };
-  }, [inputKey]);
+  }, [inputKey, setError]);
 
   const setValue = (field: keyof FormState, value: string) => setForm((prev) => ({ ...prev, [field]: value }));
   const setField = (field: keyof FormState) => (e: { target: { value: string } }) => setValue(field, e.target.value);
 
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = () => {
     if (!input) {
-      setFormError('Selecciona un empleado válido de la lista.');
+      setError('Selecciona un empleado válido de la lista.');
       return;
     }
     if (preview?.error) {
-      setFormError(preview.error.message);
+      setError(preview.error.message);
       return;
     }
 
-    setSubmitting(true);
-    setFormError(null);
-    try {
+    submit(async () => {
       await sdk.notices.create({ ...input, remarks: form.remarks.trim() || null });
       onSaved();
-    } catch (err) {
-      setFormError(getErrorMessage(err));
-    } finally {
-      setSubmitting(false);
-    }
+    });
   };
 
   return (
-    <Drawer
+    <FormDrawer
       title={title}
+      submitLabel={submitLabel}
+      submitting={submitting}
+      submitDisabled={!input || Boolean(preview?.error)}
+      error={error}
       onClose={onClose}
       onSubmit={handleSubmit}
-      footer={
-        <>
-          <button type="button" className="btn btn-secondary" onClick={onClose} disabled={submitting}>
-            Cancelar
-          </button>
-          <button type="submit" className="btn btn-primary" disabled={submitting || !input || Boolean(preview?.error)}>
-            {submitLabel}
-          </button>
-        </>
-      }
     >
-      {formError && <p className="field-error" role="alert">{formError}</p>}
-
       <FormField label="Empleado" htmlFor="af-employee">
         {employee ? (
           <input id="af-employee" value={employee.employee_name} disabled />
@@ -197,6 +182,6 @@ export function AbsenceForm({ title, submitLabel, reasons, employee, employees =
       <FormField label="Comentarios" htmlFor="af-remarks">
         <textarea id="af-remarks" rows={3} placeholder="Opcional" value={form.remarks} onChange={setField('remarks')} />
       </FormField>
-    </Drawer>
+    </FormDrawer>
   );
 }

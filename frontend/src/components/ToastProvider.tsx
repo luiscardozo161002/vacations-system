@@ -1,8 +1,7 @@
 import { useCallback, useState, type ReactNode } from 'react';
+import { config } from '../lib/config';
 import { Icon } from './Icon';
 import { ToastContext } from './toast-context';
-
-const TOAST_MS = 3200;
 
 interface Toast {
   id: number;
@@ -17,7 +16,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   const showToast = useCallback((message: string) => {
     const id = nextId++;
     setToasts((current) => [...current, { id, message }]);
-    setTimeout(() => setToasts((current) => current.filter((toast) => toast.id !== id)), TOAST_MS);
+    setTimeout(() => setToasts((current) => current.filter((toast) => toast.id !== id)), config.toastMs);
   }, []);
 
   return (

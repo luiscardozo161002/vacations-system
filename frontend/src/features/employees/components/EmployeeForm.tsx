@@ -1,8 +1,8 @@
-import { useState, type FormEvent } from 'react';
+import { useState } from 'react';
 import type { CreateEmployeeInput, Department, Employee, Shift } from '@vacations/sdk';
 import { sdk } from '../../../lib/sdk';
-import { getErrorMessage } from '../../../lib/get-error-message';
-import { Drawer } from '../../../components/Drawer';
+import { useFormSubmit } from '../../../lib/use-form-submit';
+import { FormDrawer } from '../../../components/FormDrawer';
 import { SearchSelect } from '../../../components/SearchSelect';
 import { FormField, TextField } from '../../../components/FormField';
 import type { GrantedAccess } from './AccessDialog';
@@ -37,20 +37,15 @@ const toFormState = (employee: Employee | null, departments: Department[], shift
 
 export function EmployeeForm({ employee, departments, shifts, onClose, onSaved }: EmployeeFormProps) {
   const [form, setForm] = useState<FormState>(() => toFormState(employee, departments, shifts));
-  const [submitting, setSubmitting] = useState(false);
-  const [formError, setFormError] = useState<string | null>(null);
+  const { submitting, error, setError, submit } = useFormSubmit();
 
   const setField = (field: keyof FormState, value: string) => setForm((prev) => ({ ...prev, [field]: value }));
 
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = () => {
     if (!form.department_id || !form.shift_id) {
-      setFormError('Selecciona un departamento y un turno válidos de la lista.');
+      setError('Selecciona un departamento y un turno válidos de la lista.');
       return;
     }
-
-    setSubmitting(true);
-    setFormError(null);
 
     const payload: CreateEmployeeInput = {
       employee_name: form.employee_name,
@@ -61,7 +56,7 @@ export function EmployeeForm({ employee, departments, shifts, onClose, onSaved }
       start_date: form.start_date,
     };
 
-    try {
+    submit(async () => {
       if (employee) {
         await sdk.employees.update(employee.employee_id, payload);
         onSaved('Empleado actualizado.');
@@ -74,31 +69,18 @@ export function EmployeeForm({ employee, departments, shifts, onClose, onSaved }
             : undefined;
         onSaved('Empleado creado.', access);
       }
-    } catch (err) {
-      setFormError(getErrorMessage(err));
-    } finally {
-      setSubmitting(false);
-    }
+    });
   };
 
   return (
-    <Drawer
+    <FormDrawer
       title={employee ? 'Editar empleado' : 'Nuevo empleado'}
+      submitLabel={employee ? 'Guardar cambios' : 'Crear empleado'}
+      submitting={submitting}
+      error={error}
       onClose={onClose}
       onSubmit={handleSubmit}
-      footer={
-        <>
-          <button type="button" className="btn btn-secondary" onClick={onClose} disabled={submitting}>
-            Cancelar
-          </button>
-          <button type="submit" className="btn btn-primary" disabled={submitting}>
-            {employee ? 'Guardar cambios' : 'Crear empleado'}
-          </button>
-        </>
-      }
     >
-      {formError && <p className="field-error" role="alert">{formError}</p>}
-
       <TextField
         id="f-name"
         label="Nombre completo"
@@ -165,6 +147,6 @@ export function EmployeeForm({ employee, departments, shifts, onClose, onSaved }
           hint="Se creará su cuenta con una contraseña temporal válida por un mes."
         />
       )}
-    </Drawer>
+    </FormDrawer>
   );
 }

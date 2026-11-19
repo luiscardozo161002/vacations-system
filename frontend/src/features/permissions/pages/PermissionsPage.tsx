@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { Permission, Role, RolePermission } from '@vacations/sdk';
 import { sdk } from '../../../lib/sdk';
+import { config } from '../../../lib/config';
 import { getErrorMessage } from '../../../lib/get-error-message';
 import { listAll } from '../../../lib/list-all';
 import { useApiQuery } from '../../../lib/use-api-query';
@@ -8,6 +9,7 @@ import { queryClient } from '../../../lib/query-client';
 import { ROLE_LABELS } from '../../../app/navigation';
 import { EmptyState } from '../../../components/EmptyState';
 import { Icon } from '../../../components/Icon';
+import { PageHeader } from '../../../components/PageHeader';
 import { useToast } from '../../../components/toast-context';
 import { useAuth } from '../../auth/auth-context';
 
@@ -28,7 +30,6 @@ const MODULES = [
   { code: 'audit:view', label: 'Auditoría' },
 ];
 
-const FIXED_ROLE = 'SUPERUSER';
 
 interface Matrix {
   roles: Role[];
@@ -42,9 +43,9 @@ const MATRIX_KEY = ['permissions', 'matrix'];
 
 const loadMatrix = async (signal: AbortSignal): Promise<Matrix> => {
   const [roles, permissions, grants]: [Role[], Permission[], RolePermission[]] = await Promise.all([
-    listAll((params, options) => sdk.roles.list(params, options), { status: 'active' as const }, signal),
-    listAll((params, options) => sdk.permissions.list(params, options), { status: 'active' as const }, signal),
-    listAll((params, options) => sdk.rolePermissions.list(params, options), { status: 'active' as const }, signal),
+    listAll(sdk.roles, { status: 'active' as const }, signal),
+    listAll(sdk.permissions, { status: 'active' as const }, signal),
+    listAll(sdk.rolePermissions, { status: 'active' as const }, signal),
   ]);
   return {
     roles,
@@ -87,12 +88,7 @@ export function PermissionsPage() {
 
   return (
     <>
-      <div className="page-header">
-        <div>
-          <h1>Roles y permisos</h1>
-          <p className="page-sub">Matriz de permisos por módulo. Solo el Superusuario puede modificarla.</p>
-        </div>
-      </div>
+      <PageHeader title="Roles y permisos" subtitle="Matriz de permisos por módulo. Solo el Superusuario puede modificarla." />
       {!canEdit && (
         <div className="card" style={{ marginBottom: 16, display: 'flex', gap: 10, alignItems: 'center' }}>
           <span data-icon="alert-circle">
@@ -124,7 +120,7 @@ export function PermissionsPage() {
                   {matrix.roles.map((role) => {
                     const permissionId = matrix.permissionIds.get(module.code) ?? 0;
                     const key = grantKey(role.role_id, permissionId);
-                    const fixed = role.role_code === FIXED_ROLE;
+                    const fixed = role.role_code === config.roles.global;
                     const on = fixed || matrix.granted.has(key);
                     return (
                       <td key={role.role_id}>

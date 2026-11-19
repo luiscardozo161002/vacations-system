@@ -1,19 +1,22 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { Employee, RecordStatus } from '@vacations/sdk';
 import { sdk } from '../../../lib/sdk';
+import { config } from '../../../lib/config';
 import { getErrorMessage } from '../../../lib/get-error-message';
 import { refreshData } from '../../../lib/query-client';
-import { useUrlFilters } from '../../../lib/use-url-filters';
+import { usePageFilters } from '../../../lib/use-page-filters';
+import { usePagedList } from '../../../lib/use-paged-list';
+import { useRecordForm } from '../../../lib/use-record-form';
 import { formatDate, initials, todayIso } from '../../../lib/format';
 import { saveFile } from '../../../lib/save-file';
 import { Icon } from '../../../components/Icon';
 import { DataTable, type Column } from '../../../components/DataTable';
 import { ConfirmDialog } from '../../../components/Dialog';
+import { PageHeader } from '../../../components/PageHeader';
 import { SearchSelect } from '../../../components/SearchSelect';
 import { SearchInput } from '../../../components/SearchInput';
 import { StatusBadge } from '../../../components/StatusBadge';
 import { useToast } from '../../../components/toast-context';
-import { useEmployees } from '../hooks/useEmployees';
 import { useDepartments } from '../../departments/hooks/useDepartments';
 import { useShifts } from '../../shifts/hooks/useShifts';
 import { EmployeeForm } from '../components/EmployeeForm';
@@ -21,14 +24,13 @@ import { EmployeeProfile } from '../components/EmployeeProfile';
 import { AccessDialog, type GrantedAccess } from '../components/AccessDialog';
 import { useAuth } from '../../auth/auth-context';
 
-const PAGE_SIZE = 10;
-const FILTERS = { q: '', departamento: '', estado: '', pagina: '1', perfil: '' };
+const FILTERS = { q: '', departamento: '', estado: '', perfil: '' };
 
 export function EmployeesPage() {
   const showToast = useToast();
   const { can } = useAuth();
-  const [filters, setFilters] = useUrlFilters(FILTERS);
-  const page = Number(filters.pagina);
+  const { filters, page, setFilter, setPage } = usePageFilters(FILTERS);
+  const form = useRecordForm<Employee>();
 
   const { departments, error: departmentsError } = useDepartments();
   const { shifts, error: shiftsError } = useShifts();
@@ -36,7 +38,7 @@ export function EmployeesPage() {
   const employeesParams = useMemo(
     () => ({
       page,
-      pageSize: PAGE_SIZE,
+      pageSize: config.pageSize,
       search: filters.q || undefined,
       department_id: filters.departamento ? Number(filters.departamento) : undefined,
       status: filters.estado ? (filters.estado as RecordStatus) : undefined,
@@ -44,10 +46,8 @@ export function EmployeesPage() {
     [page, filters.q, filters.departamento, filters.estado],
   );
 
-  const { data, loading, error: listError } = useEmployees(employeesParams);
+  const { data, loading, error: listError } = usePagedList('employees', sdk.employees, employeesParams);
 
-  const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
-  const [formOpen, setFormOpen] = useState(false);
   const [statusTarget, setStatusTarget] = useState<Employee | null>(null);
   const [createdAccess, setCreatedAccess] = useState<GrantedAccess | null>(null);
   const [exporting, setExporting] = useState(false);
@@ -55,12 +55,12 @@ export function EmployeesPage() {
 
   useEffect(() => {
     if (!filters.perfil) return;
-    setFilters({ perfil: '' });
+    setFilter({ perfil: '' });
     sdk.employees
       .get(Number(filters.perfil))
       .then(setProfileEmployee)
       .catch((err: unknown) => showToast(getErrorMessage(err)));
-  }, [filters.perfil, setFilters, showToast]);
+  }, [filters.perfil, setFilter, showToast]);
 
   const loadError = listError ?? departmentsError ?? shiftsError;
 
@@ -76,16 +76,9 @@ export function EmployeesPage() {
     [departments],
   );
 
-  const openForm = (employee: Employee | null) => {
-    setEditingEmployee(employee);
-    setFormOpen(true);
-  };
-
   const handleSaved = (message: string, access?: GrantedAccess) => {
-    setFormOpen(false);
-    showToast(message);
+    form.saved(message);
     if (access) setCreatedAccess(access);
-    refreshData();
   };
 
   const confirmStatusChange = async () => {
@@ -141,7 +134,7 @@ export function EmployeesPage() {
             <Icon name="eye" />
           </button>
           {can('employees:update') && (
-            <button type="button" className="icon-btn" title="Editar" onClick={() => openForm(employee)}>
+            <button type="button" className="icon-btn" title="Editar" onClick={() => form.open(employee)}>
               <Icon name="edit" />
             </button>
           )}
@@ -162,39 +155,29 @@ export function EmployeesPage() {
 
   return (
     <>
-      <div className="page-header">
-        <div>
-          <h1>Empleados</h1>
-          <p className="page-sub">Catálogo de personal, departamentos y turnos.</p>
-        </div>
+      <PageHeader title="Empleados" subtitle="Catálogo de personal, departamentos y turnos.">
         {can('employees:create') && (
-          <div className="page-actions">
-            <button type="button" className="btn btn-primary" onClick={() => openForm(null)} disabled={departments.length === 0}>
-              <Icon name="plus" /> Nuevo empleado
-            </button>
-          </div>
+          <button type="button" className="btn btn-primary" onClick={() => form.open()} disabled={departments.length === 0}>
+            <Icon name="plus" /> Nuevo empleado
+          </button>
         )}
-      </div>
+      </PageHeader>
 
       <div className="toolbar">
         <SearchInput
           id="emp-search"
           placeholder="Buscar por nombre o número..."
           value={filters.q}
-          onSearch={(q) => setFilters({ q, pagina: '1' })}
+          onSearch={(q) => setFilter({ q })}
         />
         <SearchSelect
           id="emp-dept-filter"
           options={departmentOptions}
           value={filters.departamento}
-          onChange={(value) => setFilters({ departamento: value, pagina: '1' })}
+          onChange={(value) => setFilter({ departamento: value })}
           placeholder="Todos los departamentos"
         />
-        <select
-          aria-label="Estado"
-          value={filters.estado}
-          onChange={(e) => setFilters({ estado: e.target.value, pagina: '1' })}
-        >
+        <select aria-label="Estado" value={filters.estado} onChange={(e) => setFilter({ estado: e.target.value })}>
           <option value="">Todos los estados</option>
           <option value="active">Activo</option>
           <option value="inactive">Inactivo</option>
@@ -207,35 +190,26 @@ export function EmployeesPage() {
 
       <DataTable
         columns={columns}
-        rows={data?.data ?? []}
+        data={data}
         rowKey={(employee) => employee.employee_id}
+        page={page}
+        onPageChange={setPage}
         loading={loading}
         emptyMessage={loadError ?? 'No hay empleados con estos filtros.'}
-        pagination={{
-          page,
-          totalPages: data?.pagination.totalPages ?? 1,
-          total: data?.pagination.total ?? 0,
-          onPageChange: (next) => setFilters({ pagina: String(next) }),
-        }}
       />
 
-      {formOpen && (
+      {form.isOpen && (
         <EmployeeForm
-          key={editingEmployee?.employee_id ?? 'new'}
-          employee={editingEmployee}
+          key={form.record?.employee_id ?? 'new'}
+          employee={form.record}
           departments={departments}
           shifts={shifts}
-          onClose={() => setFormOpen(false)}
+          onClose={form.close}
           onSaved={handleSaved}
         />
       )}
 
-      {createdAccess && (
-        <AccessDialog
-          access={createdAccess}
-          onClose={() => setCreatedAccess(null)}
-        />
-      )}
+      {createdAccess && <AccessDialog access={createdAccess} onClose={() => setCreatedAccess(null)} />}
 
       {profileEmployee && (
         <EmployeeProfile

@@ -1,19 +1,20 @@
 import { useMemo, useState } from 'react';
+import type { VacationEntitlement } from '@vacations/sdk';
 import { sdk } from '../../../lib/sdk';
+import { config } from '../../../lib/config';
 import { getErrorMessage } from '../../../lib/get-error-message';
 import { refreshData } from '../../../lib/query-client';
-import { useUrlFilters } from '../../../lib/use-url-filters';
-import { Icon } from '../../../components/Icon';
-import { useToast } from '../../../components/toast-context';
-import type { VacationEntitlement } from '@vacations/sdk';
+import { usePageFilters } from '../../../lib/use-page-filters';
+import { usePagedList } from '../../../lib/use-paged-list';
 import { formatDate } from '../../../lib/format';
 import { DataTable, type Column } from '../../../components/DataTable';
-import { useBalances } from '../hooks/useBalances';
+import { Icon } from '../../../components/Icon';
+import { PageHeader } from '../../../components/PageHeader';
+import { useToast } from '../../../components/toast-context';
 import { useAuth } from '../../auth/auth-context';
 import { EmployeeDashboard } from '../../dashboard/components/EmployeeDashboard';
 
-const PAGE_SIZE = 10;
-const FILTERS = { pagina: '1' };
+const FILTERS = {};
 
 const plural = (count: number, word: string) => `${count} ${word}${count === 1 ? '' : 's'}`;
 
@@ -41,11 +42,10 @@ const columns: Column<VacationEntitlement>[] = [
 
 function BalancesTable({ canGenerate }: { canGenerate: boolean }) {
   const showToast = useToast();
-  const [filters, setFilters] = useUrlFilters(FILTERS);
-  const page = Number(filters.pagina);
+  const { page, setPage } = usePageFilters(FILTERS);
   const [generating, setGenerating] = useState(false);
-  const params = useMemo(() => ({ status: 'active' as const, page, pageSize: PAGE_SIZE }), [page]);
-  const { data, loading, error } = useBalances(params);
+  const params = useMemo(() => ({ status: 'active' as const, page, pageSize: config.pageSize }), [page]);
+  const { data, loading, error } = usePagedList('balances', sdk.vacationEntitlements, params);
 
   const generate = async () => {
     setGenerating(true);
@@ -64,32 +64,25 @@ function BalancesTable({ canGenerate }: { canGenerate: boolean }) {
 
   return (
     <>
-      <div className="page-header">
-        <div>
-          <h1>Días de vacaciones</h1>
-          <p className="page-sub">Saldo por empleado: días y horas otorgados, usados y disponibles, por periodo.</p>
-        </div>
+      <PageHeader
+        title="Días de vacaciones"
+        subtitle="Saldo por empleado: días y horas otorgados, usados y disponibles, por periodo."
+      >
         {canGenerate && (
-          <div className="page-actions">
-            <button type="button" className="btn btn-secondary" onClick={generate} disabled={generating}>
-              <Icon name="calendar-check" /> Generar periodos
-            </button>
-          </div>
+          <button type="button" className="btn btn-secondary" onClick={generate} disabled={generating}>
+            <Icon name="calendar-check" /> Generar periodos
+          </button>
         )}
-      </div>
+      </PageHeader>
 
       <DataTable
         columns={columns}
-        rows={data?.data ?? []}
+        data={data}
         rowKey={(balance) => balance.entitlement_id}
+        page={page}
+        onPageChange={setPage}
         loading={loading}
         emptyMessage={error ?? 'No hay saldos generados.'}
-        pagination={{
-          page,
-          totalPages: data?.pagination.totalPages ?? 1,
-          total: data?.pagination.total ?? 0,
-          onPageChange: (next) => setFilters({ pagina: String(next) }),
-        }}
       />
     </>
   );
@@ -98,5 +91,5 @@ function BalancesTable({ canGenerate }: { canGenerate: boolean }) {
 export function BalancesPage() {
   const { user, can } = useAuth();
   if (!can('employees:view')) return <EmployeeDashboard />;
-  return <BalancesTable canGenerate={user?.role.role_code === 'SUPERUSER'} />;
+  return <BalancesTable canGenerate={user?.role.role_code === config.roles.global} />;
 }

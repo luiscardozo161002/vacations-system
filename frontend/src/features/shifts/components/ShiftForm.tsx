@@ -1,8 +1,8 @@
-import { useState, type FormEvent } from 'react';
+import { useState } from 'react';
 import type { DayOfWeek, Shift } from '@vacations/sdk';
 import { sdk } from '../../../lib/sdk';
-import { getErrorMessage } from '../../../lib/get-error-message';
-import { Drawer } from '../../../components/Drawer';
+import { useFormSubmit } from '../../../lib/use-form-submit';
+import { FormDrawer } from '../../../components/FormDrawer';
 import { FormField, TextField } from '../../../components/FormField';
 import { Icon } from '../../../components/Icon';
 import { DAY_LETTERS, WEEK, toBlocks, toSchedule, type ScheduleBlock } from '../schedule-blocks';
@@ -34,8 +34,7 @@ export function ShiftForm({ shift, onClose, onSaved }: ShiftFormProps) {
     const current = shift ? toBlocks(shift.schedule) : [];
     return current.length ? current : [NEW_BLOCK];
   });
-  const [submitting, setSubmitting] = useState(false);
-  const [formError, setFormError] = useState<string | null>(null);
+  const { submitting, error, setError, submit } = useFormSubmit();
 
   const changeBlock = (index: number, change: Partial<ScheduleBlock>) =>
     setBlocks((prev) => prev.map((block, i) => (i === index ? { ...block, ...change } : block)));
@@ -45,51 +44,35 @@ export function ShiftForm({ shift, onClose, onSaved }: ShiftFormProps) {
     changeBlock(index, { days: days.includes(day) ? days.filter((item) => item !== day) : [...days, day] });
   };
 
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = () => {
     const problem = validate(name, code, blocks);
     if (problem) {
-      setFormError(problem);
+      setError(problem);
       return;
     }
 
-    setSubmitting(true);
-    setFormError(null);
     const schedule = toSchedule(blocks.filter((block) => block.days.length));
     const data = {
       shift_name: name.trim(),
       code: code.trim(),
       number_days: schedule.filter((day) => day.is_working_day).length,
     };
-    try {
+    submit(async () => {
       const saved = shift ? await sdk.shifts.update(shift.shift_id, data) : await sdk.shifts.create(data);
       await sdk.shifts.replaceSchedule(saved.shift_id, schedule);
       onSaved(shift ? 'Turno actualizado.' : 'Turno creado.');
-    } catch (err) {
-      setFormError(getErrorMessage(err));
-    } finally {
-      setSubmitting(false);
-    }
+    });
   };
 
   return (
-    <Drawer
+    <FormDrawer
       title={shift ? 'Editar turno' : 'Nuevo turno'}
+      submitLabel={shift ? 'Guardar cambios' : 'Crear turno'}
+      submitting={submitting}
+      error={error}
       onClose={onClose}
       onSubmit={handleSubmit}
-      footer={
-        <>
-          <button type="button" className="btn btn-secondary" onClick={onClose} disabled={submitting}>
-            Cancelar
-          </button>
-          <button type="submit" className="btn btn-primary" disabled={submitting}>
-            {shift ? 'Guardar cambios' : 'Crear turno'}
-          </button>
-        </>
-      }
     >
-      {formError && <p className="field-error" role="alert">{formError}</p>}
-
       <TextField id="s-name" label="Nombre del turno" value={name} onChange={setName} placeholder="Ej. Turno Vespertino" />
       <TextField id="s-code" label="Código" value={code} onChange={setCode} placeholder="Ej. VESPERTINO" maxLength={20} />
       <label style={{ fontSize: 13, fontWeight: 500, display: 'block', marginBottom: 6 }}>Horario semanal</label>
@@ -135,6 +118,6 @@ export function ShiftForm({ shift, onClose, onSaved }: ShiftFormProps) {
       >
         <Icon name="plus" /> Agregar horario
       </button>
-    </Drawer>
+    </FormDrawer>
   );
 }

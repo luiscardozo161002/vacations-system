@@ -1,15 +1,16 @@
 import { useMemo } from 'react';
-import type { AuditLogEntry, CallOptions, ListAuditLogParams } from '@vacations/sdk';
+import type { AuditLogEntry } from '@vacations/sdk';
 import { sdk } from '../../../lib/sdk';
+import { config } from '../../../lib/config';
 import { formatDateTime } from '../../../lib/format';
 import { usePagedList } from '../../../lib/use-paged-list';
-import { useUrlFilters } from '../../../lib/use-url-filters';
+import { usePageFilters } from '../../../lib/use-page-filters';
 import { DataTable, type Column } from '../../../components/DataTable';
+import { PageHeader } from '../../../components/PageHeader';
 import { SearchInput } from '../../../components/SearchInput';
 import { StatusBadge } from '../../../components/StatusBadge';
 
-const PAGE_SIZE = 10;
-const FILTERS = { resultado: '', q: '', pagina: '1' };
+const FILTERS = { resultado: '', q: '' };
 
 const EVENT_LABELS: Record<string, string> = {
   LOGIN_SUCCESS: 'Inicio de sesión',
@@ -51,8 +52,6 @@ const detail = (entry: AuditLogEntry): string =>
     .filter(Boolean)
     .join(' · ');
 
-const listAudit = (params: ListAuditLogParams, options: CallOptions) => sdk.auditLog.list(params, options);
-
 const columns: Column<AuditLogEntry>[] = [
   { header: 'Usuario', render: (entry) => entry.username ?? 'desconocido', className: 'cell-main' },
   { header: 'Fecha y hora', render: (entry) => formatDateTime(entry.created_at), className: 'cell-sub' },
@@ -69,57 +68,38 @@ const columns: Column<AuditLogEntry>[] = [
 ];
 
 export function AuditPage() {
-  const [filters, setFilters] = useUrlFilters(FILTERS);
-  const page = Number(filters.pagina);
-
+  const { filters, page, setFilter, setPage } = usePageFilters(FILTERS);
 
   const params = useMemo(
     () => ({
       page,
-      pageSize: PAGE_SIZE,
+      pageSize: config.pageSize,
       result: filters.resultado ? (filters.resultado as 'success' | 'failed') : undefined,
       search: filters.q || undefined,
     }),
     [page, filters.resultado, filters.q],
   );
-  const { data, loading, error } = usePagedList('audit-log', listAudit, params);
+  const { data, loading, error } = usePagedList('audit-log', sdk.auditLog, params);
 
   return (
     <>
-      <div className="page-header">
-        <div>
-          <h1>Auditoría</h1>
-          <p className="page-sub">Historial de inicio de sesión y eventos de seguridad.</p>
-        </div>
-      </div>
+      <PageHeader title="Auditoría" subtitle="Historial de inicio de sesión y eventos de seguridad." />
       <div className="toolbar">
-        <select
-          aria-label="Resultado"
-          value={filters.resultado}
-          onChange={(e) => setFilters({ resultado: e.target.value, pagina: '1' })}
-        >
+        <select aria-label="Resultado" value={filters.resultado} onChange={(e) => setFilter({ resultado: e.target.value })}>
           <option value="">Todos los resultados</option>
           <option value="success">Exitoso</option>
           <option value="failed">Fallido</option>
         </select>
-        <SearchInput
-          placeholder="Buscar usuario o evento..."
-          value={filters.q}
-          onSearch={(q) => setFilters({ q, pagina: '1' })}
-        />
+        <SearchInput placeholder="Buscar usuario o evento..." value={filters.q} onSearch={(q) => setFilter({ q })} />
       </div>
       <DataTable
         columns={columns}
-        rows={data?.data ?? []}
+        data={data}
         rowKey={(entry) => entry.log_id}
+        page={page}
+        onPageChange={setPage}
         loading={loading}
         emptyMessage={error ?? 'No hay eventos con estos filtros.'}
-        pagination={{
-          page,
-          totalPages: data?.pagination.totalPages ?? 1,
-          total: data?.pagination.total ?? 0,
-          onPageChange: (next) => setFilters({ pagina: String(next) }),
-        }}
       />
     </>
   );
