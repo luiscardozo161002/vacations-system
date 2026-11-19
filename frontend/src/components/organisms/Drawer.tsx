@@ -1,5 +1,5 @@
 import type { FormEvent, ReactNode } from 'react';
-import { Icon } from './Icon';
+import { Icon } from '../atoms/Icon';
 import { Overlay } from './Overlay';
 
 interface DrawerProps {

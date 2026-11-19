@@ -1,9 +1,9 @@
 import { useState, type FormEvent, type ReactNode } from 'react';
 import { SdkHttpError } from '@vacations/sdk';
-import { sdk } from '../../../lib/sdk';
-import { getErrorMessage } from '../../../lib/get-error-message';
-import { Icon } from '../../../components/Icon';
-import { TextField } from '../../../components/FormField';
+import { sdk } from '../../../api/sdk';
+import { getErrorMessage } from '../../../utils/get-error-message';
+import { Icon } from '../../../components/atoms/Icon';
+import { TextField } from '../../../components/molecules/FormField';
 import { useAuth } from '../auth-context';
 import { DevAccounts } from '../components/DevAccounts';
 

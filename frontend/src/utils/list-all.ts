@@ -1,5 +1,5 @@
-import { config } from './config';
-import type { Listable } from './use-paged-list';
+import { config } from '../config';
+import type { Listable } from '../hooks/use-paged-list';
 
 export const listAll = async <T, P extends object>(resource: Listable<T, P & { page: number; pageSize: number }>, params: P, signal: AbortSignal): Promise<T[]> => {
   const { catalogPageSize } = config;

@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import type { DayOfWeek, Shift } from '@vacations/sdk';
-import { sdk } from '../../../lib/sdk';
-import { useFormSubmit } from '../../../lib/use-form-submit';
-import { FormDrawer } from '../../../components/FormDrawer';
-import { FormField, TextField } from '../../../components/FormField';
-import { Icon } from '../../../components/Icon';
+import { sdk } from '../../../api/sdk';
+import { useFormSubmit } from '../../../hooks/use-form-submit';
+import { FormDrawer } from '../../../components/organisms/FormDrawer';
+import { FormField, TextField } from '../../../components/molecules/FormField';
+import { Icon } from '../../../components/atoms/Icon';
 import { DAY_LETTERS, WEEK, toBlocks, toSchedule, type ScheduleBlock } from '../schedule-blocks';
 
 interface ShiftFormProps {

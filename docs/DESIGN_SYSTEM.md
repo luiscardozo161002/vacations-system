@@ -6,16 +6,17 @@ Define los estilos, componentes y patrones de interacción compartidos por el fr
 
 ## Referencias del proyecto
 
-El prototipo de Vacation Manager guía los cambios visuales. La implementación versionada se consulta en los estilos, componentes y preferencias del frontend.
+El prototipo de Vacation Manager es la referencia visual. La interfaz usa Tailwind CSS, componentes de Radix UI y Atomic Design, y el tema de Tailwind es la fuente de verdad de los tokens.
 
 | Recurso | Referencia |
 | --- | --- |
-| Tokens, temas y clases visuales | [styles.css](../frontend/src/styles.css) |
+| Tokens y tema de Tailwind | [tailwind.css](../frontend/src/tailwind.css) |
+| Variables y estilos heredados, en migración | [styles.css](../frontend/src/styles.css) |
 | Componentes React | [components](../frontend/src/components) |
-| Tema y preferencias | [appearance.ts](../frontend/src/lib/appearance.ts) |
+| Tema y preferencias | [appearance.ts](../frontend/src/utils/appearance.ts) |
 | Menú y nombres de módulos | [navigation.ts](../frontend/src/app/navigation.ts) |
 
-Los cambios de diseño se preparan en el prototipo y se trasladan al frontend junto con sus componentes. Se reutilizan los tokens y las clases compartidas al construir pantallas.
+Los componentes se organizan por nivel: `atoms` (botón, insignia, icono), `molecules` (campos, búsqueda, encabezado) y `organisms` (tabla, paneles, diálogos). Las páginas viven en `features`. Las variantes se declaran con `class-variance-authority` y las clases se combinan con `cn`. Las clases nuevas usan los tokens del tema, como `bg-primary` o `text-muted`; no se agregan clases a `styles.css`.
 
 ## Fundamentos visuales
 
@@ -39,12 +40,14 @@ Los colores de éxito, advertencia, error y estado neutral tienen tokens propios
 
 La interfaz utiliza Inter con fuentes del sistema como alternativa. El texto base es de 14 px y tiene una altura de línea de 1.5. Los títulos usan peso 600.
 
-Los radios compartidos son de 8, 10 y 12 px, con un radio independiente para controles redondeados. Las sombras y las dimensiones de la navegación se definen en los mismos estilos. [Tokens visuales](../frontend/src/styles.css)
+Los radios compartidos son de 8, 10 y 12 px, con un radio independiente para controles redondeados. Las sombras y las dimensiones de la navegación se definen en los mismos estilos. [Tokens visuales](../frontend/src/tailwind.css)
 
 ## Componentes
 
 | Componente | Uso |
 | --- | --- |
+| `Button`, `IconButton` | Acciones con variantes `primary`, `secondary`, `outline` y `ghost` |
+| `Badge` | Etiqueta con tono semántico |
 | `DataTable` | Tablas con carga, estado vacío y paginación |
 | `Drawer` | Formularios y detalle en un panel lateral |
 | `Dialog`, `ConfirmDialog` | Confirmaciones y acciones que necesitan contexto |
@@ -72,7 +75,7 @@ La implementación y las propiedades disponibles se consultan en el componente c
 
 Los paneles y diálogos se cierran con el botón de cierre, Escape o un clic en el fondo. El foco permanece dentro del panel y vuelve al control de origen al cerrarlo.
 
-Las confirmaciones muestran una acción con un verbo concreto, como «Aprobar», «Rechazar» o «Cancelar». La notificación breve comunica el resultado y se anuncia mediante una región de estado. [Overlay](../frontend/src/components/Overlay.tsx), [diálogos](../frontend/src/components/Dialog.tsx), [notificaciones](../frontend/src/components/ToastProvider.tsx)
+Las confirmaciones muestran una acción con un verbo concreto, como «Aprobar», «Rechazar» o «Cancelar». La notificación breve comunica el resultado y se anuncia mediante una región de estado. [Overlay](../frontend/src/components/organisms/Overlay.tsx), [diálogos](../frontend/src/components/organisms/Dialog.tsx), [notificaciones](../frontend/src/components/organisms/ToastProvider.tsx)
 
 ### Estados
 
@@ -87,13 +90,13 @@ Las confirmaciones muestran una acción con un verbo concreto, como «Aprobar»,
 | `cancelled` | Cancelada | Neutral |
 | `success` / `failed` | Exitoso / Fallido | Éxito / Error |
 
-Cada estado se comunica con texto además de color. [StatusBadge](../frontend/src/components/StatusBadge.tsx)
+Cada estado se comunica con texto además de color. [StatusBadge](../frontend/src/components/atoms/StatusBadge.tsx)
 
 ## Accesibilidad y adaptación
 
 Al modificar una pantalla, comprueba la navegación por teclado, las etiquetas de los controles y la recuperación del foco. Los diálogos deben conservar su título y sus atributos de modalidad.
 
-Revisa los temas claro y oscuro, los estados de carga, vacío y error, y los anchos de escritorio y móvil. Las reglas adaptables viven en el CSS compartido. Las pruebas de formularios y diálogos verifican parte de estas interacciones. [Pruebas de componentes](../frontend/src/components/Dialog.test.tsx)
+Revisa los temas claro y oscuro, los estados de carga, vacío y error, y los anchos de escritorio y móvil. Las reglas adaptables viven en el CSS compartido. Las pruebas de formularios y diálogos verifican parte de estas interacciones. [Pruebas de componentes](../frontend/src/components/organisms/Dialog.test.tsx)
 
 ## Referencias
 

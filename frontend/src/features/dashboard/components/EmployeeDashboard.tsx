@@ -1,11 +1,11 @@
 import { useNavigate } from 'react-router';
-import { sdk } from '../../../lib/sdk';
-import { useApiQuery } from '../../../lib/use-api-query';
-import { formatAbsenceRange, formatDate, formatDaysHours } from '../../../lib/format';
-import { EmptyState } from '../../../components/EmptyState';
-import { Icon } from '../../../components/Icon';
-import { PageHeader } from '../../../components/PageHeader';
-import { StatusBadge } from '../../../components/StatusBadge';
+import { sdk } from '../../../api/sdk';
+import { useApiQuery } from '../../../hooks/use-api-query';
+import { formatAbsenceRange, formatDate, formatDaysHours } from '../../../utils/format';
+import { EmptyState } from '../../../components/atoms/EmptyState';
+import { Icon } from '../../../components/atoms/Icon';
+import { PageHeader } from '../../../components/molecules/PageHeader';
+import { StatusBadge } from '../../../components/atoms/StatusBadge';
 
 export function EmployeeDashboard() {
   const navigate = useNavigate();

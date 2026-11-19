@@ -1,6 +1,6 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import type { CallOptions, Paginated } from '@vacations/sdk';
-import { getErrorMessage } from './get-error-message';
+import { getErrorMessage } from '../utils/get-error-message';
 
 export interface Listable<T, P> {
   list(params: P, options: CallOptions): Promise<Paginated<T>>;

@@ -3,13 +3,13 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { SdkHttpError, type Notice } from '@vacations/sdk';
 import { AbsenceDetail } from './AbsenceDetail';
-import { ToastProvider } from '../../../components/ToastProvider';
-import { queryClient } from '../../../lib/query-client';
+import { ToastProvider } from '../../../components/organisms/ToastProvider';
+import { queryClient } from '../../../api/query-client';
 import { hrUser } from '../../../test/users';
 
 const { approve, reject, preview } = vi.hoisted(() => ({ approve: vi.fn(), reject: vi.fn(), preview: vi.fn() }));
 
-vi.mock('../../../lib/sdk', () => ({ sdk: { notices: { approve, reject, preview } } }));
+vi.mock('../../../api/sdk', () => ({ sdk: { notices: { approve, reject, preview } } }));
 
 const pendingRequest: Notice = {
   notice_id: 7,

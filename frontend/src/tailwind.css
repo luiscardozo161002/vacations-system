@@ -1,0 +1,60 @@
+@layer theme, base, components, utilities;
+@import 'tailwindcss/theme.css' layer(theme);
+@import 'tailwindcss/utilities.css' layer(utilities);
+
+@custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
+
+@theme inline {
+  --color-*: initial;
+  --color-white: #ffffff;
+  --color-transparent: transparent;
+  --color-current: currentColor;
+
+  --color-backdrop: var(--backdrop);
+  --color-page: var(--bg);
+  --color-subtle: var(--bg-subtle);
+  --color-surface: var(--surface-solid);
+  --color-fg: var(--text);
+  --color-muted: var(--text-muted);
+  --color-line: var(--border);
+  --color-divider: var(--divider);
+
+  --color-primary: var(--btn-primary-bg);
+  --color-primary-hover: var(--btn-primary-bg-hover);
+  --color-primary-fg: var(--btn-primary-text);
+  --color-secondary: var(--btn-secondary-bg);
+  --color-secondary-hover: var(--btn-secondary-bg-hover);
+  --color-secondary-fg: var(--btn-secondary-text);
+  --color-secondary-line: var(--btn-secondary-border);
+
+  --color-success: var(--success-bg);
+  --color-success-fg: var(--success-text);
+  --color-warning: var(--warning-bg);
+  --color-warning-fg: var(--warning-text);
+  --color-danger: var(--danger-bg);
+  --color-danger-fg: var(--danger-text);
+  --color-neutral: var(--neutral-bg);
+  --color-neutral-fg: var(--neutral-text);
+
+  --font-sans: 'Inter', system-ui, 'Segoe UI', Roboto, sans-serif;
+
+  --text-xs: 12px;
+  --text-xs--line-height: 1.5;
+  --text-sm: 13px;
+  --text-sm--line-height: 1.5;
+  --text-base: 14px;
+  --text-base--line-height: 1.5;
+  --text-lg: 16px;
+  --text-lg--line-height: 1.5;
+  --text-xl: 20px;
+  --text-xl--line-height: 1.3;
+  --text-2xl: 22px;
+  --text-2xl--line-height: 1.3;
+
+  --radius-sm: 8px;
+  --radius-md: 10px;
+  --radius-lg: 12px;
+
+  --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.04);
+  --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.06);
+}

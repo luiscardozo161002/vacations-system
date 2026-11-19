@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { getErrorMessage } from './get-error-message';
+import { getErrorMessage } from '../utils/get-error-message';
 
 export function useFormSubmit() {
   const [submitting, setSubmitting] = useState(false);

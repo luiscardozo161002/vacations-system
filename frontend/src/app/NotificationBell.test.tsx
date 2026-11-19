@@ -5,7 +5,7 @@ import { NotificationBell } from './NotificationBell';
 
 const { list, markAllRead } = vi.hoisted(() => ({ list: vi.fn(), markAllRead: vi.fn() }));
 
-vi.mock('../lib/sdk', () => ({ sdk: { notifications: { list, markAllRead } } }));
+vi.mock('../api/sdk', () => ({ sdk: { notifications: { list, markAllRead } } }));
 
 const pendingRequest = {
   notice_id: 7,

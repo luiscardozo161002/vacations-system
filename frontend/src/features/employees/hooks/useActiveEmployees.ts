@@ -1,6 +1,6 @@
-import { sdk } from '../../../lib/sdk';
-import { listAll } from '../../../lib/list-all';
-import { useApiQuery } from '../../../lib/use-api-query';
+import { sdk } from '../../../api/sdk';
+import { listAll } from '../../../utils/list-all';
+import { useApiQuery } from '../../../hooks/use-api-query';
 
 export function useActiveEmployees(enabled = true) {
   const { data, error } = useApiQuery(

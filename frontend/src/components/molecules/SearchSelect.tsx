@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Icon } from './Icon';
+import { Icon } from '../atoms/Icon';
 
 export interface SearchSelectOption {
   value: string;

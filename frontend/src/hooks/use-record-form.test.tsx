@@ -1,8 +1,8 @@
 import type { ReactNode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { act, renderHook } from '@testing-library/react';
-import { ToastContext } from '../components/toast-context';
-import { queryClient } from './query-client';
+import { ToastContext } from '../components/organisms/toast-context';
+import { queryClient } from '../api/query-client';
 import { useRecordForm } from './use-record-form';
 
 const toasts: string[] = [];

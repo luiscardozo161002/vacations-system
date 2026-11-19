@@ -1,5 +1,5 @@
-import { sdk } from '../../../lib/sdk';
-import { useCatalog } from '../../../lib/use-catalog';
+import { sdk } from '../../../api/sdk';
+import { useCatalog } from '../../../hooks/use-catalog';
 
 export function useBranches(enabled = true) {
   const { items, error } = useCatalog('branches', sdk.branches, { status: 'active' as const }, enabled);

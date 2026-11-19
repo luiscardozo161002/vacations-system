@@ -1,6 +1,6 @@
 import { useCallback, useState, type ReactNode } from 'react';
-import { config } from '../lib/config';
-import { Icon } from './Icon';
+import { config } from '../../config';
+import { Icon } from '../atoms/Icon';
 import { ToastContext } from './toast-context';
 
 interface Toast {

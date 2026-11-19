@@ -1,14 +1,14 @@
 import { useMemo } from 'react';
 import type { AuditLogEntry } from '@vacations/sdk';
-import { sdk } from '../../../lib/sdk';
-import { config } from '../../../lib/config';
-import { formatDateTime } from '../../../lib/format';
-import { usePagedList } from '../../../lib/use-paged-list';
-import { usePageFilters } from '../../../lib/use-page-filters';
-import { DataTable, type Column } from '../../../components/DataTable';
-import { PageHeader } from '../../../components/PageHeader';
-import { SearchInput } from '../../../components/SearchInput';
-import { StatusBadge } from '../../../components/StatusBadge';
+import { sdk } from '../../../api/sdk';
+import { config } from '../../../config';
+import { formatDateTime } from '../../../utils/format';
+import { usePagedList } from '../../../hooks/use-paged-list';
+import { usePageFilters } from '../../../hooks/use-page-filters';
+import { DataTable, type Column } from '../../../components/organisms/DataTable';
+import { PageHeader } from '../../../components/molecules/PageHeader';
+import { SearchInput } from '../../../components/molecules/SearchInput';
+import { StatusBadge } from '../../../components/atoms/StatusBadge';
 
 const FILTERS = { resultado: '', q: '' };
 

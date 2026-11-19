@@ -4,7 +4,7 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { SdkHttpError } from '@vacations/sdk';
 import App from './App';
 import { AuthProvider } from './features/auth/AuthProvider';
-import { queryClient } from './lib/query-client';
+import { queryClient } from './api/query-client';
 import { employeeUser, hrUser } from './test/users';
 
 const { auth, sessionEvents } = vi.hoisted(() => ({
@@ -12,7 +12,7 @@ const { auth, sessionEvents } = vi.hoisted(() => ({
   sessionEvents: new EventTarget(),
 }));
 
-vi.mock('./lib/sdk', async () => {
+vi.mock('./api/sdk', async () => {
   const { sdkMock } = await import('./test/sdk-mock');
   return { sdk: sdkMock({ auth }), sessionEvents };
 });
@@ -86,7 +86,7 @@ describe('Sesión expirada', () => {
 
     expect(await screen.findByText('Tu sesión expiró. Vuelve a iniciar sesión.')).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Entrar' })).toBeTruthy();
-    expect(queryClient.getQueryCache().getAll()).toHaveLength(0);
+    await waitFor(() => expect(queryClient.getQueryCache().getAll()).toHaveLength(0));
   });
 });
 

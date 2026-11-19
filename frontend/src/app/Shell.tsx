@@ -1,14 +1,14 @@
 import { useEffect, useState, useSyncExternalStore } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router';
-import { Icon } from '../components/Icon';
-import { ToastProvider } from '../components/ToastProvider';
+import { Icon } from '../components/atoms/Icon';
+import { ToastProvider } from '../components/organisms/ToastProvider';
 import { useAuth } from '../features/auth/auth-context';
 import { ProfileDrawer } from '../features/auth/components/ProfileDrawer';
 import { NotificationBell } from './NotificationBell';
 import { GlobalSearch } from './GlobalSearch';
-import { config } from '../lib/config';
-import { initials } from '../lib/format';
-import { getTheme, subscribeTheme, toggleTheme } from '../lib/appearance';
+import { config } from '../config';
+import { initials } from '../utils/format';
+import { getTheme, subscribeTheme, toggleTheme } from '../utils/appearance';
 import { ROLE_LABELS, findNavItem, visibleGroups } from './navigation';
 
 const COLLAPSED_KEY = 'vm_sidebar_collapsed';

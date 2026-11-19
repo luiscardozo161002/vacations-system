@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import type { EmployeeAccess } from '@vacations/sdk';
-import { formatDate } from '../../../lib/format';
-import { Dialog } from '../../../components/Dialog';
+import { formatDate } from '../../../utils/format';
+import { Dialog } from '../../../components/organisms/Dialog';
 
 export interface GrantedAccess extends EmployeeAccess {
   employee_name: string;

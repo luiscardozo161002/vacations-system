@@ -38,9 +38,13 @@ El frontend importa el SDK como paquete del workspace. El SDK se compila antes d
 | `backend/src/db/` | Conexión, migraciones y seeds por dominio |
 | `sdk/src/core/` | HTTP, renovación de sesión y errores |
 | `sdk/src/resources/` | Operaciones y tipos de cada recurso |
-| `frontend/src/app/` | Navegación y estructura de la aplicación |
+| `frontend/src/app/` | Plantilla de la aplicación, navegación, buscador y campana |
 | `frontend/src/features/` | Páginas, formularios y hooks por dominio |
-| `frontend/src/components/` | Componentes visuales compartidos |
+| `frontend/src/components/` | `atoms/`, `molecules/` y `organisms/` compartidos (Atomic Design) |
+| `frontend/src/hooks/` | Hooks compartidos: filtros, listados, formularios y consultas |
+| `frontend/src/utils/` | Formato, errores, archivos, apariencia y `cn` |
+| `frontend/src/api/` | SDK, cliente de consultas y almacenamiento de sesión |
+| `frontend/src/config/` | Valores configurables leídos de `VITE_*` |
 
 ## Backend
 
@@ -98,7 +102,7 @@ La auditoría registra los eventos declarados por las rutas, incluidos rechazos 
 
 ## Frontend y SDK
 
-TanStack Query mantiene los datos remotos. Los filtros y la paginación se guardan en la URL. El SDK serializa los parámetros, adjunta el access token y comparte una única renovación entre peticiones que reciben `401`. Las consultas admiten cancelación mediante `AbortSignal`. [Cliente HTTP](../sdk/src/core/http-client.ts), [consultas del frontend](../frontend/src/lib/query-client.ts)
+TanStack Query mantiene los datos remotos. Los filtros y la paginación se guardan en la URL. El SDK serializa los parámetros, adjunta el access token y comparte una única renovación entre peticiones que reciben `401`. Las consultas admiten cancelación mediante `AbortSignal`. [Cliente HTTP](../sdk/src/core/http-client.ts), [consultas del frontend](../frontend/src/api/query-client.ts)
 
 Al guardar cambios, el frontend invalida las consultas para actualizar listas, saldos, calendario e indicadores. Los permisos determinan las opciones del menú y las rutas disponibles. [Navegación](../frontend/src/app/navigation.ts)
 
@@ -106,7 +110,7 @@ Las pantallas comparten estas piezas:
 
 | Pieza | Función |
 |---|---|
-| `lib/config.ts` | Valores configurables leídos de `VITE_*`, con su valor por defecto; ver `frontend/.env.example` |
+| `config/index.ts` | Valores configurables leídos de `VITE_*`, con su valor por defecto; ver `frontend/.env.example` |
 | `usePageFilters` | Filtros y página en la URL; cambiar un filtro vuelve a la primera página |
 | `usePagedList` y `useCatalog` | Listados paginados y catálogos completos a partir de un recurso del SDK |
 | `useRecordForm` | Estado del formulario de alta y edición; al guardar cierra, avisa y refresca |

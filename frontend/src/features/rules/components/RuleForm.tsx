@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import type { AccrualRule } from '@vacations/sdk';
-import { sdk } from '../../../lib/sdk';
-import { useFormSubmit } from '../../../lib/use-form-submit';
-import { FormDrawer } from '../../../components/FormDrawer';
-import { TextField } from '../../../components/FormField';
+import { sdk } from '../../../api/sdk';
+import { useFormSubmit } from '../../../hooks/use-form-submit';
+import { FormDrawer } from '../../../components/organisms/FormDrawer';
+import { TextField } from '../../../components/molecules/FormField';
 
 interface RuleFormProps {
   rule: AccrualRule | null;

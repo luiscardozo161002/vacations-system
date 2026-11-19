@@ -1,12 +1,12 @@
 import { useMemo, useState } from 'react';
 import type { Employee, Role } from '@vacations/sdk';
-import { sdk } from '../../../lib/sdk';
-import { config } from '../../../lib/config';
-import { useFormSubmit } from '../../../lib/use-form-submit';
+import { sdk } from '../../../api/sdk';
+import { config } from '../../../config';
+import { useFormSubmit } from '../../../hooks/use-form-submit';
 import { ROLE_LABELS } from '../../../app/navigation';
-import { FormDrawer } from '../../../components/FormDrawer';
-import { SearchSelect } from '../../../components/SearchSelect';
-import { FormField, SelectField, TextField } from '../../../components/FormField';
+import { FormDrawer } from '../../../components/organisms/FormDrawer';
+import { SearchSelect } from '../../../components/molecules/SearchSelect';
+import { FormField, SelectField, TextField } from '../../../components/molecules/FormField';
 
 interface UserFormProps {
   roles: Role[];

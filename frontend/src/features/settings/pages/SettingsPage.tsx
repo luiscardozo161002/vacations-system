@@ -1,7 +1,7 @@
 import { useState, useSyncExternalStore } from 'react';
-import { Icon } from '../../../components/Icon';
-import { PageHeader } from '../../../components/PageHeader';
-import { useToast } from '../../../components/toast-context';
+import { Icon } from '../../../components/atoms/Icon';
+import { PageHeader } from '../../../components/molecules/PageHeader';
+import { useToast } from '../../../components/organisms/toast-context';
 import {
   BACKDROP_PRESETS,
   BUTTON_COLOR_PRESETS,
@@ -13,7 +13,7 @@ import {
   setWindowAlpha,
   subscribeTheme,
   type Theme,
-} from '../../../lib/appearance';
+} from '../../../utils/appearance';
 
 const sameColor = (a: string, b: string) => a.trim().toLowerCase() === b.trim().toLowerCase();
 

@@ -1,4 +1,4 @@
-import { config } from '../../../lib/config';
+import { config } from '../../../config';
 import { useAuth } from '../../auth/auth-context';
 import { EmployeeDashboard } from '../components/EmployeeDashboard';
 import { TeamDashboard } from '../components/TeamDashboard';

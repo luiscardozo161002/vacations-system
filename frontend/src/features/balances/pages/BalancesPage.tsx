@@ -1,16 +1,16 @@
 import { useMemo, useState } from 'react';
 import type { VacationEntitlement } from '@vacations/sdk';
-import { sdk } from '../../../lib/sdk';
-import { config } from '../../../lib/config';
-import { getErrorMessage } from '../../../lib/get-error-message';
-import { refreshData } from '../../../lib/query-client';
-import { usePageFilters } from '../../../lib/use-page-filters';
-import { usePagedList } from '../../../lib/use-paged-list';
-import { formatDate } from '../../../lib/format';
-import { DataTable, type Column } from '../../../components/DataTable';
-import { Icon } from '../../../components/Icon';
-import { PageHeader } from '../../../components/PageHeader';
-import { useToast } from '../../../components/toast-context';
+import { sdk } from '../../../api/sdk';
+import { config } from '../../../config';
+import { getErrorMessage } from '../../../utils/get-error-message';
+import { refreshData } from '../../../api/query-client';
+import { usePageFilters } from '../../../hooks/use-page-filters';
+import { usePagedList } from '../../../hooks/use-paged-list';
+import { formatDate } from '../../../utils/format';
+import { DataTable, type Column } from '../../../components/organisms/DataTable';
+import { Icon } from '../../../components/atoms/Icon';
+import { PageHeader } from '../../../components/molecules/PageHeader';
+import { useToast } from '../../../components/organisms/toast-context';
 import { useAuth } from '../../auth/auth-context';
 import { EmployeeDashboard } from '../../dashboard/components/EmployeeDashboard';
 

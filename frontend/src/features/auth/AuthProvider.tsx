@@ -1,8 +1,8 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import type { CurrentUser } from '@vacations/sdk';
-import { sdk, sessionEvents } from '../../lib/sdk';
-import { rememberSession } from '../../lib/session-storage';
-import { queryClient } from '../../lib/query-client';
+import { sdk, sessionEvents } from '../../api/sdk';
+import { rememberSession } from '../../api/session-storage';
+import { queryClient } from '../../api/query-client';
 import { AuthContext, type AuthStatus } from './auth-context';
 
 export function AuthProvider({ children }: { children: ReactNode }) {

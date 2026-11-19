@@ -1,12 +1,12 @@
 import { useState, type FormEvent } from 'react';
 import type { Branch, Company, ReviewAction, User } from '@vacations/sdk';
-import { sdk } from '../../../lib/sdk';
-import { config } from '../../../lib/config';
-import { useFormSubmit } from '../../../lib/use-form-submit';
-import { initials } from '../../../lib/format';
+import { sdk } from '../../../api/sdk';
+import { config } from '../../../config';
+import { useFormSubmit } from '../../../hooks/use-form-submit';
+import { initials } from '../../../utils/format';
 import { ROLE_LABELS } from '../../../app/navigation';
-import { Drawer } from '../../../components/Drawer';
-import { FormField } from '../../../components/FormField';
+import { Drawer } from '../../../components/organisms/Drawer';
+import { FormField } from '../../../components/molecules/FormField';
 
 interface UserAssignmentProps {
   user: User;

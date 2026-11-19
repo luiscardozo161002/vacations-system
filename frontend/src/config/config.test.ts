@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 const loadConfig = async () => {
   vi.resetModules();
-  return (await import('./config')).config;
+  return (await import('./index')).config;
 };
 
 afterEach(() => vi.unstubAllEnvs());

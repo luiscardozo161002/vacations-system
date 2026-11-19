@@ -1,9 +1,9 @@
 import { useState, type FormEvent } from 'react';
-import { sdk } from '../../../lib/sdk';
-import { config } from '../../../lib/config';
-import { getErrorMessage } from '../../../lib/get-error-message';
-import { formatDate } from '../../../lib/format';
-import { TextField } from '../../../components/FormField';
+import { sdk } from '../../../api/sdk';
+import { config } from '../../../config';
+import { getErrorMessage } from '../../../utils/get-error-message';
+import { formatDate } from '../../../utils/format';
+import { TextField } from '../../../components/molecules/FormField';
 import { useAuth } from '../auth-context';
 import { LoginCard } from './LoginPage';
 

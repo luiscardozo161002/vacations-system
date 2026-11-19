@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { getErrorMessage } from './get-error-message';
+import { getErrorMessage } from '../utils/get-error-message';
 
 export function useApiQuery<T>(queryKey: readonly unknown[], load: (signal: AbortSignal) => Promise<T>, enabled = true) {
   const query = useQuery({ queryKey, queryFn: ({ signal }) => load(signal), enabled });

@@ -2,10 +2,10 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
 import type { MyNotifications, Notice } from '@vacations/sdk';
-import { sdk } from '../lib/sdk';
-import { Icon } from '../components/Icon';
-import { formatDaysHours } from '../lib/format';
-import { queryClient } from '../lib/query-client';
+import { sdk } from '../api/sdk';
+import { Icon } from '../components/atoms/Icon';
+import { formatDaysHours } from '../utils/format';
+import { queryClient } from '../api/query-client';
 
 const REFRESH_MS = 5 * 60 * 1000;
 const QUERY_KEY = ['notifications'];

@@ -5,7 +5,7 @@ import { GlobalSearch } from './GlobalSearch';
 
 const { employeesList } = vi.hoisted(() => ({ employeesList: vi.fn() }));
 
-vi.mock('../lib/sdk', () => ({
+vi.mock('../api/sdk', () => ({
   sdk: {
     employees: { list: employeesList },
     departments: {

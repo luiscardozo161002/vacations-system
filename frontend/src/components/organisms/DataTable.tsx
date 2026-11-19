@@ -1,7 +1,9 @@
 import type { ReactNode } from 'react';
 import type { Paginated } from '@vacations/sdk';
-import { EmptyState } from './EmptyState';
-import { Icon } from './Icon';
+import { cn } from '../../utils/cn';
+import { EmptyState } from '../atoms/EmptyState';
+import { Icon } from '../atoms/Icon';
+import { IconButton } from '../atoms/IconButton';
 
 export interface Column<T> {
   header: string;
@@ -24,16 +26,21 @@ export function DataTable<T>({ columns, data, rowKey, page, onPageChange, loadin
   const showEmpty = loading || rows.length === 0;
 
   return (
-    <div className="table-wrap">
-      <table className="data-table" aria-busy={loading}>
+    <div className="overflow-x-auto rounded-lg border border-line bg-surface">
+      <table className="w-full min-w-[640px] border-collapse" aria-busy={loading}>
         <thead>
           <tr>
             {columns.map((column, index) => (
-              <th key={index}>{column.header}</th>
+              <th
+                key={index}
+                className="whitespace-nowrap border-b border-line bg-subtle px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.03em] text-muted"
+              >
+                {column.header}
+              </th>
             ))}
           </tr>
         </thead>
-        <tbody>
+        <tbody className="[&_tr:last-child_td]:border-b-0">
           {showEmpty ? (
             <tr>
               <td colSpan={columns.length}>
@@ -42,9 +49,9 @@ export function DataTable<T>({ columns, data, rowKey, page, onPageChange, loadin
             </tr>
           ) : (
             rows.map((row) => (
-              <tr key={rowKey(row)}>
+              <tr key={rowKey(row)} className="hover:bg-subtle">
                 {columns.map((column, index) => (
-                  <td key={index} className={column.className}>
+                  <td key={index} className={cn('border-b border-line px-4 py-3 align-middle text-[13.5px]', column.className)}>
                     {column.render(row)}
                   </td>
                 ))}
@@ -69,32 +76,20 @@ function TableFoot({ page, totalPages, total, onPageChange }: TableFootProps) {
   const lastPage = Math.max(1, totalPages);
 
   return (
-    <div className="table-foot">
+    <div className="flex items-center justify-between px-4 py-3 text-sm text-muted">
       <span>
         {total} resultado{total === 1 ? '' : 's'}
       </span>
-      <div className="pagination">
-        <button
-          type="button"
-          className="icon-btn"
-          title="Página anterior"
-          onClick={() => onPageChange(page - 1)}
-          disabled={page <= 1}
-        >
+      <div className="flex items-center gap-2.5">
+        <IconButton title="Página anterior" onClick={() => onPageChange(page - 1)} disabled={page <= 1}>
           <Icon name="chevron-left" />
-        </button>
+        </IconButton>
         <span>
           Página {page} de {lastPage}
         </span>
-        <button
-          type="button"
-          className="icon-btn"
-          title="Página siguiente"
-          onClick={() => onPageChange(page + 1)}
-          disabled={page >= lastPage}
-        >
+        <IconButton title="Página siguiente" onClick={() => onPageChange(page + 1)} disabled={page >= lastPage}>
           <Icon name="chevron-right" />
-        </button>
+        </IconButton>
       </div>
     </div>
   );

@@ -11,13 +11,17 @@ describe('PageHeader', () => {
     );
 
     expect(screen.getByRole('heading', { name: 'Empleados' })).toBeTruthy();
-    expect(screen.getByText('Catálogo de personal.').className).toBe('page-sub');
-    expect(screen.getByRole('button', { name: 'Nuevo empleado' }).parentElement?.className).toBe('page-actions');
+    expect(screen.getByText('Catálogo de personal.')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Nuevo empleado' })).toBeTruthy();
   });
 
   it('no dibuja el contenedor de acciones cuando no hay ninguna', () => {
-    const { container } = render(<PageHeader title="Auditoría" subtitle="Historial.">{false}</PageHeader>);
+    const { container } = render(
+      <PageHeader title="Auditoría" subtitle="Historial.">
+        {false}
+      </PageHeader>,
+    );
 
-    expect(container.querySelector('.page-actions')).toBeNull();
+    expect(container.firstElementChild?.children).toHaveLength(1);
   });
 });

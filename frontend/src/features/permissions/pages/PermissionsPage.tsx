@@ -1,16 +1,16 @@
 import { useState } from 'react';
 import type { Permission, Role, RolePermission } from '@vacations/sdk';
-import { sdk } from '../../../lib/sdk';
-import { config } from '../../../lib/config';
-import { getErrorMessage } from '../../../lib/get-error-message';
-import { listAll } from '../../../lib/list-all';
-import { useApiQuery } from '../../../lib/use-api-query';
-import { queryClient } from '../../../lib/query-client';
+import { sdk } from '../../../api/sdk';
+import { config } from '../../../config';
+import { getErrorMessage } from '../../../utils/get-error-message';
+import { listAll } from '../../../utils/list-all';
+import { useApiQuery } from '../../../hooks/use-api-query';
+import { queryClient } from '../../../api/query-client';
 import { ROLE_LABELS } from '../../../app/navigation';
-import { EmptyState } from '../../../components/EmptyState';
-import { Icon } from '../../../components/Icon';
-import { PageHeader } from '../../../components/PageHeader';
-import { useToast } from '../../../components/toast-context';
+import { EmptyState } from '../../../components/atoms/EmptyState';
+import { Icon } from '../../../components/atoms/Icon';
+import { PageHeader } from '../../../components/molecules/PageHeader';
+import { useToast } from '../../../components/organisms/toast-context';
 import { useAuth } from '../../auth/auth-context';
 
 const MODULES = [

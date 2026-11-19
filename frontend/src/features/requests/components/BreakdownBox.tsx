@@ -1,5 +1,5 @@
 import type { NoticePreview } from '@vacations/sdk';
-import { formatDaysHours } from '../../../lib/format';
+import { formatDaysHours } from '../../../utils/format';
 
 interface BreakdownBoxProps {
   preview: NoticePreview | null;

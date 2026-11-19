@@ -1,4 +1,6 @@
-const STATUS: Record<string, [string, string]> = {
+import { Badge, type BadgeProps } from './Badge';
+
+const STATUS: Record<string, [NonNullable<BadgeProps['tone']>, string]> = {
   active: ['success', 'Activo'],
   inactive: ['neutral', 'Inactivo'],
   locked: ['danger', 'Bloqueado'],
@@ -12,5 +14,5 @@ const STATUS: Record<string, [string, string]> = {
 
 export function StatusBadge({ status }: { status: string }) {
   const [tone, label] = STATUS[status] ?? ['neutral', status];
-  return <span className={`badge badge-${tone}`}>{label}</span>;
+  return <Badge tone={tone}>{label}</Badge>;
 }

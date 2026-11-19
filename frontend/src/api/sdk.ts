@@ -1,5 +1,5 @@
 import { VacationsSdk } from '@vacations/sdk';
-import { config } from './config';
+import { config } from '../config';
 import { browserSessionStorage } from './session-storage';
 
 export const sessionEvents = new EventTarget();

@@ -1,14 +1,14 @@
 import { useMemo } from 'react';
 import type { AccrualRule } from '@vacations/sdk';
-import { sdk } from '../../../lib/sdk';
-import { config } from '../../../lib/config';
-import { usePagedList } from '../../../lib/use-paged-list';
-import { usePageFilters } from '../../../lib/use-page-filters';
-import { useRecordForm } from '../../../lib/use-record-form';
-import { DataTable, type Column } from '../../../components/DataTable';
-import { Icon } from '../../../components/Icon';
-import { PageHeader } from '../../../components/PageHeader';
-import { StatusBadge } from '../../../components/StatusBadge';
+import { sdk } from '../../../api/sdk';
+import { config } from '../../../config';
+import { usePagedList } from '../../../hooks/use-paged-list';
+import { usePageFilters } from '../../../hooks/use-page-filters';
+import { useRecordForm } from '../../../hooks/use-record-form';
+import { DataTable, type Column } from '../../../components/organisms/DataTable';
+import { Icon } from '../../../components/atoms/Icon';
+import { PageHeader } from '../../../components/molecules/PageHeader';
+import { StatusBadge } from '../../../components/atoms/StatusBadge';
 import { useAuth } from '../../auth/auth-context';
 import { RuleForm } from '../components/RuleForm';
 

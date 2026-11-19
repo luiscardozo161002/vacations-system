@@ -1,11 +1,11 @@
 import { useNavigate } from 'react-router';
-import { sdk } from '../../../lib/sdk';
-import { useApiQuery } from '../../../lib/use-api-query';
-import { formatDate, formatDateTime, initials } from '../../../lib/format';
-import { EmptyState } from '../../../components/EmptyState';
-import { Icon } from '../../../components/Icon';
-import { PageHeader } from '../../../components/PageHeader';
-import { StatCard } from '../../../components/StatCard';
+import { sdk } from '../../../api/sdk';
+import { useApiQuery } from '../../../hooks/use-api-query';
+import { formatDate, formatDateTime, initials } from '../../../utils/format';
+import { EmptyState } from '../../../components/atoms/EmptyState';
+import { Icon } from '../../../components/atoms/Icon';
+import { PageHeader } from '../../../components/molecules/PageHeader';
+import { StatCard } from '../../../components/molecules/StatCard';
 
 const ACTIVITY_LABELS = {
   request: { pending: 'Solicitud pendiente', approved: 'Solicitud aprobada', rejected: 'Solicitud rechazada', cancelled: 'Solicitud cancelada' },

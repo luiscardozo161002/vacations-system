@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { Button } from '../atoms/Button';
 import { Drawer } from './Drawer';
 
 interface FormDrawerProps {
@@ -23,12 +24,12 @@ export function FormDrawer({ title, submitLabel, submitting, error, submitDisabl
       }}
       footer={
         <>
-          <button type="button" className="btn btn-secondary" onClick={onClose} disabled={submitting}>
+          <Button variant="secondary" onClick={onClose} disabled={submitting}>
             Cancelar
-          </button>
-          <button type="submit" className="btn btn-primary" disabled={submitting || submitDisabled}>
+          </Button>
+          <Button type="submit" disabled={submitting || submitDisabled}>
             {submitLabel}
-          </button>
+          </Button>
         </>
       }
     >

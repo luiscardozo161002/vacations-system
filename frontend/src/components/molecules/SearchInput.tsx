@@ -1,6 +1,6 @@
 import { useEffect, useEffectEvent, useState } from 'react';
-import { config } from '../lib/config';
-import { Icon } from './Icon';
+import { config } from '../../config';
+import { Icon } from '../atoms/Icon';
 
 interface SearchInputProps {
   value: string;

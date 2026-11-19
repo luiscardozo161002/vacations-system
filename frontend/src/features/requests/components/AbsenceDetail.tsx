@@ -1,15 +1,15 @@
 import { useState } from 'react';
 import type { CurrentUser, Notice } from '@vacations/sdk';
-import { sdk } from '../../../lib/sdk';
-import { getErrorMessage } from '../../../lib/get-error-message';
-import { useApiQuery } from '../../../lib/use-api-query';
-import { saveFile } from '../../../lib/save-file';
-import { formatAbsenceRange, formatDaysHours, initials, todayIso } from '../../../lib/format';
-import { Drawer } from '../../../components/Drawer';
-import { ConfirmDialog } from '../../../components/Dialog';
-import { Icon } from '../../../components/Icon';
-import { StatusBadge } from '../../../components/StatusBadge';
-import { useToast } from '../../../components/toast-context';
+import { sdk } from '../../../api/sdk';
+import { getErrorMessage } from '../../../utils/get-error-message';
+import { useApiQuery } from '../../../hooks/use-api-query';
+import { saveFile } from '../../../utils/save-file';
+import { formatAbsenceRange, formatDaysHours, initials, todayIso } from '../../../utils/format';
+import { Drawer } from '../../../components/organisms/Drawer';
+import { ConfirmDialog } from '../../../components/organisms/Dialog';
+import { Icon } from '../../../components/atoms/Icon';
+import { StatusBadge } from '../../../components/atoms/StatusBadge';
+import { useToast } from '../../../components/organisms/toast-context';
 import { BreakdownBox } from './BreakdownBox';
 
 type Action = 'approve' | 'reject' | 'cancel';

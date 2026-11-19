@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import type { CurrentUser } from '@vacations/sdk';
-import { sdk } from '../../../lib/sdk';
-import { config } from '../../../lib/config';
-import { useFormSubmit } from '../../../lib/use-form-submit';
-import { initials } from '../../../lib/format';
-import { FormDrawer } from '../../../components/FormDrawer';
-import { TextField } from '../../../components/FormField';
-import { useToast } from '../../../components/toast-context';
+import { sdk } from '../../../api/sdk';
+import { config } from '../../../config';
+import { useFormSubmit } from '../../../hooks/use-form-submit';
+import { initials } from '../../../utils/format';
+import { FormDrawer } from '../../../components/organisms/FormDrawer';
+import { TextField } from '../../../components/molecules/FormField';
+import { useToast } from '../../../components/organisms/toast-context';
 import { useAuth } from '../auth-context';
 
 interface ProfileDrawerProps {

@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import type { CreateEmployeeInput, Department, Employee, Shift } from '@vacations/sdk';
-import { sdk } from '../../../lib/sdk';
-import { useFormSubmit } from '../../../lib/use-form-submit';
-import { FormDrawer } from '../../../components/FormDrawer';
-import { SearchSelect } from '../../../components/SearchSelect';
-import { FormField, TextField } from '../../../components/FormField';
+import { sdk } from '../../../api/sdk';
+import { useFormSubmit } from '../../../hooks/use-form-submit';
+import { FormDrawer } from '../../../components/organisms/FormDrawer';
+import { SearchSelect } from '../../../components/molecules/SearchSelect';
+import { FormField, TextField } from '../../../components/molecules/FormField';
 import type { GrantedAccess } from './AccessDialog';
 
 interface EmployeeFormProps {

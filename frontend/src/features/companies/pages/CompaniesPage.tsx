@@ -1,14 +1,14 @@
 import { useMemo, useState } from 'react';
 import type { Company, Department, Employee } from '@vacations/sdk';
-import { sdk } from '../../../lib/sdk';
-import { config } from '../../../lib/config';
-import { usePagedList } from '../../../lib/use-paged-list';
-import { useApiQuery } from '../../../lib/use-api-query';
-import { useUrlFilters } from '../../../lib/use-url-filters';
+import { sdk } from '../../../api/sdk';
+import { config } from '../../../config';
+import { usePagedList } from '../../../hooks/use-paged-list';
+import { useApiQuery } from '../../../hooks/use-api-query';
+import { useUrlFilters } from '../../../hooks/use-url-filters';
 import { useDepartments } from '../../departments/hooks/useDepartments';
-import { DataTable, type Column } from '../../../components/DataTable';
-import { EmptyState } from '../../../components/EmptyState';
-import { PageHeader } from '../../../components/PageHeader';
+import { DataTable, type Column } from '../../../components/organisms/DataTable';
+import { EmptyState } from '../../../components/atoms/EmptyState';
+import { PageHeader } from '../../../components/molecules/PageHeader';
 
 const TABS = [
   { id: 'datos', label: 'Datos de empresa' },

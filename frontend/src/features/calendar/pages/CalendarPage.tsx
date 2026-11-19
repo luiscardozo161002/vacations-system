@@ -1,11 +1,11 @@
 import { useMemo } from 'react';
 import type { Calendar, CalendarAbsence, Holiday } from '@vacations/sdk';
-import { sdk } from '../../../lib/sdk';
-import { useApiQuery } from '../../../lib/use-api-query';
-import { useUrlFilters } from '../../../lib/use-url-filters';
-import { todayIso } from '../../../lib/format';
-import { Icon } from '../../../components/Icon';
-import { PageHeader } from '../../../components/PageHeader';
+import { sdk } from '../../../api/sdk';
+import { useApiQuery } from '../../../hooks/use-api-query';
+import { useUrlFilters } from '../../../hooks/use-url-filters';
+import { todayIso } from '../../../utils/format';
+import { Icon } from '../../../components/atoms/Icon';
+import { PageHeader } from '../../../components/molecules/PageHeader';
 
 const MONTH_NAMES = [
   'Enero',

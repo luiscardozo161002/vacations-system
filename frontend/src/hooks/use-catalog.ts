@@ -1,4 +1,4 @@
-import { config } from './config';
+import { config } from '../config';
 import { useApiQuery } from './use-api-query';
 import type { Listable } from './use-paged-list';
 

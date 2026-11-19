@@ -1,10 +1,10 @@
 import { useMemo, useState } from 'react';
 import type { Branch, Department, Employee } from '@vacations/sdk';
-import { sdk } from '../../../lib/sdk';
-import { useFormSubmit } from '../../../lib/use-form-submit';
-import { FormDrawer } from '../../../components/FormDrawer';
-import { SearchSelect } from '../../../components/SearchSelect';
-import { FormField, SelectField, TextField } from '../../../components/FormField';
+import { sdk } from '../../../api/sdk';
+import { useFormSubmit } from '../../../hooks/use-form-submit';
+import { FormDrawer } from '../../../components/organisms/FormDrawer';
+import { SearchSelect } from '../../../components/molecules/SearchSelect';
+import { FormField, SelectField, TextField } from '../../../components/molecules/FormField';
 
 interface DepartmentFormProps {
   department: Department | null;
