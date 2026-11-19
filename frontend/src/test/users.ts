@@ -43,7 +43,7 @@ export const employeeUser: CurrentUser = {
   email: 'j.perez@jo.com.mx',
   review_actions: [],
   role: { role_id: 3, role_code: 'EMPLOYEE', description: 'Empleado' },
-  employee: { employee_id: 1, employee_number: 'EMP-001', employee_name: 'Juan Perez Lopez', department_id: 1, shift_id: 2 },
+  employee: { employee_id: 1, employee_number: '0001', employee_name: 'Juan Perez Lopez', department_id: 1, shift_id: 2 },
   permissions: EMPLOYEE_PERMISSIONS,
 };
 

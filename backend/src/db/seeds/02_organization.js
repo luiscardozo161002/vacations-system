@@ -74,18 +74,18 @@ const DEPARTMENTS = [
 ];
 
 const EMPLOYEES = [
-  { employee_id: 1, department_id: 1, shift_id: 2, folio: '01', employee_number: 'EMP-001', employee_name: 'Juan Perez Lopez', start_date: '2025-08-01', status: 'active' },
-  { employee_id: 2, department_id: 1, shift_id: 2, folio: '02', employee_number: 'EMP-002', employee_name: 'Maria Garcia Hernandez', start_date: '2024-05-15', status: 'active' },
-  { employee_id: 3, department_id: 2, shift_id: 2, folio: '03', employee_number: 'EMP-003', employee_name: 'Carlos Ramirez Soto', start_date: '2023-01-10', status: 'active' },
-  { employee_id: 4, department_id: 2, shift_id: 2, folio: '04', employee_number: 'EMP-004', employee_name: 'Ana Torres Mendoza', start_date: '2021-09-01', status: 'active' },
-  { employee_id: 5, department_id: 8, shift_id: 1, folio: '05', employee_number: 'EMP-005', employee_name: 'Roberto Jimenez Cruz', start_date: '2018-03-01', status: 'active' },
-  { employee_id: 6, department_id: 4, shift_id: 2, folio: '06', employee_number: 'EMP-006', employee_name: 'Laura Sanchez Ortiz', start_date: '2013-06-01', status: 'active' },
-  { employee_id: 7, department_id: 5, shift_id: 2, folio: '07', employee_number: 'EMP-007', employee_name: 'Miguel Angel Flores', start_date: '2008-02-01', status: 'active' },
-  { employee_id: 8, department_id: 6, shift_id: 1, folio: '08', employee_number: 'EMP-008', employee_name: 'Patricia Vega Luna', start_date: '2002-11-01', status: 'active' },
-  { employee_id: 9, department_id: 7, shift_id: 2, folio: '09', employee_number: 'EMP-009', employee_name: 'Francisco Rojas Medina', start_date: '1998-04-01', status: 'active' },
-  { employee_id: 10, department_id: 1, shift_id: 2, folio: '10', employee_number: 'EMP-010', employee_name: 'Daniela Castro Rios', start_date: '2026-02-01', status: 'active' },
-  { employee_id: 11, department_id: 1, shift_id: 2, folio: '11', employee_number: 'EMP-011', employee_name: 'Jorge Luis Navarro', start_date: '2020-01-15', status: 'active' },
-  { employee_id: 12, department_id: 2, shift_id: 2, folio: '12', employee_number: 'EMP-012', employee_name: 'Sofia Hernandez Paredes', start_date: '2015-07-01', status: 'active' },
+  { employee_id: 1, department_id: 1, shift_id: 2, employee_number: '0001', employee_name: 'Juan Perez Lopez', start_date: '2025-08-01', status: 'active' },
+  { employee_id: 2, department_id: 1, shift_id: 2, employee_number: '0002', employee_name: 'Maria Garcia Hernandez', start_date: '2024-05-15', status: 'active' },
+  { employee_id: 3, department_id: 2, shift_id: 2, employee_number: '0003', employee_name: 'Carlos Ramirez Soto', start_date: '2023-01-10', status: 'active' },
+  { employee_id: 4, department_id: 2, shift_id: 2, employee_number: '0004', employee_name: 'Ana Torres Mendoza', start_date: '2021-09-01', status: 'active' },
+  { employee_id: 5, department_id: 8, shift_id: 1, employee_number: '0005', employee_name: 'Roberto Jimenez Cruz', start_date: '2018-03-01', status: 'active' },
+  { employee_id: 6, department_id: 4, shift_id: 2, employee_number: '0006', employee_name: 'Laura Sanchez Ortiz', start_date: '2013-06-01', status: 'active' },
+  { employee_id: 7, department_id: 5, shift_id: 2, employee_number: '0007', employee_name: 'Miguel Angel Flores', start_date: '2008-02-01', status: 'active' },
+  { employee_id: 8, department_id: 6, shift_id: 1, employee_number: '0008', employee_name: 'Patricia Vega Luna', start_date: '2002-11-01', status: 'active' },
+  { employee_id: 9, department_id: 7, shift_id: 2, employee_number: '0009', employee_name: 'Francisco Rojas Medina', start_date: '1998-04-01', status: 'active' },
+  { employee_id: 10, department_id: 1, shift_id: 2, employee_number: '0010', employee_name: 'Daniela Castro Rios', start_date: '2026-02-01', status: 'active' },
+  { employee_id: 11, department_id: 1, shift_id: 2, employee_number: '0011', employee_name: 'Jorge Luis Navarro', start_date: '2020-01-15', status: 'active' },
+  { employee_id: 12, department_id: 2, shift_id: 2, employee_number: '0012', employee_name: 'Sofia Hernandez Paredes', start_date: '2015-07-01', status: 'active' },
 ];
 
 const DEPARTMENT_MANAGERS = [

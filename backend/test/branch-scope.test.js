@@ -67,7 +67,7 @@ describe('Alcance por sede', () => {
 
   it('el Usuario recibe 404 al leer o editar un empleado de otra sede', async () => {
     assert.equal((await call('USER', 'GET', `/employees/${JOR_HGO_EMPLOYEE}`)).statusCode, 404);
-    assert.equal((await call('USER', 'PATCH', `/employees/${JOR_HGO_EMPLOYEE}`, { folio: 'X' })).statusCode, 404);
+    assert.equal((await call('USER', 'PATCH', `/employees/${JOR_HGO_EMPLOYEE}`, { employee_name: 'Xavier' })).statusCode, 404);
     assert.equal((await call('USER', 'DELETE', `/employees/${JOR_HGO_EMPLOYEE}`)).statusCode, 404);
   });
 

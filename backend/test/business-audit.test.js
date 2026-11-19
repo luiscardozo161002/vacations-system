@@ -94,15 +94,14 @@ describe('Auditoría de empleados, reglas, usuarios y permisos', () => {
     const res = await call('USER', 'POST', '/employees', {
       department_id: 1,
       shift_id: 2,
-      folio: 'AUD-1',
-      employee_number: 'AUD-001',
+      employee_number: '9101',
       employee_name: 'Empleado Auditado',
       start_date: '2026-11-01',
     });
     const event = await lastEvent('EMPLOYEE_CREATED');
 
     assert.equal(event.entity_id, String(res.result.employee_id));
-    assert.equal(event.metadata.changes.employee_number, 'AUD-001');
+    assert.equal(event.metadata.changes.employee_number, '9101');
   });
 
   it('registra la baja del empleado', async () => {

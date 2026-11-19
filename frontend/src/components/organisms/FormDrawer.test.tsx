@@ -45,6 +45,21 @@ describe('FormDrawer', () => {
     expect((screen.getByRole('button', { name: 'Crear turno' }) as HTMLButtonElement).disabled).toBe(true);
   });
 
+  it('en solo lectura bloquea los campos y ofrece Editar en lugar de enviar', () => {
+    const onEdit = vi.fn();
+    const onSubmit = vi.fn();
+    render(drawer({ readOnly: true, onEdit, onSubmit }));
+
+    expect(screen.getByLabelText('Nombre').matches(':disabled')).toBe(true);
+    expect(screen.queryByRole('button', { name: 'Crear turno' })).toBeNull();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Editar' }));
+    fireEvent.submit(screen.getByRole('dialog').querySelector('form')!);
+
+    expect(onEdit).toHaveBeenCalledTimes(1);
+    expect(onSubmit).not.toHaveBeenCalled();
+  });
+
   it('cierra con Cancelar', () => {
     const onClose = vi.fn();
     render(drawer({ onClose }));

@@ -5,13 +5,14 @@ interface DrawerProps {
   title: string;
   onClose: () => void;
   onSubmit?: (e: FormEvent) => void;
+  noValidate?: boolean;
   footer?: ReactNode;
   children: ReactNode;
 }
 
 const PANEL = 'flex h-full flex-col overflow-y-auto';
 
-export function Drawer({ title, onClose, onSubmit, footer, children }: DrawerProps) {
+export function Drawer({ title, onClose, onSubmit, noValidate, footer, children }: DrawerProps) {
   const content = (
     <>
       <ModalHeader title={title} />
@@ -26,7 +27,7 @@ export function Drawer({ title, onClose, onSubmit, footer, children }: DrawerPro
       className="top-0 right-0 h-full w-full max-w-[420px] shadow-[-8px_0_24px_rgba(15,23,42,0.12)]"
     >
       {onSubmit ? (
-        <form className={PANEL} onSubmit={onSubmit}>
+        <form className={PANEL} onSubmit={onSubmit} noValidate={noValidate}>
           {content}
         </form>
       ) : (

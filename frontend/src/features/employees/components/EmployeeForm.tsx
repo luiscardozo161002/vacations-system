@@ -1,10 +1,21 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { CreateEmployeeInput, Department, Employee, Shift } from '@vacations/sdk';
 import { sdk } from '../../../services/sdk';
 import { useFormSubmit } from '../../../hooks/use-form-submit';
+import { todayIso } from '../../../utils/format';
 import { FormDrawer } from '../../../components/organisms/FormDrawer';
 import { SearchSelect } from '../../../components/molecules/SearchSelect';
 import { FormField, TextField } from '../../../components/molecules/FormField';
+import { describedBy } from '../../../utils/described-by';
+import {
+  EMAIL_MAX,
+  NAME_MAX,
+  NUMBER_LENGTH,
+  cleanName,
+  cleanNumber,
+  validateEmployee,
+  type EmployeeValues,
+} from '../validation';
 import type { GrantedAccess } from './AccessDialog';
 
 interface EmployeeFormProps {
@@ -15,42 +26,39 @@ interface EmployeeFormProps {
   onSaved: (message: string, access?: GrantedAccess) => void;
 }
 
-interface FormState {
-  employee_name: string;
-  employee_number: string;
-  folio: string;
-  department_id: string;
-  shift_id: string;
-  start_date: string;
-  email: string;
-}
-
-const toFormState = (employee: Employee | null, departments: Department[], shifts: Shift[]): FormState => ({
+const toValues = (employee: Employee | null, departments: Department[], shifts: Shift[]): EmployeeValues => ({
   employee_name: employee?.employee_name ?? '',
   employee_number: employee?.employee_number ?? '',
-  folio: employee?.folio ?? '',
   department_id: String(employee?.department_id ?? departments[0]?.department_id ?? ''),
   shift_id: String(employee?.shift_id ?? shifts[0]?.shift_id ?? ''),
-  start_date: employee?.start_date.slice(0, 10) ?? new Date().toISOString().slice(0, 10),
+  start_date: employee?.start_date.slice(0, 10) ?? todayIso(),
   email: '',
 });
 
 export function EmployeeForm({ employee, departments, shifts, onClose, onSaved }: EmployeeFormProps) {
-  const [form, setForm] = useState<FormState>(() => toFormState(employee, departments, shifts));
-  const { submitting, error, setError, submit } = useFormSubmit();
+  const [initial] = useState(() => toValues(employee, departments, shifts));
+  const [form, setForm] = useState<EmployeeValues>(initial);
+  const [editing, setEditing] = useState(!employee);
+  const [submitted, setSubmitted] = useState(false);
+  const { submitting, error, submit } = useFormSubmit();
 
-  const setField = (field: keyof FormState, value: string) => setForm((prev) => ({ ...prev, [field]: value }));
+  const today = todayIso();
+  const errors = submitted ? validateEmployee(form, today) : {};
+  const changed = (Object.keys(form) as (keyof EmployeeValues)[]).some((field) => form[field] !== initial[field]);
+
+  useEffect(() => {
+    if (employee && editing) document.getElementById('f-name')?.focus();
+  }, [employee, editing]);
+
+  const setField = (field: keyof EmployeeValues, value: string) => setForm((prev) => ({ ...prev, [field]: value }));
 
   const handleSubmit = () => {
-    if (!form.department_id || !form.shift_id) {
-      setError('Selecciona un departamento y un turno válidos de la lista.');
-      return;
-    }
+    setSubmitted(true);
+    if (Object.keys(validateEmployee(form, today)).length) return;
 
     const payload: CreateEmployeeInput = {
-      employee_name: form.employee_name,
+      employee_name: form.employee_name.trim(),
       employee_number: form.employee_number,
-      folio: form.folio,
       department_id: Number(form.department_id),
       shift_id: Number(form.shift_id),
       start_date: form.start_date,
@@ -77,7 +85,11 @@ export function EmployeeForm({ employee, departments, shifts, onClose, onSaved }
       title={employee ? 'Editar empleado' : 'Nuevo empleado'}
       submitLabel={employee ? 'Guardar cambios' : 'Crear empleado'}
       submitting={submitting}
+      submitDisabled={Boolean(employee) && !changed}
       error={error}
+      readOnly={!editing}
+      noValidate
+      onEdit={() => setEditing(true)}
       onClose={onClose}
       onSubmit={handleSubmit}
     >
@@ -85,45 +97,43 @@ export function EmployeeForm({ employee, departments, shifts, onClose, onSaved }
         id="f-name"
         label="Nombre completo"
         value={form.employee_name}
-        onChange={(value) => setField('employee_name', value)}
+        onChange={(value) => setField('employee_name', cleanName(value))}
         placeholder="Ej. Laura Hernández"
-        maxLength={150}
-        required
+        maxLength={NAME_MAX}
+        error={errors.employee_name}
+        data-autofocus
       />
       <TextField
         id="f-number"
         label="Número de empleado"
         value={form.employee_number}
-        onChange={(value) => setField('employee_number', value)}
-        placeholder="EMP-0000"
-        maxLength={20}
-        required
+        onChange={(value) => setField('employee_number', cleanNumber(value))}
+        placeholder="0000"
+        inputMode="numeric"
+        maxLength={NUMBER_LENGTH}
+        error={errors.employee_number}
       />
-      <TextField
-        id="f-folio"
-        label="Folio"
-        value={form.folio}
-        onChange={(value) => setField('folio', value)}
-        maxLength={10}
-        required
-      />
-      <FormField label="Departamento" htmlFor="f-department">
+      <FormField label="Departamento" htmlFor="f-department" error={errors.department_id}>
         <SearchSelect
           id="f-department"
           options={departments.map((department) => ({ value: String(department.department_id), label: department.department_name }))}
           value={form.department_id}
           onChange={(value) => setField('department_id', value)}
           placeholder="Busca un departamento..."
+          invalid={Boolean(errors.department_id)}
+          describedBy={describedBy('f-department', undefined, errors.department_id)}
           fullWidth
         />
       </FormField>
-      <FormField label="Turno" htmlFor="f-shift">
+      <FormField label="Turno" htmlFor="f-shift" error={errors.shift_id}>
         <SearchSelect
           id="f-shift"
           options={shifts.map((shift) => ({ value: String(shift.shift_id), label: shift.shift_name }))}
           value={form.shift_id}
           onChange={(value) => setField('shift_id', value)}
           placeholder="Busca un turno..."
+          invalid={Boolean(errors.shift_id)}
+          describedBy={describedBy('f-shift', undefined, errors.shift_id)}
           fullWidth
         />
       </FormField>
@@ -133,7 +143,8 @@ export function EmployeeForm({ employee, departments, shifts, onClose, onSaved }
         type="date"
         value={form.start_date}
         onChange={(value) => setField('start_date', value)}
-        required
+        max={today}
+        error={errors.start_date}
       />
       {!employee && (
         <TextField
@@ -143,8 +154,9 @@ export function EmployeeForm({ employee, departments, shifts, onClose, onSaved }
           value={form.email}
           onChange={(value) => setField('email', value)}
           placeholder="nombre@empresa.com"
-          maxLength={120}
-          hint="Se creará su cuenta con una contraseña temporal válida por un mes."
+          maxLength={EMAIL_MAX}
+          error={errors.email}
+          hint="Opcional. Si lo escribes, se creará su cuenta con una contraseña temporal válida por un mes."
         />
       )}
     </FormDrawer>

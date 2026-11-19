@@ -18,17 +18,19 @@ body:json {
   {
     "department_id": 1,
     "shift_id": 1,
-    "folio": "EMP-001",
     "employee_number": "0001",
     "employee_name": "Juan Perez",
     "start_date": "2026-01-01",
+    "email": "juan.perez@empresa.com",
     "status": "active"
   }
 }
 
 docs {
-  Requeridos: `department_id`, `shift_id`, `folio`, `employee_number`, `employee_name`, `start_date`.
-  `status` es opcional (default `active`).
+  Requeridos: `department_id`, `shift_id`, `employee_number`, `employee_name`, `start_date`.
+  `status` y `email` son opcionales (`status` por defecto `active`).
 
-  Errores: `422 INVALID_DEPARTMENT` / `INVALID_SHIFT` si los ids no existen; `409 EMPLOYEE_NUMBER_EXISTS` si `employee_number` ya esta en uso.
+  Validaciones: `employee_number` son exactamente 4 digitos; `employee_name` de 3 a 150 caracteres, solo letras, espacios, puntos, apostrofos y guiones; `start_date` no puede ser posterior a hoy; `email` con formato valido.
+
+  Errores: `400` con el mensaje del campo que fallo; `422 INVALID_DEPARTMENT` / `INVALID_SHIFT` si los ids no existen; `409 EMPLOYEE_NUMBER_EXISTS` si `employee_number` ya esta en uso.
 }

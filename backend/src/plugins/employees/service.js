@@ -6,7 +6,7 @@ const csv = require('../../lib/csv');
 const { AppError } = require('../../lib/app-error');
 const { EDITABLE_FIELDS } = require('./fields');
 
-const EXPORT_HEADERS = ['Número', 'Folio', 'Nombre', 'Sede', 'Departamento', 'Turno', 'Fecha de ingreso', 'Correo', 'Estado'];
+const EXPORT_HEADERS = ['Número', 'Nombre', 'Sede', 'Departamento', 'Turno', 'Fecha de ingreso', 'Correo', 'Estado'];
 const STATUS_LABELS = { active: 'Activo', inactive: 'Inactivo' };
 
 const toMexicanDate = (iso) => iso.split('-').reverse().join('/');
@@ -18,7 +18,6 @@ class EmployeeService extends CrudService {
       EXPORT_HEADERS,
       ...rows.map((row) => [
         row.employee_number,
-        row.folio,
         row.employee_name,
         row.branch_code,
         row.department_name,

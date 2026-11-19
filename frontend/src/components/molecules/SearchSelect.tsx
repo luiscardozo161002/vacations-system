@@ -13,9 +13,20 @@ interface SearchSelectProps {
   onChange: (value: string) => void;
   placeholder?: string;
   fullWidth?: boolean;
+  invalid?: boolean;
+  describedBy?: string;
 }
 
-export function SearchSelect({ id, options, value, onChange, placeholder = 'Buscar...', fullWidth = false }: SearchSelectProps) {
+export function SearchSelect({
+  id,
+  options,
+  value,
+  onChange,
+  placeholder = 'Buscar...',
+  fullWidth = false,
+  invalid,
+  describedBy,
+}: SearchSelectProps) {
   const [typed, setTyped] = useState<string | null>(null);
   const selectedLabel = options.find((option) => option.value === value)?.label ?? '';
 
@@ -44,6 +55,8 @@ export function SearchSelect({ id, options, value, onChange, placeholder = 'Busc
         onChange={(e) => handleChange(e.target.value)}
         onBlur={() => setTyped(null)}
         autoComplete="off"
+        aria-invalid={invalid ? true : undefined}
+        aria-describedby={describedBy}
       />
       <datalist id={`${id}-list`}>
         {options.map((option) => (

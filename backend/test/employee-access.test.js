@@ -19,9 +19,8 @@ const newEmployee = (number, extra = {}) =>
   call('POST', '/api/v1/employees', {
     department_id: 1,
     shift_id: 2,
-    folio: number,
     employee_number: number,
-    employee_name: `Empleado ${number}`,
+    employee_name: 'Empleado Prueba',
     start_date: '2026-11-01',
     ...extra,
   });
@@ -41,7 +40,7 @@ after(async () => {
 
 describe('Alta de empleado con correo', () => {
   it('crea su cuenta de Empleado con contraseña temporal de un mes', async () => {
-    const res = await newEmployee('ACC-001', { email: 'm.lopez@thh.com.mx' });
+    const res = await newEmployee('9001', { email: 'm.lopez@thh.com.mx' });
 
     assert.equal(res.statusCode, 201);
     assert.equal(res.result.account.username, 'm.lopez');
@@ -54,7 +53,7 @@ describe('Alta de empleado con correo', () => {
   });
 
   it('obliga a cambiar la temporal y la limpia al cambiarla', async () => {
-    const created = await newEmployee('ACC-002', { email: 'p.ruiz@thh.com.mx' });
+    const created = await newEmployee('9002', { email: 'p.ruiz@thh.com.mx' });
     const first = await login('p.ruiz@thh.com.mx', created.result.temporary_password);
     assert.equal(first.statusCode, 200);
     assert.equal(first.result.must_change_password, true);
@@ -73,19 +72,19 @@ describe('Alta de empleado con correo', () => {
   });
 
   it('usa otro nombre de usuario si el del correo ya existe', async () => {
-    const res = await newEmployee('ACC-003', { email: 'j.perez@thh.com.mx' });
+    const res = await newEmployee('9003', { email: 'j.perez@thh.com.mx' });
     assert.equal(res.result.account.username, 'j.perez2');
   });
 
   it('no crea el empleado si el correo ya está en uso', async () => {
-    const res = await newEmployee('ACC-004', { email: 'j.navarro@jo.com.mx' });
+    const res = await newEmployee('9004', { email: 'j.navarro@jo.com.mx' });
     assert.equal(res.statusCode, 409);
     assert.equal(res.result.error.code, 'EMAIL_EXISTS');
-    assert.equal(await db('employees').where('employee_number', 'ACC-004').first(), undefined);
+    assert.equal(await db('employees').where('employee_number', '9004').first(), undefined);
   });
 
   it('sin correo da de alta al empleado sin cuenta', async () => {
-    const res = await newEmployee('ACC-005');
+    const res = await newEmployee('9005');
     assert.equal(res.statusCode, 201);
     assert.equal(res.result.account, null);
     assert.equal(res.result.temporary_password, undefined);
@@ -94,7 +93,7 @@ describe('Alta de empleado con correo', () => {
 
 describe('Contraseña temporal vencida', () => {
   it('rechaza el login y pide acudir a RH', async () => {
-    const created = await newEmployee('ACC-010', { email: 'v.mora@thh.com.mx' });
+    const created = await newEmployee('9010', { email: 'v.mora@thh.com.mx' });
     await db('users')
       .where('user_id', created.result.account.user_id)
       .update({ temporary_password_expires_at: new Date(Date.now() - 1000).toISOString() });

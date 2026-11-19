@@ -23,14 +23,14 @@ describe('Buscador de la topbar', () => {
 
   it('busca mientras se escribe y abre el perfil elegido', async () => {
     employeesList.mockResolvedValue(
-      page([{ employee_id: 2, employee_name: 'Maria Garcia Hernandez', employee_number: 'EMP-002', department_id: 1 }]),
+      page([{ employee_id: 2, employee_name: 'Maria Garcia Hernandez', employee_number: '0002', department_id: 1 }]),
     );
     renderApp(<GlobalSearch />, '/dashboard');
 
     fireEvent.change(screen.getByPlaceholderText(/Buscar empleados/), { target: { value: 'garcia' } });
 
     const result = await screen.findByText('Maria Garcia Hernandez');
-    expect(await screen.findByText('Explotacion · EMP-002')).toBeTruthy();
+    expect(await screen.findByText('Explotacion · 0002')).toBeTruthy();
     expect(employeesList).toHaveBeenCalledWith(
       { search: 'garcia', sort: 'employee_name', pageSize: 6 },
       expect.objectContaining({ signal: expect.any(AbortSignal) }),

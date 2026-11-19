@@ -35,13 +35,86 @@ const search = async (role, text) => {
   return res.result.data.map((employee) => employee.employee_name);
 };
 
+const VALID_EMPLOYEE = {
+  department_id: 1,
+  shift_id: 2,
+  employee_number: '7001',
+  employee_name: 'Valeria Ortega Díaz',
+  start_date: '2026-01-15',
+};
+
+const create = (payload, role = 'SUPERUSER') =>
+  server.inject({
+    method: 'POST',
+    url: '/api/v1/employees',
+    payload,
+    headers: { authorization: `Bearer ${tokens[role]}` },
+  });
+
+const tomorrow = () => new Date(Date.now() + 2 * 86400000).toISOString().slice(0, 10);
+
+describe('POST /employees validaciones', () => {
+  const rejects = async (changes, message) => {
+    const res = await create({ ...VALID_EMPLOYEE, ...changes });
+
+    assert.equal(res.statusCode, 400);
+    assert.match(res.result.error.message, message);
+  };
+
+  it('no acepta el campo folio', async () => {
+    await rejects({ folio: '01' }, /folio no está permitido/);
+  });
+
+  it('exige que el número de empleado tenga exactamente 4 dígitos', async () => {
+    await rejects({ employee_number: 'EMP-1' }, /exactamente 4 dígitos/);
+    await rejects({ employee_number: '123' }, /exactamente 4 dígitos/);
+    await rejects({ employee_number: '12345' }, /exactamente 4 dígitos/);
+    await rejects({ employee_number: '' }, /Escribe el número de empleado/);
+  });
+
+  it('valida el largo y los caracteres del nombre', async () => {
+    await rejects({ employee_name: 'Al' }, /al menos 3 caracteres/);
+    await rejects({ employee_name: 'A'.repeat(151) }, /máximo 150 caracteres/);
+    await rejects({ employee_name: 'Luis 4545' }, /solo admite letras/);
+    await rejects({ employee_name: '   ' }, /Escribe el nombre completo/);
+  });
+
+  it('rechaza una fecha de ingreso posterior a hoy', async () => {
+    await rejects({ start_date: tomorrow() }, /no puede ser posterior a hoy/);
+    await rejects({ start_date: '2026-02-30' }, /fecha debe ser válida/);
+  });
+
+  it('valida el correo', async () => {
+    await rejects({ email: 'sin-arroba' }, /correo electrónico no es válido/);
+  });
+
+  it('exige departamento y turno existentes', async () => {
+    await rejects({ department_id: 'abc' }, /Selecciona un departamento/);
+    await rejects({ shift_id: undefined }, /Selecciona un turno/);
+    assert.equal((await create({ ...VALID_EMPLOYEE, department_id: 9999 })).statusCode, 422);
+    assert.equal((await create({ ...VALID_EMPLOYEE, shift_id: 9999 })).statusCode, 422);
+  });
+
+  it('aplica las mismas reglas al actualizar', async () => {
+    const res = await server.inject({
+      method: 'PATCH',
+      url: '/api/v1/employees/1',
+      payload: { employee_number: 'ABCD' },
+      headers: { authorization: `Bearer ${tokens.SUPERUSER}` },
+    });
+
+    assert.equal(res.statusCode, 400);
+    assert.match(res.result.error.message, /exactamente 4 dígitos/);
+  });
+});
+
 describe('GET /employees?search', () => {
   it('busca por parte del nombre sin importar mayúsculas', async () => {
     assert.deepEqual(await search('SUPERUSER', 'PEREZ'), ['Juan Perez Lopez']);
   });
 
   it('busca por número de empleado', async () => {
-    assert.deepEqual(await search('SUPERUSER', 'emp-012'), ['Sofia Hernandez Paredes']);
+    assert.deepEqual(await search('SUPERUSER', '0012'), ['Sofia Hernandez Paredes']);
   });
 
   it('respeta las sedes del usuario', async () => {

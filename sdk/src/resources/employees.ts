@@ -8,7 +8,6 @@ export interface Employee {
   employee_id: number;
   department_id: number;
   shift_id: number;
-  folio: string;
   employee_number: string;
   employee_name: string;
   start_date: string;
@@ -52,7 +51,6 @@ export type ExportEmployeesParams = Omit<ListEmployeesParams, keyof ListParams>;
 export interface CreateEmployeeInput {
   department_id: number;
   shift_id: number;
-  folio: string;
   employee_number: string;
   employee_name: string;
   start_date: string;

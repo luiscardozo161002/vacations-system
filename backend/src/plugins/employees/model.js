@@ -12,14 +12,13 @@ class Employee extends Model {
   static get jsonSchema() {
     return {
       type: 'object',
-      required: ['department_id', 'shift_id', 'folio', 'employee_number', 'employee_name', 'start_date'],
+      required: ['department_id', 'shift_id', 'employee_number', 'employee_name', 'start_date'],
       additionalProperties: false,
       properties: {
         employee_id: { type: 'integer' },
         department_id: { type: 'integer' },
         shift_id: { type: 'integer' },
-        folio: { type: 'string', maxLength: 10 },
-        employee_number: { type: 'string', maxLength: 20 },
+        employee_number: { type: 'string', pattern: '^\\d{4}$' },
         employee_name: { type: 'string', maxLength: 150 },
         start_date: { type: 'string', format: 'date' },
         status: { type: 'string', enum: ['active', 'inactive'] },

@@ -46,7 +46,6 @@ class EmployeeRepository extends CrudRepository {
       .orderBy('employees.employee_name')
       .select(
         'employees.employee_number',
-        'employees.folio',
         'employees.employee_name',
         'b.code as branch_code',
         'd.department_name',

@@ -132,7 +132,6 @@ export function EmployeesPage() {
       ),
     },
     { header: 'Número', render: (employee) => employee.employee_number },
-    { header: 'Folio', render: (employee) => employee.folio, className: 'text-[12.5px] text-muted' },
     { header: 'Departamento', render: (employee) => departmentNames.get(employee.department_id) ?? '' },
     { header: 'Turno', render: (employee) => shiftNames.get(employee.shift_id) ?? '' },
     { header: 'Ingreso', render: (employee) => formatDate(employee.start_date) },

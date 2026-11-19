@@ -30,7 +30,7 @@ const pendingRequest: Notice = {
   approved_at: null,
   request_date: '2026-11-13',
   employee_name: 'Maria Garcia Hernandez',
-  employee_number: 'EMP-002',
+  employee_number: '0002',
   department_name: 'Explotacion',
   reason_description: 'Vacaciones',
 };

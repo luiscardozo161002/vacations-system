@@ -79,6 +79,8 @@ La implementación y las propiedades disponibles se consultan en el componente c
 - Las tablas distinguen carga y ausencia de resultados.
 - Los campos tienen una etiqueta visible y la ayuda se vincula al control.
 - Los formularios presentan los errores de la API junto al contexto de la operación.
+- Los campos validan en el cliente con las mismas reglas que la API y muestran bajo cada control qué falló. Los controles limitan lo que se puede escribir: solo dígitos en números y solo letras en nombres.
+- Al editar un registro el formulario se abre en solo lectura. `Editar` habilita los campos y `Guardar cambios` solo se activa cuando hay algún cambio. [FormDrawer](../frontend/src/components/organisms/FormDrawer.tsx), [validación de empleados](../frontend/src/features/employees/validation.ts)
 
 ### Paneles y confirmaciones
 

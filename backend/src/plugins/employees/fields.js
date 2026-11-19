@@ -4,7 +4,6 @@ const ID_COLUMN = 'employee_id';
 const EDITABLE_FIELDS = [
   'department_id',
   'shift_id',
-  'folio',
   'employee_number',
   'employee_name',
   'start_date',

@@ -112,9 +112,7 @@ export function EmployeeProfile({ employee, departmentName, shiftName, onClose }
           <Avatar size="lg">{initials(employee.employee_name)}</Avatar>
           <div>
             <h2 className="text-lg">{employee.employee_name}</h2>
-            <p className="text-[12.5px] text-muted">
-              {employee.employee_number} · {employee.folio}
-            </p>
+            <p className="text-[12.5px] text-muted">{employee.employee_number}</p>
           </div>
         </div>
         <KeyValueGrid>

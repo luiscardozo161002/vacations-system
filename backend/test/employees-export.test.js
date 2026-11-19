@@ -43,7 +43,7 @@ describe('GET /employees/export', () => {
     assert.match(res.headers['content-type'], /^text\/csv/);
     assert.match(res.headers['content-disposition'], /attachment; filename="empleados-\d{4}-\d{2}-\d{2}\.csv"/);
     assert.ok(res.payload.startsWith('\uFEFF'));
-    assert.equal(rows[0], '"Número","Folio","Nombre","Sede","Departamento","Turno","Fecha de ingreso","Correo","Estado"');
+    assert.equal(rows[0], '"Número","Nombre","Sede","Departamento","Turno","Fecha de ingreso","Correo","Estado"');
     assert.ok(rows.slice(1).every((row) => row.includes('"THH_HGO"')));
     assert.ok(!res.payload.includes('Laura Sanchez Ortiz'));
   });
@@ -52,7 +52,7 @@ describe('GET /employees/export', () => {
     const rows = lines(await download('SUPERUSER', '?search=perez&status=active'));
 
     assert.equal(rows.length, 2);
-    assert.match(rows[1], /^"EMP-001","\d+","Juan Perez Lopez","THH_HGO","Explotacion","Operaciones","\d{2}\/\d{2}\/\d{4}","j.perez@jo.com.mx","Activo"$/);
+    assert.match(rows[1], /^"0001","Juan Perez Lopez","THH_HGO","Explotacion","Operaciones","\d{2}\/\d{2}\/\d{4}","j.perez@jo.com.mx","Activo"$/);
   });
 
   it('queda en la auditoría con los filtros usados', async () => {
