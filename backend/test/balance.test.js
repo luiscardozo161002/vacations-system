@@ -40,6 +40,7 @@ const MONDAY = iso(monday);
 const FRIDAY = iso(addDays(monday, 4));
 const SUNDAY = iso(addDays(monday, 6));
 const NEXT_FRIDAY = iso(addDays(monday, 11));
+const NEXT_MONDAY = iso(addDays(monday, 7));
 
 let server;
 const tokens = {};
@@ -123,6 +124,19 @@ describe('POST /notices/preview', () => {
     assert.deepEqual(res.result.working_weekdays, [1, 2, 3, 4, 5, 6]);
   });
 
+  it('sin contemplar el sábado, viernes a lunes consumen 2 días en lugar de 3', async () => {
+    const withSaturday = await call('EMPLOYEE', 'POST', '/notices/preview', vacation(FRIDAY, NEXT_MONDAY));
+    const withoutSaturday = await call(
+      'EMPLOYEE',
+      'POST',
+      '/notices/preview',
+      vacation(FRIDAY, NEXT_MONDAY, { skip_saturdays: true })
+    );
+
+    assert.equal(withSaturday.result.breakdown.days, 3);
+    assert.deepEqual(withoutSaturday.result.breakdown, { days: 2, hours: 0, rest_days: 2, holidays: 0, daily_hours: 8 });
+  });
+
   it('avisa cuando excede el saldo sin rechazar la vista previa', async () => {
     const res = await call('EMPLOYEE', 'POST', '/notices/preview', vacation(MONDAY, NEXT_FRIDAY));
 
@@ -181,6 +195,21 @@ describe('Reglas al crear', () => {
 
     assert.equal(res.result.days_taken, 0);
     assert.equal(res.result.hours_taken, 3.5);
+  });
+
+  it('guarda que no se contempló el sábado y descuenta solo los días trabajados', async () => {
+    const res = await call('EMPLOYEE', 'POST', '/notices', vacation(FRIDAY, NEXT_MONDAY, { skip_saturdays: true }));
+
+    assert.equal(res.statusCode, 201);
+    assert.equal(res.result.skip_saturdays, true);
+    assert.equal(res.result.days_taken, 2);
+  });
+
+  it('por omisión el sábado se contempla', async () => {
+    const res = await call('EMPLOYEE', 'POST', '/notices', vacation(FRIDAY, NEXT_MONDAY));
+
+    assert.equal(res.result.skip_saturdays, false);
+    assert.equal(res.result.days_taken, 3);
   });
 });
 

@@ -6,10 +6,14 @@ import { Button } from '../atoms/Button';
 import { control } from '../atoms/control';
 import { Icon } from '../atoms/Icon';
 import { Calendar } from './Calendar';
+import { CheckboxRow } from './CheckboxRow';
+
+const SATURDAY = 6;
 
 export interface DateRange {
   start: string;
   end: string;
+  skipSaturdays: boolean;
 }
 
 interface DateRangePickerProps {
@@ -42,22 +46,37 @@ export function DateRangePicker({ id, value, onChange, min, workingWeekdays, inv
 
   const pick = (date: string) => {
     if (anchor === null) {
-      setDraft({ start: date, end: date });
+      setDraft((prev) => ({ ...prev, start: date, end: date }));
       setAnchor(date);
     } else {
-      setDraft(date < anchor ? { start: date, end: anchor } : { start: anchor, end: date });
+      setDraft((prev) => ({ ...prev, ...(date < anchor ? { start: date, end: anchor } : { start: anchor, end: date }) }));
       setAnchor(null);
     }
   };
 
-  const isRestDay = workingWeekdays ? (date: string) => !workingWeekdays.includes(isoWeekday(date)) : undefined;
-  const dayCount = ({ start, end }: DateRange) =>
-    formatDayCount(workingWeekdays ? countWorkingDays(start, end, workingWeekdays) : countDays(start, end));
+  const coveredWeekdays = (skipSaturdays: boolean) =>
+    skipSaturdays ? workingWeekdays?.filter((weekday) => weekday !== SATURDAY) : workingWeekdays;
+  const saturdaysIn = ({ start, end }: DateRange) =>
+    workingWeekdays?.includes(SATURDAY) ? countWorkingDays(start, end, [SATURDAY]) : 0;
+  const keepsSkip = (range: DateRange) => range.skipSaturdays && saturdaysIn(range) > 0;
+
+  const isSkippedSaturday = (date: string) =>
+    keepsSkip(draft) && isoWeekday(date) === SATURDAY && date >= draft.start && date <= draft.end;
+  const isRestDay = workingWeekdays
+    ? (date: string) => !workingWeekdays.includes(isoWeekday(date)) || isSkippedSaturday(date)
+    : undefined;
+  const dayCount = (range: DateRange) => {
+    const weekdays = coveredWeekdays(keepsSkip(range));
+    const count = formatDayCount(weekdays ? countWorkingDays(range.start, range.end, weekdays) : countDays(range.start, range.end));
+    return keepsSkip(range) ? `${count}, sin sábado` : count;
+  };
 
   const accept = () => {
-    onChange(draft);
+    onChange({ ...draft, skipSaturdays: keepsSkip(draft) });
     setOpen(false);
   };
+
+  const saturdays = saturdaysIn(draft);
 
   return (
     <PopoverPrimitive.Root open={open} onOpenChange={changeOpen}>
@@ -100,6 +119,15 @@ export function DateRangePicker({ id, value, onChange, min, workingWeekdays, inv
             onPick={pick}
           />
           {isRestDay && <p className="mt-2 text-xs text-muted">Los días en rojo son descanso del turno y no se cuentan.</p>}
+          {saturdays > 0 && (
+            <CheckboxRow
+              className="mt-3"
+              checked={!draft.skipSaturdays}
+              onCheckedChange={(checked) => setDraft((prev) => ({ ...prev, skipSaturdays: checked !== true }))}
+            >
+              {saturdays === 1 ? '¿Contemplar el sábado?' : '¿Contemplar los sábados?'}
+            </CheckboxRow>
+          )}
           <Button className="mt-3 w-full" onClick={accept}>
             Aceptar
           </Button>

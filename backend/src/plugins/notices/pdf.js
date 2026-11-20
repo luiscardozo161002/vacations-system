@@ -48,6 +48,7 @@ class NoticePdf {
       lines.push(
         `DÍAS   Del ${NoticePdf.longDate(notice.absence_start_date, true)} al ${NoticePdf.longDate(notice.absence_end_date, true)}, Número de Días: ${notice.days_taken}`
       );
+      if (notice.skip_saturdays) lines.push('Sin contemplar sábados');
     }
     if (notice.hours_taken > 0) {
       lines.push(

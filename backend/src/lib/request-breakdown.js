@@ -23,18 +23,22 @@ const datesBetween = (startDate, endDate) => {
 
 const isoWeekday = (date) => date.getUTCDay() || 7;
 
-const workingBlock = (schedule, date) => {
-  const day = schedule.find((entry) => entry.day_of_week === isoWeekday(date));
+const SATURDAY = 6;
+
+const workingBlock = (schedule, date, skipSaturdays) => {
+  const weekday = isoWeekday(date);
+  if (skipSaturdays && weekday === SATURDAY) return null;
+  const day = schedule.find((entry) => entry.day_of_week === weekday);
   if (!day || !day.is_working_day || !day.check_in_time || !day.check_out_time) return null;
   return { start: toHours(day.check_in_time), end: toHours(day.check_out_time) };
 };
 
 const toIsoDate = (date) => date.toISOString().slice(0, 10);
 
-const workingDates = ({ schedule, startDate, endDate, holidays = [] }) => {
+const workingDates = ({ schedule, startDate, endDate, holidays = [], skipSaturdays = false }) => {
   const holidaySet = new Set(holidays);
   return datesBetween(startDate, endDate)
-    .filter((date) => workingBlock(schedule, date) && !holidaySet.has(toIsoDate(date)))
+    .filter((date) => workingBlock(schedule, date, skipSaturdays) && !holidaySet.has(toIsoDate(date)))
     .map(toIsoDate);
 };
 
@@ -60,7 +64,15 @@ const shiftDailyHours = (schedule) => {
   return toHours(firstWorkingDay.check_out_time) - toHours(firstWorkingDay.check_in_time);
 };
 
-const computeRequestBreakdown = ({ schedule, startDate, endDate, startTime = null, endTime = null, holidays = [] }) => {
+const computeRequestBreakdown = ({
+  schedule,
+  startDate,
+  endDate,
+  startTime = null,
+  endTime = null,
+  holidays = [],
+  skipSaturdays = false,
+}) => {
   const dates = datesBetween(startDate, endDate);
   const startHour = startTime ? toHours(startTime) : null;
   const endHour = endTime ? toHours(endTime) : null;
@@ -73,7 +85,7 @@ const computeRequestBreakdown = ({ schedule, startDate, endDate, startTime = nul
   const holidaySet = new Set(holidays);
 
   dates.forEach((date, index) => {
-    const block = workingBlock(schedule, date);
+    const block = workingBlock(schedule, date, skipSaturdays);
     if (!block) {
       restDays += 1;
       return;

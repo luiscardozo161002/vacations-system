@@ -2,9 +2,11 @@ import { describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { DateRangePicker } from './DateRangePicker';
 
+const range = (start: string, end: string, skipSaturdays = false) => ({ start, end, skipSaturdays });
+
 const renderPicker = () => {
   const onChange = vi.fn();
-  render(<DateRangePicker id="r-dates" value={{ start: '2026-11-13', end: '2026-11-15' }} onChange={onChange} />);
+  render(<DateRangePicker id="r-dates" value={range('2026-11-13', '2026-11-15')} onChange={onChange} />);
   fireEvent.click(screen.getByRole('button', { name: /Vie 13 nov/ }));
   return onChange;
 };
@@ -13,7 +15,7 @@ const day = (number: number) => screen.getByRole('button', { name: `${number} de
 
 describe('DateRangePicker', () => {
   it('resume el rango y cuántos días abarca', () => {
-    render(<DateRangePicker id="r-dates" value={{ start: '2026-11-13', end: '2026-11-15' }} onChange={vi.fn()} />);
+    render(<DateRangePicker id="r-dates" value={range('2026-11-13', '2026-11-15')} onChange={vi.fn()} />);
 
     const trigger = screen.getByRole('button', { name: /Vie 13 nov/ });
     expect(trigger.textContent).toContain('Vie 13 nov – Dom 15 nov');
@@ -25,7 +27,7 @@ describe('DateRangePicker', () => {
     render(
       <DateRangePicker
         id="r-dates"
-        value={{ start: '2026-11-13', end: '2026-11-17' }}
+        value={range('2026-11-13', '2026-11-17')}
         workingWeekdays={[1, 2, 3, 4, 5]}
         onChange={onChange}
       />,
@@ -46,7 +48,45 @@ describe('DateRangePicker', () => {
     expect(screen.getAllByText('3 días')).toHaveLength(2);
     fireEvent.click(screen.getByRole('button', { name: 'Aceptar' }));
 
-    expect(onChange).toHaveBeenCalledWith({ start: '2026-11-18', end: '2026-11-20' });
+    expect(onChange).toHaveBeenCalledWith(range('2026-11-18', '2026-11-20'));
+  });
+
+  it('pregunta por el sábado y, si no se contempla, no lo cuenta', () => {
+    const onChange = vi.fn();
+    render(
+      <DateRangePicker
+        id="r-dates"
+        value={range('2026-11-20', '2026-11-24')}
+        workingWeekdays={[1, 2, 3, 4, 5, 6]}
+        onChange={onChange}
+      />,
+    );
+
+    const trigger = screen.getByRole('button', { name: /Vie 20 nov/ });
+    expect(trigger.textContent).toContain('4 días');
+
+    fireEvent.click(trigger);
+    fireEvent.click(screen.getByRole('checkbox', { name: '¿Contemplar el sábado?' }));
+    expect(screen.getAllByText('3 días, sin sábado')).toHaveLength(1);
+    expect((day(21) as HTMLButtonElement).disabled).toBe(true);
+    fireEvent.click(screen.getByRole('button', { name: 'Aceptar' }));
+
+    expect(onChange).toHaveBeenCalledWith(range('2026-11-20', '2026-11-24', true));
+  });
+
+  it('no pregunta por el sábado si el rango no lo incluye', () => {
+    render(
+      <DateRangePicker
+        id="r-dates"
+        value={range('2026-11-16', '2026-11-18')}
+        workingWeekdays={[1, 2, 3, 4, 5, 6]}
+        onChange={vi.fn()}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: /Lun 16 nov/ }));
+
+    expect(screen.queryByRole('checkbox')).toBeNull();
   });
 
   it('elige el primer y el último día y los confirma con Aceptar', () => {
@@ -56,7 +96,7 @@ describe('DateRangePicker', () => {
     fireEvent.click(day(19));
     fireEvent.click(screen.getByRole('button', { name: 'Aceptar' }));
 
-    expect(onChange).toHaveBeenCalledWith({ start: '2026-11-17', end: '2026-11-19' });
+    expect(onChange).toHaveBeenCalledWith(range('2026-11-17', '2026-11-19'));
   });
 
   it('ordena las fechas si se elige primero la última', () => {
@@ -66,7 +106,7 @@ describe('DateRangePicker', () => {
     fireEvent.click(day(17));
     fireEvent.click(screen.getByRole('button', { name: 'Aceptar' }));
 
-    expect(onChange).toHaveBeenCalledWith({ start: '2026-11-17', end: '2026-11-19' });
+    expect(onChange).toHaveBeenCalledWith(range('2026-11-17', '2026-11-19'));
   });
 
   it('permite un solo día con un toque y Aceptar', () => {
@@ -76,7 +116,7 @@ describe('DateRangePicker', () => {
     expect(screen.getByText('1 día')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Aceptar' }));
 
-    expect(onChange).toHaveBeenCalledWith({ start: '2026-11-17', end: '2026-11-17' });
+    expect(onChange).toHaveBeenCalledWith(range('2026-11-17', '2026-11-17'));
   });
 
   it('descarta la selección si se cierra sin aceptar', () => {

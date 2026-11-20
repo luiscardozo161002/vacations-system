@@ -25,7 +25,7 @@ body:json {
 }
 
 docs {
-  Requeridos: `employee_id`, `reason_id`, `absence_start_date`, `absence_end_date`. El estado lo decide el servidor:
+  Requeridos: `employee_id`, `reason_id`, `absence_start_date`, `absence_end_date`. Opcional `skip_saturdays` (`false` por omision): si es `true` el sabado del rango no se cuenta, no se descuenta y no aparece en el calendario. El estado lo decide el servidor:
   - Empleado: crea una solicitud (`kind = request`) pendiente, solo para si mismo.
   - RH: registra un aviso (`kind = notice`) ya aprobado por quien lo registra, para empleados de sus sedes.
 

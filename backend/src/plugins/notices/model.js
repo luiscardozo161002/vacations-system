@@ -28,6 +28,7 @@ class Notice extends Model {
         absence_end_date: { type: 'string', format: 'date' },
         absence_start_time: { type: ['string', 'null'] },
         absence_end_time: { type: ['string', 'null'] },
+        skip_saturdays: { type: 'boolean' },
         days_taken: { type: 'integer' },
         hours_taken: { type: 'number' },
         entitlement_id: { type: ['integer', 'null'] },

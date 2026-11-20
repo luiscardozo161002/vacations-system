@@ -24,7 +24,9 @@ body:json {
 }
 
 docs {
-  Calcula sin guardar cuanto consume una ausencia segun el turno del empleado: `breakdown` (`days`, `hours`, `rest_days`, `daily_hours`).
+  Calcula sin guardar cuanto consume una ausencia segun el turno del empleado: `breakdown` (`days`, `hours`, `rest_days`, `daily_hours`). `skip_saturdays` (opcional, `false` por omision) deja el sabado como descanso aunque el turno lo trabaje.
+
+  Tambien devuelve `work_hours` (horario del turno el primer dia, `null` si es descanso o festivo) y `working_weekdays` (dias de la semana, 1 lunes a 7 domingo, que cubre el turno).
 
   Si el motivo descuenta vacaciones, `balance` trae el periodo vigente, lo disponible y lo que quedaria (`remaining`).
 

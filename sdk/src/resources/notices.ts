@@ -17,6 +17,7 @@ export interface Notice {
   absence_end_date: string;
   absence_start_time: string | null;
   absence_end_time: string | null;
+  skip_saturdays: boolean;
   remarks: string | null;
   days_taken: number;
   hours_taken: number;
@@ -48,6 +49,7 @@ export interface CreateNoticeInput {
   absence_end_date: string;
   absence_start_time?: string | null;
   absence_end_time?: string | null;
+  skip_saturdays?: boolean;
   remarks?: string | null;
 }
 

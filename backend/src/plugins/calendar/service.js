@@ -49,7 +49,8 @@ class CalendarService {
         'n.absence_start_date',
         'n.absence_end_date',
         'n.absence_start_time',
-        'n.absence_end_time'
+        'n.absence_end_time',
+        'n.skip_saturdays'
       );
     return this.visibleTo(query, scope);
   }
@@ -78,6 +79,7 @@ class CalendarService {
             startDate: absence.absence_start_date < from ? from : absence.absence_start_date,
             endDate: absence.absence_end_date > to ? to : absence.absence_end_date,
             holidays: holidays.map((holiday) => holiday.date),
+            skipSaturdays: absence.skip_saturdays,
           }),
         }))
         .filter((absence) => absence.dates.length > 0),

@@ -46,6 +46,7 @@ const toPreviewInput = (form: FormState, hours: TimeRange | null): PreviewNotice
     reason_id: Number(form.reason_id),
     absence_start_date: form.range.start,
     absence_end_date: form.range.end,
+    skip_saturdays: form.range.skipSaturdays,
     absence_start_time: hours?.start ?? null,
     absence_end_time: hours?.end ?? null,
   };
@@ -56,7 +57,7 @@ export function AbsenceForm({ title, submitLabel, reasons, employee, employees =
   const [form, setForm] = useState<FormState>({
     employee_id: employee ? String(employee.employee_id) : '',
     reason_id: String(vacation?.reason_id ?? reasons[0]?.reason_id ?? ''),
-    range: { start: todayIso(7), end: todayIso(9) },
+    range: { start: todayIso(7), end: todayIso(9), skipSaturdays: false },
     partial: false,
     hours: null,
     remarks: '',
