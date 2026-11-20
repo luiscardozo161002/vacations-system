@@ -13,6 +13,7 @@ const list = Joi.object({
   user_id: id,
   event_type: listOf(Joi.string().max(40)),
   result: listOf(Joi.string().valid('success', 'failed')),
+  entity: listOf(Joi.string().max(40)),
   from: isoDate,
   to: isoDate,
   search: Joi.string().trim().max(100),

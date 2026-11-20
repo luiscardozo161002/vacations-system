@@ -2,6 +2,8 @@ const db = require('../db');
 const clientIp = require('./client-ip');
 const config = require('../config');
 
+const ROUTE_COLUMN_LENGTH = 120;
+
 class AuditLog {
   plugin() {
     return {
@@ -58,6 +60,8 @@ class AuditLog {
         result: failed ? 'failed' : 'success',
         entity: audit.entity,
         entity_id: this.entityIdOf(request, audit.id),
+        http_method: request.method.toUpperCase(),
+        route: request.route.path.slice(0, ROUTE_COLUMN_LENGTH),
         ip_address: ip,
         user_agent: userAgent,
         request_id: requestId,

@@ -47,6 +47,7 @@ class NoticeRoutes extends CrudRoutes {
 
   createRoute() {
     return this.route({
+      action: 'create',
       method: 'POST',
       description: this.describe('create'),
       permission: this.permissions.create,
@@ -90,6 +91,12 @@ module.exports = new NoticeRoutes({
   service,
   audit: {
     entity: 'notice',
-    events: { approve: 'NOTICE_APPROVED', reject: 'NOTICE_REJECTED', cancel: 'NOTICE_CANCELLED' },
+    events: {
+      create: 'NOTICE_CREATED',
+      update: 'NOTICE_UPDATED',
+      approve: 'NOTICE_APPROVED',
+      reject: 'NOTICE_REJECTED',
+      cancel: 'NOTICE_CANCELLED',
+    },
   },
 }).plugin();
