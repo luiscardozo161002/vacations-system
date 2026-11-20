@@ -4,11 +4,13 @@ import { sdk } from '../../../services/sdk';
 import { getErrorMessage } from '../../../utils/get-error-message';
 import { useFormSubmit } from '../../../hooks/use-form-submit';
 import { todayIso } from '../../../utils/format';
+import { countWorkingDays, nextWeekday } from '../../../utils/calendar';
 import { fitsWithin, firstHour, type TimeRange } from '../../../utils/time';
 import { FormDrawer } from '../../../components/organisms/FormDrawer';
 import { Input, Textarea } from '../../../components/atoms/Input';
 import { SearchSelect } from '../../../components/molecules/SearchSelect';
 import { CheckboxRow } from '../../../components/molecules/CheckboxRow';
+import { DatePicker } from '../../../components/molecules/DatePicker';
 import { DateRangePicker, type DateRange } from '../../../components/molecules/DateRangePicker';
 import { HourRangePicker } from '../../../components/molecules/HourRangePicker';
 import { FormField, SelectField } from '../../../components/molecules/FormField';
@@ -39,14 +41,17 @@ interface FormState {
   remarks: string;
 }
 
+const SATURDAY = 6;
+
 const toPreviewInput = (form: FormState, hours: TimeRange | null): PreviewNoticeInput | null => {
   if (!form.employee_id || !form.reason_id) return null;
+  const { start, end, skipSaturdays } = form.range;
   return {
     employee_id: Number(form.employee_id),
     reason_id: Number(form.reason_id),
-    absence_start_date: form.range.start,
-    absence_end_date: form.range.end,
-    skip_saturdays: form.range.skipSaturdays,
+    absence_start_date: start,
+    absence_end_date: end,
+    skip_saturdays: !form.partial && skipSaturdays && countWorkingDays(start, end, [SATURDAY]) > 0,
     absence_start_time: hours?.start ?? null,
     absence_end_time: hours?.end ?? null,
   };
@@ -57,7 +62,7 @@ export function AbsenceForm({ title, submitLabel, reasons, employee, employees =
   const [form, setForm] = useState<FormState>({
     employee_id: employee ? String(employee.employee_id) : '',
     reason_id: String(vacation?.reason_id ?? reasons[0]?.reason_id ?? ''),
-    range: { start: todayIso(7), end: todayIso(9), skipSaturdays: false },
+    range: { start: nextWeekday(todayIso(7)), end: nextWeekday(todayIso(7)), skipSaturdays: true },
     partial: false,
     hours: null,
     remarks: '',
@@ -74,11 +79,8 @@ export function AbsenceForm({ title, submitLabel, reasons, employee, employees =
     [employees],
   );
 
-  const singleDay = form.range.start === form.range.end;
   const workHours = preview?.work_hours ?? null;
-  const canPartial = singleDay && workHours !== null && Boolean(form.employee_id);
-  const partial = form.partial && canPartial;
-  const hours = partial ? (form.hours && fitsWithin(form.hours, workHours) ? form.hours : firstHour(workHours)) : null;
+  const hours = form.partial && workHours ? (form.hours && fitsWithin(form.hours, workHours) ? form.hours : firstHour(workHours)) : null;
 
   const input = toPreviewInput(form, hours);
   const inputKey = JSON.stringify(input);
@@ -122,18 +124,23 @@ export function AbsenceForm({ title, submitLabel, reasons, employee, employees =
     });
   };
 
-  const partialHint = !singleDay
-    ? 'Disponible cuando la ausencia es de un solo día.'
-    : preview && !workHours
-      ? 'Ese día no es laborable para el turno del empleado.'
-      : null;
+  const changePartial = (partial: boolean) =>
+    setForm((prev) => ({ ...prev, partial, range: partial ? { ...prev.range, end: prev.range.start } : prev.range }));
+
+  const partialHint = !form.partial
+    ? null
+    : !form.employee_id
+      ? 'Elige un empleado para ver su horario.'
+      : preview && !workHours
+        ? 'Ese día no es laborable para el turno del empleado.'
+        : null;
 
   return (
     <FormDrawer
       title={title}
       submitLabel={submitLabel}
       submitting={submitting}
-      submitDisabled={!input || Boolean(preview?.error)}
+      submitDisabled={!input || Boolean(preview?.error) || (form.partial && !hours)}
       error={error}
       onClose={onClose}
       onSubmit={handleSubmit}
@@ -160,22 +167,28 @@ export function AbsenceForm({ title, submitLabel, reasons, employee, employees =
         options={reasons.map((reason) => ({ value: reason.reason_id, label: reason.description }))}
         required
       />
-      <FormField label="Fechas de la ausencia" htmlFor="af-dates" hint="Para un solo día, toca el mismo día dos veces.">
-        <DateRangePicker
-          id="af-dates"
-          value={form.range}
-          onChange={(range) => setValue('range', range)}
-          workingWeekdays={preview?.working_weekdays}
-        />
-      </FormField>
-      <CheckboxRow
-        className="mb-3"
-        checked={partial}
-        disabled={!canPartial}
-        onCheckedChange={(checked) => setValue('partial', checked === true)}
-      >
+      <CheckboxRow className="mb-3" checked={form.partial} onCheckedChange={(checked) => changePartial(checked === true)}>
         Solo unas horas del día
       </CheckboxRow>
+      {form.partial ? (
+        <FormField label="Día de la ausencia" htmlFor="af-date">
+          <DatePicker
+            id="af-date"
+            value={form.range.start}
+            onChange={(date) => setValue('range', { ...form.range, start: date, end: date })}
+            workingWeekdays={preview?.working_weekdays}
+          />
+        </FormField>
+      ) : (
+        <FormField label="Fechas de la ausencia" htmlFor="af-dates" hint="Para un solo día, toca el mismo día dos veces.">
+          <DateRangePicker
+            id="af-dates"
+            value={form.range}
+            onChange={(range) => setValue('range', range)}
+            workingWeekdays={preview?.working_weekdays}
+          />
+        </FormField>
+      )}
       {partialHint && <FieldHint className="mb-3">{partialHint}</FieldHint>}
       {hours && workHours && (
         <FormField

@@ -60,11 +60,8 @@ export function DateRangePicker({ id, value, onChange, min, workingWeekdays, inv
     workingWeekdays?.includes(SATURDAY) ? countWorkingDays(start, end, [SATURDAY]) : 0;
   const keepsSkip = (range: DateRange) => range.skipSaturdays && saturdaysIn(range) > 0;
 
-  const isSkippedSaturday = (date: string) =>
-    keepsSkip(draft) && isoWeekday(date) === SATURDAY && date >= draft.start && date <= draft.end;
-  const isRestDay = workingWeekdays
-    ? (date: string) => !workingWeekdays.includes(isoWeekday(date)) || isSkippedSaturday(date)
-    : undefined;
+  const draftWeekdays = workingWeekdays?.includes(SATURDAY) ? coveredWeekdays(draft.skipSaturdays) : workingWeekdays;
+  const isRestDay = draftWeekdays ? (date: string) => !draftWeekdays.includes(isoWeekday(date)) : undefined;
   const dayCount = (range: DateRange) => {
     const weekdays = coveredWeekdays(keepsSkip(range));
     const count = formatDayCount(weekdays ? countWorkingDays(range.start, range.end, weekdays) : countDays(range.start, range.end));
@@ -76,7 +73,7 @@ export function DateRangePicker({ id, value, onChange, min, workingWeekdays, inv
     setOpen(false);
   };
 
-  const saturdays = saturdaysIn(draft);
+  const worksSaturdays = Boolean(workingWeekdays?.includes(SATURDAY));
 
   return (
     <PopoverPrimitive.Root open={open} onOpenChange={changeOpen}>
@@ -119,13 +116,13 @@ export function DateRangePicker({ id, value, onChange, min, workingWeekdays, inv
             onPick={pick}
           />
           {isRestDay && <p className="mt-2 text-xs text-muted">Los días en rojo son descanso del turno y no se cuentan.</p>}
-          {saturdays > 0 && (
+          {worksSaturdays && (
             <CheckboxRow
               className="mt-3"
               checked={!draft.skipSaturdays}
               onCheckedChange={(checked) => setDraft((prev) => ({ ...prev, skipSaturdays: checked !== true }))}
             >
-              {saturdays === 1 ? '¿Contemplar el sábado?' : '¿Contemplar los sábados?'}
+              Habilitar día sábado para este empleado
             </CheckboxRow>
           )}
           <Button className="mt-3 w-full" onClick={accept}>

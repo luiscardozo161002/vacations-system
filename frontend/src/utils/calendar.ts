@@ -51,6 +51,12 @@ export const countDays = (start: string, end: string) =>
 
 export const isoWeekday = (iso: string) => parseIso(iso).getDay() || 7;
 
+export const nextWeekday = (iso: string) => {
+  const date = parseIso(iso);
+  while ((date.getDay() || 7) > 5) date.setDate(date.getDate() + 1);
+  return toIso(date);
+};
+
 export const countWorkingDays = (start: string, end: string, workingWeekdays: number[]) => {
   let count = 0;
   for (const date = parseIso(start); toIso(date) <= end; date.setDate(date.getDate() + 1)) {
