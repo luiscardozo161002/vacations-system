@@ -64,7 +64,23 @@ describe('Auditoría de avisos', () => {
     assert.equal(event.entity_id, String(created.result.notice_id));
     assert.equal(event.ip_address, '127.0.0.1');
     assert.equal(event.user_agent, 'pruebas');
+    assert.equal(event.http_method, 'POST');
+    assert.equal(event.route, '/api/v1/notices/{noticeId}/approve');
     assert.ok(event.request_id);
+  });
+
+  it('registra quién crea el aviso y de qué empleado es', async () => {
+    const created = await call('EMPLOYEE', 'POST', '/notices', {
+      employee_id: 1,
+      reason_id: 1,
+      absence_start_date: '2027-06-02',
+      absence_end_date: '2027-06-02',
+    });
+    const event = await lastEvent('NOTICE_CREATED');
+
+    assert.equal(event.user_id, EMPLOYEE_USER_ID);
+    assert.equal(event.entity_id, String(created.result.notice_id));
+    assert.equal(event.metadata.changes.absence_start_date, '2027-06-02');
   });
 
   it('registra el intento fallido con el motivo', async () => {
@@ -147,7 +163,65 @@ describe('Auditoría de empleados, reglas, usuarios y permisos', () => {
   });
 });
 
+describe('Auditoría de departamentos, turnos y periodos', () => {
+  it('registra el alta y el cambio de un departamento', async () => {
+    const created = await call('SUPERUSER', 'POST', '/departments', { branch_id: 5, code: 'AUD', department_name: 'Auditoria' });
+    await call('SUPERUSER', 'PATCH', `/departments/${created.result.department_id}`, { department_name: 'Auditoria 2' });
+
+    assert.equal((await lastEvent('DEPARTMENT_CREATED')).entity_id, String(created.result.department_id));
+    assert.equal((await lastEvent('DEPARTMENT_UPDATED')).metadata.changes.department_name, 'Auditoria 2');
+  });
+
+  it('registra el cambio de horario de un turno', async () => {
+    const days = [1, 2, 3, 4, 5, 6, 7].map((day) => ({
+      day_of_week: day,
+      is_working_day: day < 6,
+      check_in_time: day < 6 ? '08:00' : null,
+      check_out_time: day < 6 ? '16:00' : null,
+    }));
+    const res = await call('SUPERUSER', 'PUT', '/shifts/1/schedule', days);
+    const event = await lastEvent('SHIFT_SCHEDULE_REPLACED');
+
+    assert.equal(res.statusCode, 200);
+    assert.equal(event.entity, 'shift');
+    assert.equal(event.entity_id, '1');
+    assert.equal(event.http_method, 'PUT');
+  });
+
+  it('registra cuando se generan los periodos de vacaciones', async () => {
+    const res = await call('SUPERUSER', 'POST', '/vacation-entitlements/generate');
+    const event = await lastEvent('PERIODS_GENERATED');
+
+    assert.equal(res.statusCode, 200);
+    assert.equal(event.entity, 'vacation_entitlement');
+    assert.equal(event.result, 'success');
+  });
+});
+
 describe('GET /auth-audit-log', () => {
+  it('trae el rol, el empleado y el nombre del objeto afectado', async () => {
+    const created = await lastEvent('NOTICE_CREATED');
+    const res = await call('SUPERUSER', 'GET', '/auth-audit-log?event_type=NOTICE_CREATED&pageSize=100');
+    const entry = res.result.data.find((row) => row.entity_id === created.entity_id);
+
+    assert.equal(entry.username, 'j.perez');
+    assert.equal(entry.role_code, 'EMPLOYEE');
+    assert.equal(entry.actor_name, 'Juan Perez Lopez');
+    assert.equal(entry.target_name, 'Juan Perez Lopez');
+    assert.equal(entry.http_method, 'POST');
+  });
+
+  it('filtra por módulo, incluida la sesión', async () => {
+    const notices = await call('SUPERUSER', 'GET', '/auth-audit-log?entity=notice&pageSize=100');
+    const session = await call('SUPERUSER', 'GET', '/auth-audit-log?entity=session&pageSize=100');
+
+    assert.ok(notices.result.data.length > 0);
+    assert.ok(notices.result.data.every((entry) => entry.entity === 'notice'));
+    assert.ok(session.result.data.length > 0);
+    assert.ok(session.result.data.every((entry) => entry.entity === null));
+    assert.ok(session.result.data.some((entry) => entry.event_type === 'LOGIN_SUCCESS'));
+  });
+
   it('filtra por resultado y trae el nombre del usuario', async () => {
     const res = await call('SUPERUSER', 'GET', '/auth-audit-log?result=failed&event_type=NOTICE_APPROVED');
 

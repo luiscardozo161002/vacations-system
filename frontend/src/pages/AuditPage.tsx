@@ -1,18 +1,23 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import type { AuditLogEntry } from '@vacations/sdk';
 import { sdk } from '../services/sdk';
 import { config } from '../config';
 import { formatDateTime } from '../utils/format';
+import { ROLE_LABELS } from '../layouts/navigation';
 import { usePagedList } from '../hooks/use-paged-list';
 import { usePageFilters } from '../hooks/use-page-filters';
 import { DataTable, type Column } from '../components/organisms/DataTable';
+import { Icon } from '../components/atoms/Icon';
+import { IconButton } from '../components/atoms/IconButton';
 import { Select } from '../components/atoms/Select';
 import { PageHeader } from '../components/molecules/PageHeader';
 import { SearchInput } from '../components/molecules/SearchInput';
 import { StatusBadge } from '../components/atoms/StatusBadge';
-import { Toolbar } from '../components/molecules/Toolbar';
+import { RowActions, Toolbar } from '../components/molecules/Toolbar';
+import { AuditDetail } from '../features/audit/components/AuditDetail';
+import { MODULE_LABELS, eventLabel, moduleLabel, targetLabel } from '../features/audit/labels';
 
-const FILTERS = { resultado: '', q: '' };
+const FILTERS = { resultado: '', modulo: '', q: '' };
 
 const RESULT_OPTIONS = [
   { value: '', label: 'Todos los resultados' },
@@ -20,79 +25,66 @@ const RESULT_OPTIONS = [
   { value: 'failed', label: 'Fallido' },
 ];
 
-const EVENT_LABELS: Record<string, string> = {
-  LOGIN_SUCCESS: 'Inicio de sesión',
-  LOGIN_FAILED: 'Intento de inicio de sesión',
-  LOGOUT: 'Cierre de sesión',
-  TOKEN_REFRESH: 'Renovación de sesión',
-  PASSWORD_RESET_REQUESTED: 'Solicitó restablecer contraseña',
-  PASSWORD_RESET_COMPLETED: 'Restableció contraseña',
-  PASSWORD_CHANGED: 'Cambió su contraseña',
-  NOTICE_APPROVED: 'Aprobó una ausencia',
-  NOTICE_REJECTED: 'Rechazó una ausencia',
-  NOTICE_CANCELLED: 'Canceló una ausencia',
-  EMPLOYEE_CREATED: 'Dio de alta un empleado',
-  EMPLOYEE_UPDATED: 'Editó un empleado',
-  EMPLOYEE_DEACTIVATED: 'Dio de baja un empleado',
-  EMPLOYEE_ACCESS_GRANTED: 'Envió acceso a un empleado',
-  EMPLOYEES_EXPORTED: 'Exportó empleados a CSV',
-  RULE_CREATED: 'Creó una regla de acumulación',
-  RULE_UPDATED: 'Editó una regla de acumulación',
-  RULE_DEACTIVATED: 'Desactivó una regla de acumulación',
-  USER_CREATED: 'Creó un usuario',
-  USER_UPDATED: 'Editó un usuario',
-  USER_DEACTIVATED: 'Desactivó un usuario',
-  USER_BRANCHES_CHANGED: 'Cambió las sedes de un usuario',
-  PERMISSION_GRANTED: 'Otorgó un permiso',
-  PERMISSION_REVOKED: 'Quitó un permiso',
-};
-
-const ENTITY_LABELS: Record<string, string> = {
-  notice: 'Ausencia',
-  employee: 'Empleado',
-  accrual_rule: 'Regla',
-  user: 'Usuario',
-  role: 'Rol',
-};
-
-const detail = (entry: AuditLogEntry): string =>
-  [entry.entity && `${ENTITY_LABELS[entry.entity] ?? entry.entity} #${entry.entity_id}`, entry.ip_address]
-    .filter(Boolean)
-    .join(' · ');
-
-const columns: Column<AuditLogEntry>[] = [
-  { header: 'Usuario', render: (entry) => entry.username ?? 'desconocido', className: 'font-medium' },
-  { header: 'Fecha y hora', render: (entry) => formatDateTime(entry.created_at), className: 'text-[12.5px] text-muted' },
-  {
-    header: 'Evento',
-    render: (entry) => (
-      <>
-        {EVENT_LABELS[entry.event_type] ?? entry.event_type}
-        <div className="text-[12.5px] text-muted">{detail(entry)}</div>
-      </>
-    ),
-  },
-  { header: 'Resultado', render: (entry) => <StatusBadge status={entry.result} /> },
+const MODULE_OPTIONS = [
+  { value: '', label: 'Todos los módulos' },
+  ...Object.entries(MODULE_LABELS).map(([value, label]) => ({ value, label })),
 ];
 
 export function AuditPage() {
   const { filters, page, setFilter, setPage } = usePageFilters(FILTERS);
+  const [selected, setSelected] = useState<AuditLogEntry | null>(null);
 
   const params = useMemo(
     () => ({
       page,
       pageSize: config.pageSize,
       result: filters.resultado ? (filters.resultado as 'success' | 'failed') : undefined,
+      entity: filters.modulo || undefined,
       search: filters.q || undefined,
     }),
-    [page, filters.resultado, filters.q],
+    [page, filters.resultado, filters.modulo, filters.q],
   );
   const { data, loading, error } = usePagedList('audit-log', sdk.auditLog, params);
 
+  const columns: Column<AuditLogEntry>[] = [
+    {
+      header: 'Usuario',
+      render: (entry) => (
+        <>
+          <span className="font-medium">{entry.username ?? 'desconocido'}</span>
+          <div className="text-[12.5px] text-muted">{ROLE_LABELS[entry.role_code ?? ''] ?? entry.role_code}</div>
+        </>
+      ),
+    },
+    { header: 'Fecha y hora', render: (entry) => formatDateTime(entry.created_at), className: 'text-[12.5px] text-muted' },
+    { header: 'Módulo', render: moduleLabel },
+    {
+      header: 'Acción',
+      render: (entry) => (
+        <>
+          {eventLabel(entry)}
+          <div className="text-[12.5px] text-muted">{targetLabel(entry)}</div>
+        </>
+      ),
+    },
+    { header: 'Resultado', render: (entry) => <StatusBadge status={entry.result} /> },
+    {
+      header: '',
+      render: (entry) => (
+        <RowActions>
+          <IconButton title="Ver detalle" onClick={() => setSelected(entry)}>
+            <Icon name="eye" />
+          </IconButton>
+        </RowActions>
+      ),
+    },
+  ];
+
   return (
     <>
-      <PageHeader title="Auditoría" subtitle="Historial de inicio de sesión y eventos de seguridad." />
+      <PageHeader title="Auditoría" subtitle="Quién hizo qué, cuándo, en qué módulo y desde dónde." />
       <Toolbar>
+        <Select compact aria-label="Módulo" value={filters.modulo} onChange={(modulo) => setFilter({ modulo })} options={MODULE_OPTIONS} />
         <Select compact aria-label="Resultado" value={filters.resultado} onChange={(resultado) => setFilter({ resultado })} options={RESULT_OPTIONS} />
         <SearchInput placeholder="Buscar usuario o evento..." value={filters.q} onSearch={(q) => setFilter({ q })} />
       </Toolbar>
@@ -105,6 +97,7 @@ export function AuditPage() {
         loading={loading}
         emptyMessage={error ?? 'No hay eventos con estos filtros.'}
       />
+      {selected && <AuditDetail entry={selected} onClose={() => setSelected(null)} />}
     </>
   );
 }

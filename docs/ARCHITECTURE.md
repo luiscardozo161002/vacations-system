@@ -101,7 +101,7 @@ La API valida JWT y exige permisos con el formato `modulo:accion`. Los repositor
 
 Los permisos y las sedes se incluyen en el access token. Sus cambios se reflejan al emitir el siguiente token. La comprobación actual de Hapi valida firma y vencimiento. La revocación inmediata y la exigencia del cambio de contraseña temporal desde la API están en el [roadmap](ROADMAP.md#seguridad-e-integridad).
 
-La auditoría registra los eventos declarados por las rutas, incluidos rechazos de negocio y de autorización. Guarda usuario, entidad, resultado e identificador de petición. La IP se obtiene de la conexión y, para proxies confiables, de `X-Forwarded-For`. [Auditoría](../backend/src/lib/audit.js), [resolución de IP](../backend/src/lib/client-ip.js)
+La auditoría registra los eventos declarados por las rutas, incluidos rechazos de negocio y de autorización. Guarda usuario, entidad, resultado, método y ruta de la petición, dispositivo, IP, identificador de petición y los datos enviados, sin los campos secretos. El listado agrega el rol y el empleado de quien actuó y el nombre del objeto afectado, y se filtra por módulo; los eventos de inicio de sesión pertenecen al módulo `session` y no llevan entidad. Se auditan avisos, empleados, departamentos, turnos, periodos de vacaciones, reglas, usuarios y permisos. La IP se obtiene de la conexión y, para proxies confiables, de `X-Forwarded-For`. [Auditoría](../backend/src/lib/audit.js), [resolución de IP](../backend/src/lib/client-ip.js)
 
 ## Frontend y SDK
 

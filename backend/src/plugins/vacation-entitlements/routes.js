@@ -14,6 +14,7 @@ class VacationEntitlementRoutes extends CrudRoutes {
 
   generateRoute() {
     return this.route({
+      action: 'generate',
       method: 'POST',
       path: `${this.path}/generate`,
       description: 'Open current periods, expire ended ones and send period reminders',
@@ -42,4 +43,5 @@ module.exports = new VacationEntitlementRoutes({
   },
   schemas,
   service,
+  audit: { entity: 'vacation_entitlement', events: { generate: 'PERIODS_GENERATED' } },
 }).plugin();

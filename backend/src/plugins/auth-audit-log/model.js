@@ -26,6 +26,8 @@ class AuthAuditLog extends Model {
         entity: { type: ['string', 'null'], maxLength: 40 },
         entity_id: { type: ['string', 'null'], maxLength: 40 },
         request_id: { type: ['string', 'null'], maxLength: 64 },
+        http_method: { type: ['string', 'null'], maxLength: 10 },
+        route: { type: ['string', 'null'], maxLength: 120 },
         metadata: { type: ['object', 'null'] },
         created_at: { type: 'string' },
       },

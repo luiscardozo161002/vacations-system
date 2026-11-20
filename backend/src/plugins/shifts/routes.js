@@ -9,6 +9,7 @@ class ShiftRoutes extends CrudRoutes {
 
   replaceScheduleRoute() {
     return this.route({
+      action: 'schedule',
       method: 'PUT',
       path: `${this.itemPath()}/schedule`,
       description: 'Replace the weekly schedule of a shift (all 7 days at once)',
@@ -29,4 +30,13 @@ module.exports = new ShiftRoutes({
   permissions: { view: 'shifts:view', create: 'shifts:create', update: 'shifts:update', delete: 'shifts:delete' },
   schemas,
   service,
+  audit: {
+    entity: 'shift',
+    events: {
+      create: 'SHIFT_CREATED',
+      update: 'SHIFT_UPDATED',
+      remove: 'SHIFT_DEACTIVATED',
+      schedule: 'SHIFT_SCHEDULE_REPLACED',
+    },
+  },
 }).plugin();

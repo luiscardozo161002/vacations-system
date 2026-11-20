@@ -9,6 +9,8 @@ const COLUMNS = [
   'result',
   'entity',
   'entity_id',
+  'http_method',
+  'route',
   'ip_address',
   'user_agent',
   'request_id',
