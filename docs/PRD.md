@@ -109,6 +109,8 @@ El calendario inicial contempla los descansos anuales del artículo 74 de la LFT
 
 Recursos Humanos ve las ausencias de sus sedes. El empleado ve las propias y las de su departamento cuando está habilitada la opción de compartir calendario. Esta opción comienza activada y Recursos Humanos puede modificarla.
 
+Cada persona ausente tiene su propio color en el calendario y las solicitudes pendientes se distinguen por un borde punteado. El sábado y el domingo se muestran con fondos distintos. Un sábado que el aviso no contempla no aparece como ausencia.
+
 ### Cuentas y acceso
 
 Dar de alta un empleado con correo crea su cuenta. La contraseña temporal vence según la vigencia configurada y el empleado debe cambiarla al ingresar. Una temporal vencida impide iniciar sesión y requiere que Recursos Humanos reenvíe el acceso.

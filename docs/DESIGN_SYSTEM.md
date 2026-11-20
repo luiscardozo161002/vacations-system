@@ -106,7 +106,9 @@ Las confirmaciones muestran una acción con un verbo concreto, como «Aprobar»,
 | `cancelled` | Cancelada | Neutral |
 | `success` / `failed` | Exitoso / Fallido | Éxito / Error |
 
-Cada estado se comunica con texto además de color. [StatusBadge](../frontend/src/components/atoms/StatusBadge.tsx)
+Cada estado se comunica con texto además de color.
+
+En el calendario mensual el color identifica a la persona, no el estado: se deriva del identificador del empleado (`personHue`) y se adapta al tema claro y oscuro. La solicitud pendiente se marca con un borde punteado y se anuncia en el título de la etiqueta; el sábado y el domingo tienen un fondo propio. [Calendario](../frontend/src/pages/CalendarPage.tsx) [StatusBadge](../frontend/src/components/atoms/StatusBadge.tsx)
 
 ## Accesibilidad y adaptación
 
