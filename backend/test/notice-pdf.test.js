@@ -56,6 +56,13 @@ describe('Formato del PDF', () => {
     assert.deepEqual(absenceLines(hours), ['HORAS   de las 13:00 a las 14:00 hrs, Número de Horas: 1']);
     assert.equal(absenceLines({ ...days, hours_taken: 2, absence_start_time: '13:00', absence_end_time: '15:00' }).length, 2);
   });
+
+  it('indica cuando el rango no contempla el sábado', () => {
+    const days = { absence_start_date: '2026-11-20', absence_end_date: '2026-11-24', days_taken: 3, hours_taken: 0 };
+
+    assert.deepEqual(absenceLines({ ...days, skip_saturdays: true }).slice(1), ['Sin contemplar sábados']);
+    assert.equal(absenceLines({ ...days, skip_saturdays: false }).length, 1);
+  });
 });
 
 describe('GET /notices/{id}/pdf', () => {

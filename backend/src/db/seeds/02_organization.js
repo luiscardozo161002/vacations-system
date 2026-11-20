@@ -58,7 +58,7 @@ const SHIFT_SCHEDULES = [
   { shift_id: 2, day_of_week: 3, is_working_day: true, check_in_time: '07:00', check_out_time: '15:00' },
   { shift_id: 2, day_of_week: 4, is_working_day: true, check_in_time: '07:00', check_out_time: '15:00' },
   { shift_id: 2, day_of_week: 5, is_working_day: true, check_in_time: '07:00', check_out_time: '15:00' },
-  { shift_id: 2, day_of_week: 6, is_working_day: true, check_in_time: '08:00', check_out_time: '13:00' },
+  { shift_id: 2, day_of_week: 6, is_working_day: true, check_in_time: '07:00', check_out_time: '13:00' },
   { shift_id: 2, day_of_week: 7, is_working_day: false, check_in_time: null, check_out_time: null },
 ];
 

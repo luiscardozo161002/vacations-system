@@ -16,7 +16,7 @@ const week = (days) =>
 const weekdays = (from, to) => ({ 1: [from, to], 2: [from, to], 3: [from, to], 4: [from, to], 5: [from, to] });
 
 const OFICINAS = week(weekdays('07:00', '16:00'));
-const OPERACIONES = week({ ...weekdays('07:00', '15:00'), 6: ['08:00', '13:00'] });
+const OPERACIONES = week({ ...weekdays('07:00', '15:00'), 6: ['07:00', '13:00'] });
 
 const MONDAY = '2026-11-09';
 const TUESDAY = '2026-11-10';
@@ -70,6 +70,16 @@ describe('computeRequestBreakdown', () => {
 
   it('en Operaciones una semana completa son 6 días y el domingo es descanso', () => {
     assert.deepEqual(breakdown(OPERACIONES, MONDAY, SUNDAY), { fullDays: 6, partialHours: 0, restDays: 1, holidayDays: 0, dailyHours: 8 });
+  });
+
+  it('en Operaciones sin contemplar el sábado, viernes a lunes son 2 días y el sábado es descanso', () => {
+    const result = computeRequestBreakdown({ schedule: OPERACIONES, startDate: FRIDAY, endDate: NEXT_MONDAY, skipSaturdays: true });
+
+    assert.deepEqual(result, { fullDays: 2, partialHours: 0, restDays: 2, holidayDays: 0, dailyHours: 8 });
+  });
+
+  it('en Operaciones contemplando el sábado, viernes a lunes son 3 días', () => {
+    assert.equal(breakdown(OPERACIONES, FRIDAY, NEXT_MONDAY).fullDays, 3);
   });
 
   it('en Operaciones de viernes 13:00 a sábado 13:00 son 1 día y 2 horas', () => {

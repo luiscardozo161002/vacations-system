@@ -7,6 +7,7 @@ const EDITABLE_FIELDS = [
   'absence_end_date',
   'absence_start_time',
   'absence_end_time',
+  'skip_saturdays',
   'remarks',
 ];
 const CREATE_FIELDS = ['employee_id', ...EDITABLE_FIELDS];

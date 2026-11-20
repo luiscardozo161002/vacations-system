@@ -94,6 +94,7 @@ class NoticeBalance {
       startTime: request.absence_start_time,
       endTime: request.absence_end_time,
       holidays: holidaysBetween(request.absence_start_date, request.absence_end_date).map((holiday) => holiday.date),
+      skipSaturdays: request.skip_saturdays,
     });
     const breakdown = {
       days: result.fullDays,

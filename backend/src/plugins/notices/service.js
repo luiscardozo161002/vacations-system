@@ -13,7 +13,14 @@ const entitlements = require('../vacation-entitlements/service');
 const REVIEW_PERMISSION = 'approvals:review';
 const REGISTER_PERMISSION = 'notices:create';
 
-const SCHEDULE_FIELDS = ['reason_id', 'absence_start_date', 'absence_end_date', 'absence_start_time', 'absence_end_time'];
+const SCHEDULE_FIELDS = [
+  'reason_id',
+  'absence_start_date',
+  'absence_end_date',
+  'absence_start_time',
+  'absence_end_time',
+  'skip_saturdays',
+];
 
 const ACTIONS = {
   approve: { verb: 'aprobar', from: ['pending'], to: 'approved' },

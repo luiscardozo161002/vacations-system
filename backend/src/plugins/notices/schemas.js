@@ -12,6 +12,7 @@ const fields = {
   absence_end_date: isoDate,
   absence_start_time: timeString,
   absence_end_time: timeString,
+  skip_saturdays: Joi.boolean(),
   remarks: Joi.string().max(255).allow(null),
 };
 
@@ -30,6 +31,7 @@ const preview = Joi.object({
   absence_end_date: fields.absence_end_date.required(),
   absence_start_time: fields.absence_start_time,
   absence_end_time: fields.absence_end_time,
+  skip_saturdays: fields.skip_saturdays,
 }).unknown(false);
 
 const update = Joi.object(fields).min(1).unknown(false);

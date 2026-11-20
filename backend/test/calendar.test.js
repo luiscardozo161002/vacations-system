@@ -65,6 +65,28 @@ describe('GET /calendar', () => {
     assert.deepEqual(find(operations.notice_id).dates, ['2026-10-24', '2026-10-26', '2026-10-27', '2026-10-28']);
   });
 
+  it('no marca el sábado cuando la ausencia no lo contempla', async () => {
+    const [notice] = await db('notices')
+      .insert({
+        employee_id: 1,
+        reason_id: 5,
+        kind: 'request',
+        status: 'pending',
+        absence_start_date: '2026-10-23',
+        absence_end_date: '2026-10-27',
+        skip_saturdays: true,
+      })
+      .returning('notice_id');
+
+    const res = await calendar('SUPERUSER', '2026-10-01', '2026-10-31');
+    await db('notices').where('notice_id', notice.notice_id).del();
+
+    assert.deepEqual(
+      res.result.absences.find((absence) => absence.notice_id === notice.notice_id).dates,
+      ['2026-10-23', '2026-10-26', '2026-10-27']
+    );
+  });
+
   it('no marca los festivos ni ausencias que caen solo en descanso', async () => {
     const [holiday, weekend] = await db('notices')
       .insert([
