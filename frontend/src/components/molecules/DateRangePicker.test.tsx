@@ -51,35 +51,57 @@ describe('DateRangePicker', () => {
     expect(onChange).toHaveBeenCalledWith(range('2026-11-18', '2026-11-20'));
   });
 
-  it('pregunta por el sábado y, si no se contempla, no lo cuenta', () => {
+  it('el sábado viene deshabilitado y no se cuenta hasta habilitarlo para el empleado', () => {
     const onChange = vi.fn();
     render(
       <DateRangePicker
         id="r-dates"
-        value={range('2026-11-20', '2026-11-24')}
+        value={range('2026-11-20', '2026-11-24', true)}
         workingWeekdays={[1, 2, 3, 4, 5, 6]}
         onChange={onChange}
       />,
     );
 
     const trigger = screen.getByRole('button', { name: /Vie 20 nov/ });
-    expect(trigger.textContent).toContain('4 días');
+    expect(trigger.textContent).toContain('3 días, sin sábado');
 
     fireEvent.click(trigger);
-    fireEvent.click(screen.getByRole('checkbox', { name: '¿Contemplar el sábado?' }));
-    expect(screen.getAllByText('3 días, sin sábado')).toHaveLength(1);
-    expect((day(21) as HTMLButtonElement).disabled).toBe(true);
+    expect((day(28) as HTMLButtonElement).disabled).toBe(true);
+
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Habilitar día sábado para este empleado' }));
+    expect((day(28) as HTMLButtonElement).disabled).toBe(false);
+    expect(screen.getAllByText('4 días')).toHaveLength(1);
     fireEvent.click(screen.getByRole('button', { name: 'Aceptar' }));
 
-    expect(onChange).toHaveBeenCalledWith(range('2026-11-20', '2026-11-24', true));
+    expect(onChange).toHaveBeenCalledWith(range('2026-11-20', '2026-11-24', false));
   });
 
-  it('no pregunta por el sábado si el rango no lo incluye', () => {
+  it('habilitar el sábado permite pedir solo ese día', () => {
+    const onChange = vi.fn();
     render(
       <DateRangePicker
         id="r-dates"
-        value={range('2026-11-16', '2026-11-18')}
+        value={range('2026-11-20', '2026-11-20', true)}
         workingWeekdays={[1, 2, 3, 4, 5, 6]}
+        onChange={onChange}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: /Vie 20 nov/ }));
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Habilitar día sábado para este empleado' }));
+    fireEvent.click(day(21));
+    fireEvent.click(day(21));
+    fireEvent.click(screen.getByRole('button', { name: 'Aceptar' }));
+
+    expect(onChange).toHaveBeenCalledWith(range('2026-11-21', '2026-11-21', false));
+  });
+
+  it('no ofrece habilitar el sábado si el turno no lo trabaja', () => {
+    render(
+      <DateRangePicker
+        id="r-dates"
+        value={range('2026-11-16', '2026-11-18', true)}
+        workingWeekdays={[1, 2, 3, 4, 5]}
         onChange={vi.fn()}
       />,
     );

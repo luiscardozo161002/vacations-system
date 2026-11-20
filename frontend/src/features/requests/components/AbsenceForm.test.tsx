@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import type { NoticePreview, Reason } from '@vacations/sdk';
-import { formatLongDate } from '../../../utils/calendar';
+import { nextWeekday } from '../../../utils/calendar';
 import { todayIso } from '../../../utils/format';
 import { AbsenceForm } from './AbsenceForm';
 
@@ -54,30 +54,31 @@ describe('Solicitud por horas', () => {
     preview.mockResolvedValue({ ...withoutBalance, error: null });
   });
 
-  const chooseSingleDay = async () => {
-    fireEvent.click(screen.getByLabelText('Fechas de la ausencia'));
-    const day = formatLongDate(todayIso(7));
-    fireEvent.click(screen.getByRole('button', { name: day }));
-    fireEvent.click(screen.getByRole('button', { name: day }));
-    fireEvent.click(screen.getByRole('button', { name: 'Aceptar' }));
-    await waitFor(() => expect(preview).toHaveBeenCalledTimes(2));
-  };
-
-  it('con varios días no permite elegir horas y lo explica', async () => {
+  it('por omisión pide un solo día laborable con el sábado sin habilitar', async () => {
     renderForm();
-    await waitFor(() => expect(preview).toHaveBeenCalledTimes(1));
 
-    expect(screen.getByRole('checkbox', { name: 'Solo unas horas del día' }).hasAttribute('data-disabled')).toBe(true);
-    expect(screen.getByText('Disponible cuando la ausencia es de un solo día.')).toBeTruthy();
+    await waitFor(() =>
+      expect(preview).toHaveBeenLastCalledWith(
+        expect.objectContaining({ absence_start_date: nextWeekday(todayIso(7)), absence_end_date: nextWeekday(todayIso(7)), skip_saturdays: false }),
+        expect.anything(),
+      ),
+    );
   });
 
-  it('en un solo día ofrece las horas del turno y manda la elegida', async () => {
+  it('las horas se pueden elegir siempre, también con el rango de varios días', async () => {
     renderForm();
     await waitFor(() => expect(preview).toHaveBeenCalledTimes(1));
-    await chooseSingleDay();
+
+    expect((screen.getByRole('checkbox', { name: 'Solo unas horas del día' }) as HTMLButtonElement).hasAttribute('data-disabled')).toBe(false);
+  });
+
+  it('con horas pide un solo día y ofrece las horas del turno de ese día', async () => {
+    renderForm();
+    await waitFor(() => expect(preview).toHaveBeenCalledTimes(1));
 
     fireEvent.click(screen.getByRole('checkbox', { name: 'Solo unas horas del día' }));
 
+    expect(screen.getByLabelText('Día de la ausencia')).toBeTruthy();
     expect(screen.getByText('Horario del turno ese día: 07:00 a 15:00.')).toBeTruthy();
     expect(screen.getByLabelText('Horario de la ausencia').textContent).toContain('07:00 – 08:00');
 
