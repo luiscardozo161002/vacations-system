@@ -60,7 +60,8 @@ Los radios compartidos son de 8, 10 y 12 px, con un radio independiente para con
 | `Input`, `Select`, `Textarea`, `Checkbox` | Controles de formulario; `Select` y `Checkbox` usan Radix y `Select` admite `compact` para las barras de filtros |
 | `FieldError`, `FieldHint` | Mensaje de error y texto de ayuda de un campo |
 | `FormField`, `TextField`, `SelectField`, `CheckboxRow` | Campos con etiqueta, ayuda y validación |
-| `SearchBox`, `SearchInput`, `SearchSelect` | Búsqueda y selección de registros |
+| `SearchBox`, `SearchInput` | Campo de búsqueda con icono y búsqueda que espera 300 ms |
+| `SearchSelect` | Elección de un registro de una lista: filtra al escribir tras 300 ms sin importar acentos, se maneja con el teclado y solo acepta una opción de la lista; un texto que no coincide se descarta al salir del campo |
 | `DatePicker`, `DateRangePicker`, `Calendar` | Fecha única o rango de fechas en un calendario; el rango se confirma con Aceptar y admite un solo día |
 | `HourRangePicker` | Hora de inicio y de fin como botones limitados al horario del turno, con la duración y confirmación con Aceptar |
 | `TimeSelect` | Hora en intervalos configurables, en lugar del campo de hora del navegador |
@@ -90,7 +91,7 @@ La implementación y las propiedades disponibles se consultan en el componente c
 
 Los paneles y diálogos se cierran con el botón de cierre, Escape o un clic en el fondo. El foco permanece dentro del panel y vuelve al control de origen al cerrarlo.
 
-Las confirmaciones muestran una acción con un verbo concreto, como «Aprobar», «Rechazar» o «Cancelar». La notificación breve comunica el resultado y se anuncia mediante una región de estado. Al abrir un panel el foco pasa a su primer campo, o al elemento marcado con `data-autofocus`. [Modal](../frontend/src/components/organisms/Modal.tsx), [diálogos](../frontend/src/components/organisms/Dialog.tsx), [notificaciones](../frontend/src/components/organisms/Toaster.tsx)
+Las confirmaciones muestran una acción con un verbo concreto, como «Aprobar», «Rechazar» o «Cancelar». Toda acción que modifica o elimina datos pide confirmación antes de ejecutarse: guardar los cambios de un registro existente (`confirm` en `FormDrawer`, que valida antes de preguntar), dar de baja o reactivar, aprobar, rechazar o cancelar, cambiar un permiso y generar periodos. Crear un registro nuevo no la pide. La notificación breve comunica el resultado de cada acción y se anuncia mediante una región de estado. Al abrir un panel el foco pasa a su primer campo, o al elemento marcado con `data-autofocus`. [Modal](../frontend/src/components/organisms/Modal.tsx), [diálogos](../frontend/src/components/organisms/Dialog.tsx), [notificaciones](../frontend/src/components/organisms/Toaster.tsx)
 
 ### Estados
 

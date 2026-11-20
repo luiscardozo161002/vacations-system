@@ -60,6 +60,33 @@ describe('FormDrawer', () => {
     expect(onSubmit).not.toHaveBeenCalled();
   });
 
+  it('con confirmación pregunta antes de enviar y no envía si se cancela', () => {
+    const onSubmit = vi.fn();
+    render(drawer({ confirm: '¿Guardar los cambios del turno?', onSubmit }));
+
+    fireEvent.submit(screen.getByRole('dialog').querySelector('form')!);
+    expect(screen.getByText('¿Guardar los cambios del turno?')).toBeTruthy();
+    expect(onSubmit).not.toHaveBeenCalled();
+
+    fireEvent.keyDown(document.activeElement ?? document.body, { key: 'Escape' });
+    expect(screen.queryByText('¿Guardar los cambios del turno?')).toBeNull();
+    expect(onSubmit).not.toHaveBeenCalled();
+
+    fireEvent.submit(screen.getByRole('dialog').querySelector('form')!);
+    fireEvent.click(screen.getByRole('button', { name: 'Guardar cambios' }));
+    expect(onSubmit).toHaveBeenCalledTimes(1);
+  });
+
+  it('no pregunta ni envía si la validación falla', () => {
+    const onSubmit = vi.fn();
+    render(drawer({ confirm: '¿Guardar?', validate: () => false, onSubmit }));
+
+    fireEvent.submit(screen.getByRole('dialog').querySelector('form')!);
+
+    expect(screen.queryByText('¿Guardar?')).toBeNull();
+    expect(onSubmit).not.toHaveBeenCalled();
+  });
+
   it('cierra con Cancelar', () => {
     const onClose = vi.fn();
     render(drawer({ onClose }));

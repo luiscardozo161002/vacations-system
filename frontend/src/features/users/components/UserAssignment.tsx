@@ -6,6 +6,7 @@ import { useFormSubmit } from '../../../hooks/use-form-submit';
 import { initials } from '../../../utils/format';
 import { ROLE_LABELS } from '../../../layouts/navigation';
 import { Drawer } from '../../../components/organisms/Drawer';
+import { ConfirmDialog } from '../../../components/organisms/Dialog';
 import { FormField } from '../../../components/molecules/FormField';
 import { CheckboxRow } from '../../../components/molecules/CheckboxRow';
 import { Input } from '../../../components/atoms/Input';
@@ -39,6 +40,7 @@ export function UserAssignment({ user, branches, companies, onClose, onSaved }: 
     branches.filter((branch) => user.branch_codes.includes(branch.code)).map((branch) => branch.branch_id),
   );
   const [reviewActions, setReviewActions] = useState<ReviewAction[]>(user.review_actions);
+  const [confirming, setConfirming] = useState(false);
   const { submitting, error, submit } = useFormSubmit();
 
   const isHr = user.role_code === config.roles.scoped;
@@ -48,6 +50,11 @@ export function UserAssignment({ user, branches, companies, onClose, onSaved }: 
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
+    setConfirming(true);
+  };
+
+  const save = () => {
+    setConfirming(false);
     submit(async () => {
       await sdk.users.replaceBranches(user.user_id, branchIds);
       await sdk.users.update(user.user_id, { review_actions: reviewActions });
@@ -56,6 +63,7 @@ export function UserAssignment({ user, branches, companies, onClose, onSaved }: 
   };
 
   return (
+    <>
     <Drawer
       title="Asignación organizacional"
       onClose={onClose}
@@ -119,5 +127,15 @@ export function UserAssignment({ user, branches, companies, onClose, onSaved }: 
         </>
       )}
     </Drawer>
+    {confirming && (
+      <ConfirmDialog
+        title="Guardar asignación"
+        message={`¿Guardar la asignación de ${name}? Cambia las sedes que ve y los estados que puede revisar.`}
+        confirmLabel="Guardar asignación"
+        onConfirm={save}
+        onCancel={() => setConfirming(false)}
+      />
+    )}
+    </>
   );
 }

@@ -111,6 +111,10 @@ describe('Edición de empleado', () => {
     expect(save.disabled).toBe(false);
     fireEvent.click(save);
 
+    expect(update).not.toHaveBeenCalled();
+    expect(screen.getByText('¿Guardar los cambios de Juan Perez Lopez?')).toBeTruthy();
+    fireEvent.click(screen.getAllByRole('button', { name: 'Guardar cambios' }).at(-1)!);
+
     await waitFor(() => expect(onSaved).toHaveBeenCalledWith('Empleado actualizado.'));
     expect(update).toHaveBeenCalledWith(7, expect.objectContaining({ employee_name: 'Juan Perez Lopez Jr', employee_number: '0001' }));
   });
@@ -123,6 +127,7 @@ describe('Edición de empleado', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Guardar cambios' }));
 
     expect(screen.getByText(/exactamente 4 dígitos/)).toBeTruthy();
+    expect(screen.queryByText(/¿Guardar los cambios/)).toBeNull();
     expect(update).not.toHaveBeenCalled();
   });
 });

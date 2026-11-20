@@ -74,6 +74,7 @@ export function ShiftForm({ shift, onClose, onSaved }: ShiftFormProps) {
     <FormDrawer
       title={shift ? 'Editar turno' : 'Nuevo turno'}
       submitLabel={shift ? 'Guardar cambios' : 'Crear turno'}
+      confirm={shift ? `¿Guardar los cambios del turno ${shift.shift_name}? Cambian el cálculo de los empleados que lo tienen.` : undefined}
       submitting={submitting}
       error={error}
       onClose={onClose}

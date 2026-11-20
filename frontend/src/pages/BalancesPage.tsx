@@ -14,6 +14,7 @@ import { useToast } from '../hooks/use-toast';
 import { useAuth } from '../contexts/auth-context';
 import { EmployeeDashboard } from '../features/dashboard/components/EmployeeDashboard';
 import { Button } from '../components/atoms/Button';
+import { ConfirmDialog } from '../components/organisms/Dialog';
 
 const FILTERS = {};
 
@@ -45,10 +46,12 @@ function BalancesTable({ canGenerate }: { canGenerate: boolean }) {
   const showToast = useToast();
   const { page, setPage } = usePageFilters(FILTERS);
   const [generating, setGenerating] = useState(false);
+  const [confirming, setConfirming] = useState(false);
   const params = useMemo(() => ({ status: 'active' as const, page, pageSize: config.pageSize }), [page]);
   const { data, loading, error } = usePagedList('balances', sdk.vacationEntitlements, params);
 
   const generate = async () => {
+    setConfirming(false);
     setGenerating(true);
     try {
       const summary = await sdk.vacationEntitlements.generate();
@@ -70,7 +73,7 @@ function BalancesTable({ canGenerate }: { canGenerate: boolean }) {
         subtitle="Saldo por empleado: días y horas otorgados, usados y disponibles, por periodo."
       >
         {canGenerate && (
-          <Button variant="secondary" onClick={generate} disabled={generating}>
+          <Button variant="secondary" onClick={() => setConfirming(true)} disabled={generating}>
             <Icon name="calendar-check" /> Generar periodos
           </Button>
         )}
@@ -85,6 +88,15 @@ function BalancesTable({ canGenerate }: { canGenerate: boolean }) {
         loading={loading}
         emptyMessage={error ?? 'No hay saldos generados.'}
       />
+      {confirming && (
+        <ConfirmDialog
+          title="Generar periodos"
+          message="¿Abrir los periodos de vacaciones que faltan, vencer los que ya terminaron y enviar los avisos pendientes?"
+          confirmLabel="Generar periodos"
+          onConfirm={generate}
+          onCancel={() => setConfirming(false)}
+        />
+      )}
     </>
   );
 }

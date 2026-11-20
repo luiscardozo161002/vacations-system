@@ -60,6 +60,7 @@ export function DepartmentForm({ department, branches, employees, onClose, onSav
     <FormDrawer
       title={department ? 'Editar departamento' : 'Nuevo departamento'}
       submitLabel={department ? 'Guardar cambios' : 'Crear departamento'}
+      confirm={department ? `¿Guardar los cambios de ${department.department_name}?` : undefined}
       submitting={submitting}
       error={error}
       onClose={onClose}

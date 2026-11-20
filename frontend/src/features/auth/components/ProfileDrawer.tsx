@@ -30,7 +30,7 @@ export function ProfileDrawer({ user, roleLabel, onClose }: ProfileDrawerProps) 
   const displayName = user.employee?.employee_name ?? user.username;
   const changingPassword = Boolean(currentPassword || newPassword || confirmPassword);
 
-  const validate = (): string | null => {
+  const findProblem = (): string | null => {
     if (!username.trim() || !email.trim()) return 'Nombre y correo son obligatorios.';
     if (!changingPassword) return null;
     if (!currentPassword) return 'Escribe tu contraseña actual para cambiarla.';
@@ -41,11 +41,13 @@ export function ProfileDrawer({ user, roleLabel, onClose }: ProfileDrawerProps) 
     return null;
   };
 
-  const handleSubmit = () => {
-    const validationError = validate();
-    setError(validationError);
-    if (validationError) return;
+  const validate = () => {
+    const problem = findProblem();
+    setError(problem);
+    return problem === null;
+  };
 
+  const handleSubmit = () => {
     submit(async () => {
       if (changingPassword) {
         await sdk.auth.changePassword({ currentPassword, newPassword });
@@ -66,6 +68,8 @@ export function ProfileDrawer({ user, roleLabel, onClose }: ProfileDrawerProps) 
     <FormDrawer
       title="Editar mi perfil"
       submitLabel="Guardar cambios"
+      confirm="¿Guardar los cambios de tu perfil?"
+      validate={validate}
       submitting={submitting}
       error={error}
       onClose={onClose}
