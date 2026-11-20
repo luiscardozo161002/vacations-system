@@ -53,10 +53,12 @@ export function EmployeeForm({ employee, departments, shifts, onClose, onSaved }
 
   const setField = (field: keyof EmployeeValues, value: string) => setForm((prev) => ({ ...prev, [field]: value }));
 
-  const handleSubmit = () => {
+  const validate = () => {
     setSubmitted(true);
-    if (Object.keys(validateEmployee(form, today)).length) return;
+    return Object.keys(validateEmployee(form, today)).length === 0;
+  };
 
+  const handleSubmit = () => {
     const payload: CreateEmployeeInput = {
       employee_name: form.employee_name.trim(),
       employee_number: form.employee_number,
@@ -90,6 +92,8 @@ export function EmployeeForm({ employee, departments, shifts, onClose, onSaved }
       error={error}
       readOnly={!editing}
       noValidate
+      validate={validate}
+      confirm={employee ? `¿Guardar los cambios de ${employee.employee_name}?` : undefined}
       onEdit={() => setEditing(true)}
       onClose={onClose}
       onSubmit={handleSubmit}

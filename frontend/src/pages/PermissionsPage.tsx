@@ -15,6 +15,7 @@ import { useAuth } from '../contexts/auth-context';
 import { Card } from '../components/molecules/Card';
 import { cn } from '../utils/cn';
 import { Checkbox } from '../components/atoms/Checkbox';
+import { ConfirmDialog } from '../components/organisms/Dialog';
 
 const cell = 'border-b border-line px-3.5 py-2.5 text-center text-sm';
 const headCell = 'border-b border-line bg-subtle px-3.5 py-2.5 text-center text-xs font-semibold text-muted uppercase first:text-left';
@@ -66,8 +67,10 @@ export function PermissionsPage() {
   const canEdit = can('permissions:update');
   const { data: matrix, error } = useApiQuery(MATRIX_KEY, loadMatrix);
   const [saving, setSaving] = useState<string | null>(null);
+  const [pending, setPending] = useState<{ role: Role; module: (typeof MODULES)[number] } | null>(null);
 
   const toggle = async (role: Role, module: (typeof MODULES)[number]) => {
+    setPending(null);
     if (!matrix) return;
     const permissionId = matrix.permissionIds.get(module.code);
     if (!permissionId) return;
@@ -133,7 +136,7 @@ export function PermissionsPage() {
                         <Checkbox
                           checked={on}
                           disabled={fixed || !canEdit || saving === key}
-                          onCheckedChange={() => toggle(role, module)}
+                          onCheckedChange={() => setPending({ role, module })}
                           aria-label={`${module.label} para ${ROLE_LABELS[role.role_code] ?? role.role_code}`}
                         />
                       </td>
@@ -144,6 +147,19 @@ export function PermissionsPage() {
             </tbody>
           </table>
         </div>
+      )}
+      {pending && matrix && (
+        <ConfirmDialog
+          title="Cambiar permiso"
+          message={`¿${
+            matrix.granted.has(grantKey(pending.role.role_id, matrix.permissionIds.get(pending.module.code) ?? 0))
+              ? 'Quitar'
+              : 'Dar'
+          } el permiso de "${pending.module.label}" al rol ${ROLE_LABELS[pending.role.role_code] ?? pending.role.role_code}?`}
+          confirmLabel="Cambiar permiso"
+          onConfirm={() => toggle(pending.role, pending.module)}
+          onCancel={() => setPending(null)}
+        />
       )}
     </>
   );

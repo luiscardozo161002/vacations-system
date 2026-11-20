@@ -44,6 +44,7 @@ export function RuleForm({ rule, effectiveYear, onClose, onSaved }: RuleFormProp
     <FormDrawer
       title={rule ? 'Editar regla de acumulación' : 'Nueva regla de acumulación'}
       submitLabel={rule ? 'Guardar cambios' : 'Crear regla'}
+      confirm={rule ? '¿Guardar los cambios de esta regla de acumulación?' : undefined}
       submitting={submitting}
       error={error}
       onClose={onClose}
