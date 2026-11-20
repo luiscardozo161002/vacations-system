@@ -12,9 +12,15 @@ import { Card, CardHeader, CardTitle } from '../components/molecules/Card';
 import { FieldError } from '../components/atoms/FieldText';
 import { cn } from '../utils/cn';
 import { DayPill } from '../features/calendar/components/DayPill';
-import { MONTH_NAMES, WEEKDAYS, monthCells, monthOf, toIso } from '../utils/calendar';
+import { MONTH_NAMES, WEEKDAYS, monthCells, monthOf, personHue, toIso } from '../utils/calendar';
 
 const FILTERS = { mes: '' };
+
+const SATURDAY = 5;
+const SUNDAY = 6;
+
+const weekendHeader = (index: number) => cn(index === SATURDAY && 'text-warning-fg', index === SUNDAY && 'text-danger-fg');
+const weekendCell = (index: number) => cn(index === SATURDAY && 'bg-warning', index === SUNDAY && 'bg-danger');
 
 const currentMonth = () => monthOf(toIso(new Date()));
 
@@ -74,15 +80,18 @@ export function CalendarPage() {
         </CardHeader>
         <div className="overflow-x-auto">
           <div className="grid grid-cols-[repeat(7,minmax(120px,1fr))] border-t border-l border-line bg-surface">
-            {WEEKDAYS.map((weekday) => (
+            {WEEKDAYS.map((weekday, index) => (
               <div
                 key={weekday}
-                className="border-r border-b border-line bg-subtle px-2.5 py-2 text-[11.5px] font-semibold text-muted uppercase"
+                className={cn(
+                  'border-r border-b border-line bg-subtle px-2.5 py-2 text-[11.5px] font-semibold text-muted uppercase',
+                  weekendHeader(index),
+                )}
               >
                 {weekday}
               </div>
             ))}
-            {cells.map((cell) => {
+            {cells.map((cell, index) => {
               const holiday = cell.inMonth ? holidays.get(cell.date) : undefined;
               const entries = cell.inMonth ? (absences.get(cell.date) ?? []) : [];
               const isToday = cell.date === today;
@@ -91,6 +100,7 @@ export function CalendarPage() {
                   key={cell.date}
                   className={cn(
                     'flex min-h-24 flex-col gap-1 border-r border-b border-line bg-surface p-2 text-[12.5px] text-muted',
+                    cell.inMonth && weekendCell(index % 7),
                     !cell.inMonth && 'bg-subtle text-faint',
                     isToday && 'shadow-[inset_0_0_0_2px_var(--text)]',
                   )}
@@ -104,8 +114,9 @@ export function CalendarPage() {
                   {entries.map((absence) => (
                     <DayPill
                       key={absence.notice_id}
-                      status={absence.status}
-                      title={`${absence.employee_name} — ${absence.reason_description}`}
+                      hue={personHue(absence.employee_id)}
+                      pending={absence.status === 'pending'}
+                      title={`${absence.employee_name} — ${absence.reason_description}${absence.status === 'pending' ? ' (pendiente de aprobación)' : ''}`}
                     >
                       {absence.employee_name.split(' ')[0]}
                     </DayPill>
@@ -115,6 +126,10 @@ export function CalendarPage() {
             })}
           </div>
         </div>
+        <p className="mt-3 text-xs text-muted">
+          Cada persona tiene su propio color. El borde punteado marca una solicitud pendiente de aprobación; sábado y domingo
+          se distinguen por su fondo.
+        </p>
       </Card>
     </>
   );

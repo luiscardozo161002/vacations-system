@@ -59,6 +59,10 @@ export const countWorkingDays = (start: string, end: string, workingWeekdays: nu
   return count;
 };
 
+const GOLDEN_ANGLE = 137.508;
+
+export const personHue = (employeeId: number) => Math.round((employeeId * GOLDEN_ANGLE) % 360);
+
 export const formatNumericDate = (iso: string) => iso.split('-').reverse().join('/');
 
 export const formatWeekdayDate = (iso: string) => {
