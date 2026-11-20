@@ -91,7 +91,8 @@ class NoticeService extends CrudService {
 
   async preview(data, credentials) {
     await this.ensureEmployeeInScope(credentials, data.employee_id);
-    return this.balance.toResponse(await this.balance.evaluate(db, data));
+    const evaluation = await this.balance.evaluate(db, data);
+    return { ...this.balance.toResponse(evaluation), ...(await this.balance.shiftInfo(db, data)) };
   }
 
   async create(data, credentials) {

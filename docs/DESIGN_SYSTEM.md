@@ -61,6 +61,9 @@ Los radios compartidos son de 8, 10 y 12 px, con un radio independiente para con
 | `FieldError`, `FieldHint` | Mensaje de error y texto de ayuda de un campo |
 | `FormField`, `TextField`, `SelectField`, `CheckboxRow` | Campos con etiqueta, ayuda y validación |
 | `SearchBox`, `SearchInput`, `SearchSelect` | Búsqueda y selección de registros |
+| `DatePicker`, `DateRangePicker`, `Calendar` | Fecha única o rango de fechas en un calendario; el rango se confirma con Aceptar y admite un solo día |
+| `HourRangePicker` | Hora de inicio y de fin como botones limitados al horario del turno, con la duración y confirmación con Aceptar |
+| `TimeSelect` | Hora en intervalos configurables, en lugar del campo de hora del navegador |
 | `Toolbar`, `ToolbarSpacer`, `RowActions` | Barra de filtros y acciones de una fila |
 | `StatusBadge` | Estado con texto y tono semántico |
 | `Toaster`, `useToast` | Confirmación breve del resultado de una acción, con Sonner |
@@ -79,6 +82,7 @@ La implementación y las propiedades disponibles se consultan en el componente c
 - Las tablas distinguen carga y ausencia de resultados.
 - Los campos tienen una etiqueta visible y la ayuda se vincula al control.
 - Los formularios presentan los errores de la API junto al contexto de la operación.
+- Las fechas se muestran como dd/mm/aaaa y se eligen en el calendario; el calendario deshabilita los días fuera del mínimo y el máximo permitidos. En las ausencias, los días de descanso del turno del empleado se marcan en rojo, no se pueden elegir y no se cuentan en el resumen del rango. Las ausencias por horas son de un solo día: se elige ese día y después la hora de inicio y la de fin entre las horas del turno del empleado, que devuelve la vista previa de la API.
 - Los campos validan en el cliente con las mismas reglas que la API y muestran bajo cada control qué falló. Los controles limitan lo que se puede escribir: solo dígitos en números y solo letras en nombres.
 - Al editar un registro el formulario se abre en solo lectura. `Editar` habilita los campos y `Guardar cambios` solo se activa cuando hay algún cambio. [FormDrawer](../frontend/src/components/organisms/FormDrawer.tsx), [validación de empleados](../frontend/src/features/employees/validation.ts)
 

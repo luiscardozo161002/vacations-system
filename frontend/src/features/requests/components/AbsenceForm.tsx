@@ -4,10 +4,14 @@ import { sdk } from '../../../services/sdk';
 import { getErrorMessage } from '../../../utils/get-error-message';
 import { useFormSubmit } from '../../../hooks/use-form-submit';
 import { todayIso } from '../../../utils/format';
+import { fitsWithin, firstHour, type TimeRange } from '../../../utils/time';
 import { FormDrawer } from '../../../components/organisms/FormDrawer';
 import { Input, Textarea } from '../../../components/atoms/Input';
 import { SearchSelect } from '../../../components/molecules/SearchSelect';
-import { FormField, SelectField, TextField } from '../../../components/molecules/FormField';
+import { CheckboxRow } from '../../../components/molecules/CheckboxRow';
+import { DateRangePicker, type DateRange } from '../../../components/molecules/DateRangePicker';
+import { HourRangePicker } from '../../../components/molecules/HourRangePicker';
+import { FormField, SelectField } from '../../../components/molecules/FormField';
 import { BreakdownBox } from './BreakdownBox';
 import { FieldHint } from '../../../components/atoms/FieldText';
 
@@ -29,27 +33,21 @@ interface AbsenceFormProps {
 interface FormState {
   employee_id: string;
   reason_id: string;
-  start: string;
-  end: string;
-  startHour: string;
-  endHour: string;
+  range: DateRange;
+  partial: boolean;
+  hours: TimeRange | null;
   remarks: string;
 }
 
-const FULL_DAY = { start: 0, end: 23 };
-
-const hourToTime = (hour: string): string => `${String(Number(hour)).padStart(2, '0')}:00`;
-
-const toPreviewInput = (form: FormState): PreviewNoticeInput | null => {
-  if (!form.employee_id || !form.reason_id || !form.start || !form.end) return null;
-  const fullDay = Number(form.startHour) === FULL_DAY.start && Number(form.endHour) === FULL_DAY.end;
+const toPreviewInput = (form: FormState, hours: TimeRange | null): PreviewNoticeInput | null => {
+  if (!form.employee_id || !form.reason_id) return null;
   return {
     employee_id: Number(form.employee_id),
     reason_id: Number(form.reason_id),
-    absence_start_date: form.start,
-    absence_end_date: form.end,
-    absence_start_time: fullDay ? null : hourToTime(form.startHour),
-    absence_end_time: fullDay ? null : hourToTime(form.endHour),
+    absence_start_date: form.range.start,
+    absence_end_date: form.range.end,
+    absence_start_time: hours?.start ?? null,
+    absence_end_time: hours?.end ?? null,
   };
 };
 
@@ -58,10 +56,9 @@ export function AbsenceForm({ title, submitLabel, reasons, employee, employees =
   const [form, setForm] = useState<FormState>({
     employee_id: employee ? String(employee.employee_id) : '',
     reason_id: String(vacation?.reason_id ?? reasons[0]?.reason_id ?? ''),
-    start: todayIso(7),
-    end: todayIso(9),
-    startHour: String(FULL_DAY.start),
-    endHour: String(FULL_DAY.end),
+    range: { start: todayIso(7), end: todayIso(9) },
+    partial: false,
+    hours: null,
     remarks: '',
   });
   const [preview, setPreview] = useState<NoticePreview | null>(null);
@@ -76,7 +73,13 @@ export function AbsenceForm({ title, submitLabel, reasons, employee, employees =
     [employees],
   );
 
-  const input = toPreviewInput(form);
+  const singleDay = form.range.start === form.range.end;
+  const workHours = preview?.work_hours ?? null;
+  const canPartial = singleDay && workHours !== null && Boolean(form.employee_id);
+  const partial = form.partial && canPartial;
+  const hours = partial ? (form.hours && fitsWithin(form.hours, workHours) ? form.hours : firstHour(workHours)) : null;
+
+  const input = toPreviewInput(form, hours);
   const inputKey = JSON.stringify(input);
 
   useEffect(() => {
@@ -99,8 +102,8 @@ export function AbsenceForm({ title, submitLabel, reasons, employee, employees =
     };
   }, [inputKey, setError]);
 
-  const setValue = (field: keyof FormState, value: string) => setForm((prev) => ({ ...prev, [field]: value }));
-  const setField = (field: keyof FormState) => (e: { target: { value: string } }) => setValue(field, e.target.value);
+  const setValue = <Field extends keyof FormState>(field: Field, value: FormState[Field]) =>
+    setForm((prev) => ({ ...prev, [field]: value }));
 
   const handleSubmit = () => {
     if (!input) {
@@ -117,6 +120,12 @@ export function AbsenceForm({ title, submitLabel, reasons, employee, employees =
       onSaved();
     });
   };
+
+  const partialHint = !singleDay
+    ? 'Disponible cuando la ausencia es de un solo día.'
+    : preview && !workHours
+      ? 'Ese día no es laborable para el turno del empleado.'
+      : null;
 
   return (
     <FormDrawer
@@ -150,39 +159,45 @@ export function AbsenceForm({ title, submitLabel, reasons, employee, employees =
         options={reasons.map((reason) => ({ value: reason.reason_id, label: reason.description }))}
         required
       />
-      <TextField
-        id="af-start"
-        label="Fecha de inicio"
-        type="date"
-        value={form.start}
-        onChange={(value) => setValue('start', value)}
-        required
-      />
-      <TextField
-        id="af-end"
-        label="Fecha de fin"
-        type="date"
-        value={form.end}
-        onChange={(value) => setValue('end', value)}
-        min={form.start}
-        required
-      />
-      <div className="flex gap-3">
-        <FormField label="Hora de inicio" htmlFor="af-start-hour" className="flex-1">
-          <Input id="af-start-hour" type="number" min={0} max={23} value={form.startHour} onChange={setField('startHour')} />
+      <FormField label="Fechas de la ausencia" htmlFor="af-dates" hint="Para un solo día, toca el mismo día dos veces.">
+        <DateRangePicker
+          id="af-dates"
+          value={form.range}
+          onChange={(range) => setValue('range', range)}
+          workingWeekdays={preview?.working_weekdays}
+        />
+      </FormField>
+      <CheckboxRow
+        className="mb-3"
+        checked={partial}
+        disabled={!canPartial}
+        onCheckedChange={(checked) => setValue('partial', checked === true)}
+      >
+        Solo unas horas del día
+      </CheckboxRow>
+      {partialHint && <FieldHint className="mb-3">{partialHint}</FieldHint>}
+      {hours && workHours && (
+        <FormField
+          label="Horario de la ausencia"
+          htmlFor="af-hours"
+          hint={`Horario del turno ese día: ${workHours.start} a ${workHours.end}.`}
+        >
+          <HourRangePicker id="af-hours" value={hours} workHours={workHours} onChange={(range) => setValue('hours', range)} />
         </FormField>
-        <FormField label="Hora de fin" htmlFor="af-end-hour" className="flex-1">
-          <Input id="af-end-hour" type="number" min={0} max={23} value={form.endHour} onChange={setField('endHour')} />
-        </FormField>
-      </div>
-      <FieldHint>Deja el horario en 0–23 para un día completo.</FieldHint>
+      )}
       <BreakdownBox
         preview={input ? preview : null}
         verb={employee ? 'Vas a tomar' : 'Va a tomar'}
         placeholder="Selecciona empleado, motivo y fechas para ver el cálculo."
       />
       <FormField label="Comentarios" htmlFor="af-remarks">
-        <Textarea id="af-remarks" rows={3} placeholder="Opcional" value={form.remarks} onChange={setField('remarks')} />
+        <Textarea
+          id="af-remarks"
+          rows={3}
+          placeholder="Opcional"
+          value={form.remarks}
+          onChange={(e) => setValue('remarks', e.target.value)}
+        />
       </FormField>
     </FormDrawer>
   );

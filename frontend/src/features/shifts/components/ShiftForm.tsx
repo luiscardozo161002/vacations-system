@@ -3,9 +3,9 @@ import type { DayOfWeek, Shift } from '@vacations/sdk';
 import { sdk } from '../../../services/sdk';
 import { useFormSubmit } from '../../../hooks/use-form-submit';
 import { FormDrawer } from '../../../components/organisms/FormDrawer';
-import { Input } from '../../../components/atoms/Input';
 import { cn } from '../../../utils/cn';
 import { FormField, TextField } from '../../../components/molecules/FormField';
+import { TimeSelect } from '../../../components/molecules/TimeSelect';
 import { Icon } from '../../../components/atoms/Icon';
 import { DAY_LETTERS, WEEK, toBlocks, toSchedule, type ScheduleBlock } from '../schedule-blocks';
 import { IconButton } from '../../../components/atoms/IconButton';
@@ -16,6 +16,8 @@ interface ShiftFormProps {
   onClose: () => void;
   onSaved: (message: string) => void;
 }
+
+const SCHEDULE_STEP = 15;
 
 const NEW_BLOCK: ScheduleBlock = { days: [1, 2, 3, 4, 5], start: '09:00', end: '18:00' };
 
@@ -99,11 +101,11 @@ export function ShiftForm({ shift, onClose, onSaved }: ShiftFormProps) {
               ))}
             </div>
             <div className="flex gap-3">
-              <FormField label="Hora entrada" className="mb-0 flex-1">
-                <Input type="time" value={block.start} onChange={(e) => changeBlock(index, { start: e.target.value })} />
+              <FormField label="Hora entrada" htmlFor={`s-start-${index}`} className="mb-0 flex-1">
+                <TimeSelect id={`s-start-${index}`} step={SCHEDULE_STEP} value={block.start} onChange={(value) => changeBlock(index, { start: value })} />
               </FormField>
-              <FormField label="Hora salida" className="mb-0 flex-1">
-                <Input type="time" value={block.end} onChange={(e) => changeBlock(index, { end: e.target.value })} />
+              <FormField label="Hora salida" htmlFor={`s-end-${index}`} className="mb-0 flex-1">
+                <TimeSelect id={`s-end-${index}`} step={SCHEDULE_STEP} value={block.end} onChange={(value) => changeBlock(index, { end: value })} />
               </FormField>
             </div>
           </div>

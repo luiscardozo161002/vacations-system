@@ -1,6 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import type { NoticePreview, Reason } from '@vacations/sdk';
+import { formatLongDate } from '../../../utils/calendar';
+import { todayIso } from '../../../utils/format';
 import { AbsenceForm } from './AbsenceForm';
 
 const { preview, create } = vi.hoisted(() => ({ preview: vi.fn(), create: vi.fn() }));
@@ -16,6 +18,8 @@ const vacation: Reason = {
 };
 
 const withoutBalance: NoticePreview = {
+  work_hours: { start: '07:00', end: '15:00' },
+  working_weekdays: [1, 2, 3, 4, 5, 6],
   breakdown: { days: 5, hours: 0, rest_days: 2, holidays: 0, daily_hours: 8 },
   affects_balance: true,
   balance: {
@@ -44,6 +48,53 @@ const renderForm = () => {
   return onSaved;
 };
 
+describe('Solicitud por horas', () => {
+  beforeEach(() => {
+    vi.resetAllMocks();
+    preview.mockResolvedValue({ ...withoutBalance, error: null });
+  });
+
+  const chooseSingleDay = async () => {
+    fireEvent.click(screen.getByLabelText('Fechas de la ausencia'));
+    const day = formatLongDate(todayIso(7));
+    fireEvent.click(screen.getByRole('button', { name: day }));
+    fireEvent.click(screen.getByRole('button', { name: day }));
+    fireEvent.click(screen.getByRole('button', { name: 'Aceptar' }));
+    await waitFor(() => expect(preview).toHaveBeenCalledTimes(2));
+  };
+
+  it('con varios días no permite elegir horas y lo explica', async () => {
+    renderForm();
+    await waitFor(() => expect(preview).toHaveBeenCalledTimes(1));
+
+    expect(screen.getByRole('checkbox', { name: 'Solo unas horas del día' }).hasAttribute('data-disabled')).toBe(true);
+    expect(screen.getByText('Disponible cuando la ausencia es de un solo día.')).toBeTruthy();
+  });
+
+  it('en un solo día ofrece las horas del turno y manda la elegida', async () => {
+    renderForm();
+    await waitFor(() => expect(preview).toHaveBeenCalledTimes(1));
+    await chooseSingleDay();
+
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Solo unas horas del día' }));
+
+    expect(screen.getByText('Horario del turno ese día: 07:00 a 15:00.')).toBeTruthy();
+    expect(screen.getByLabelText('Horario de la ausencia').textContent).toContain('07:00 – 08:00');
+
+    fireEvent.click(screen.getByLabelText('Horario de la ausencia'));
+    fireEvent.click(screen.getByRole('button', { name: '09:00' }));
+    fireEvent.click(screen.getByRole('button', { name: '11:00' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Aceptar' }));
+
+    expect(screen.getByLabelText('Horario de la ausencia').textContent).toContain('09:00 – 11:00');
+    await waitFor(() =>
+      expect(preview).toHaveBeenLastCalledWith(
+        expect.objectContaining({ absence_start_time: '09:00', absence_end_time: '11:00' }),
+        expect.anything(),
+      ),
+    );
+  });
+});
 describe('Solicitud que excede el saldo', () => {
   beforeEach(() => {
     vi.resetAllMocks();

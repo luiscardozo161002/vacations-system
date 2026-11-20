@@ -28,6 +28,13 @@ const firstMondayFrom = (date) => {
   return day;
 };
 
+const nextWorkday = (date) => {
+  let day = date;
+  const isHoliday = (candidate) => holidaysOfYear(candidate.getFullYear()).some((holiday) => holiday.date === iso(candidate));
+  while (day.getDay() === 0 || day.getDay() === 6 || isHoliday(day)) day = addDays(day, 1);
+  return day;
+};
+
 const monday = firstMondayFrom(addDays(new Date(), 7));
 const MONDAY = iso(monday);
 const FRIDAY = iso(addDays(monday, 4));
@@ -102,6 +109,20 @@ describe('POST /notices/preview', () => {
     assert.deepEqual(res.result.balance.remaining, { days: 6, hours: 6 });
   });
 
+  it('devuelve el horario laboral del primer día para elegir las horas', async () => {
+    const weekday = await call('EMPLOYEE', 'POST', '/notices/preview', vacation(MONDAY));
+    const rest = await call('EMPLOYEE', 'POST', '/notices/preview', vacation(SUNDAY));
+
+    assert.deepEqual(weekday.result.work_hours, { start: '07:00', end: '15:00' });
+    assert.equal(rest.result.work_hours, null);
+  });
+
+  it('devuelve los días de la semana que cubre el turno para marcar los descansos', async () => {
+    const res = await call('EMPLOYEE', 'POST', '/notices/preview', vacation(MONDAY));
+
+    assert.deepEqual(res.result.working_weekdays, [1, 2, 3, 4, 5, 6]);
+  });
+
   it('avisa cuando excede el saldo sin rechazar la vista previa', async () => {
     const res = await call('EMPLOYEE', 'POST', '/notices/preview', vacation(MONDAY, NEXT_FRIDAY));
 
@@ -130,7 +151,7 @@ describe('Reglas al crear', () => {
   });
 
   it('rechaza fechas fuera del periodo vigente', async () => {
-    const res = await call('EMPLOYEE', 'POST', '/notices', vacation(iso(addDays(new Date(), 400))));
+    const res = await call('EMPLOYEE', 'POST', '/notices', vacation(iso(nextWorkday(addDays(new Date(), 400)))));
 
     assert.equal(res.statusCode, 422);
     assert.equal(res.result.error.code, 'OUTSIDE_PERIOD');

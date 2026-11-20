@@ -38,6 +38,20 @@ const workingDates = ({ schedule, startDate, endDate, holidays = [] }) => {
     .map(toIsoDate);
 };
 
+const clock = (time) => time.slice(0, 5);
+
+const workHoursOn = ({ schedule, date, holidays = [] }) => {
+  const day = schedule.find((entry) => entry.day_of_week === isoWeekday(new Date(`${date}T00:00:00Z`)));
+  if (!day || !day.is_working_day || !day.check_in_time || !day.check_out_time || holidays.includes(date)) return null;
+  return { start: clock(day.check_in_time), end: clock(day.check_out_time) };
+};
+
+const workingWeekdays = (schedule) =>
+  schedule
+    .filter((day) => day.is_working_day && day.check_in_time && day.check_out_time)
+    .map((day) => day.day_of_week)
+    .sort((a, b) => a - b);
+
 const shiftDailyHours = (schedule) => {
   const firstWorkingDay = [...schedule]
     .sort((a, b) => a.day_of_week - b.day_of_week)
@@ -91,4 +105,4 @@ const computeRequestBreakdown = ({ schedule, startDate, endDate, startTime = nul
   };
 };
 
-module.exports = { computeRequestBreakdown, shiftDailyHours, workingDates };
+module.exports = { computeRequestBreakdown, shiftDailyHours, workingDates, workHoursOn, workingWeekdays };
