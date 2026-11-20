@@ -5,6 +5,7 @@ import { useFormSubmit } from '../../../hooks/use-form-submit';
 import { todayIso } from '../../../utils/format';
 import { FormDrawer } from '../../../components/organisms/FormDrawer';
 import { SearchSelect } from '../../../components/molecules/SearchSelect';
+import { DatePicker } from '../../../components/molecules/DatePicker';
 import { FormField, TextField } from '../../../components/molecules/FormField';
 import { describedBy } from '../../../utils/described-by';
 import {
@@ -137,15 +138,16 @@ export function EmployeeForm({ employee, departments, shifts, onClose, onSaved }
           fullWidth
         />
       </FormField>
-      <TextField
-        id="f-start"
-        label="Fecha de ingreso"
-        type="date"
-        value={form.start_date}
-        onChange={(value) => setField('start_date', value)}
-        max={today}
-        error={errors.start_date}
-      />
+      <FormField label="Fecha de ingreso" htmlFor="f-start" error={errors.start_date}>
+        <DatePicker
+          id="f-start"
+          value={form.start_date}
+          onChange={(value) => setField('start_date', value)}
+          max={today}
+          invalid={Boolean(errors.start_date)}
+          describedBy={describedBy('f-start', undefined, errors.start_date)}
+        />
+      </FormField>
       {!employee && (
         <TextField
           id="f-email"

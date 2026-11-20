@@ -12,45 +12,11 @@ import { Card, CardHeader, CardTitle } from '../components/molecules/Card';
 import { FieldError } from '../components/atoms/FieldText';
 import { cn } from '../utils/cn';
 import { DayPill } from '../features/calendar/components/DayPill';
-
-const MONTH_NAMES = [
-  'Enero',
-  'Febrero',
-  'Marzo',
-  'Abril',
-  'Mayo',
-  'Junio',
-  'Julio',
-  'Agosto',
-  'Septiembre',
-  'Octubre',
-  'Noviembre',
-  'Diciembre',
-];
-const WEEKDAYS = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
-
-const pad = (value: number) => String(value).padStart(2, '0');
-const toIso = (date: Date) => `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
-
-interface Cell {
-  date: string;
-  day: number;
-  inMonth: boolean;
-}
-
-const monthCells = (year: number, month: number): Cell[] => {
-  const firstWeekday = (new Date(year, month, 1).getDay() + 6) % 7;
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
-  const total = Math.ceil((firstWeekday + daysInMonth) / 7) * 7;
-  return Array.from({ length: total }, (_, index) => {
-    const date = new Date(year, month, index - firstWeekday + 1);
-    return { date: toIso(date), day: date.getDate(), inMonth: date.getMonth() === month };
-  });
-};
+import { MONTH_NAMES, WEEKDAYS, monthCells, monthOf, toIso } from '../utils/calendar';
 
 const FILTERS = { mes: '' };
 
-const currentMonth = () => toIso(new Date()).slice(0, 7);
+const currentMonth = () => monthOf(toIso(new Date()));
 
 const groupByDate = (calendar: Calendar | undefined) => {
   const absences = new Map<string, CalendarAbsence[]>();

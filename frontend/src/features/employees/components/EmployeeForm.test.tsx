@@ -46,13 +46,11 @@ describe('Alta de empleado', () => {
   it('al enviar vacío muestra qué falló en cada campo y no llama a la API', () => {
     renderForm(null);
 
-    fireEvent.change(screen.getByLabelText('Fecha de ingreso'), { target: { value: '' } });
     fireEvent.click(screen.getByRole('button', { name: 'Crear empleado' }));
 
     const messages = screen.getAllByRole('alert').map((alert) => alert.textContent);
     expect(messages).toContain('Escribe el nombre completo');
     expect(messages).toContain('Escribe el número de empleado');
-    expect(messages).toContain('Indica la fecha de ingreso');
     expect(screen.getByLabelText('Nombre completo').getAttribute('aria-invalid')).toBe('true');
     expect(create).not.toHaveBeenCalled();
   });

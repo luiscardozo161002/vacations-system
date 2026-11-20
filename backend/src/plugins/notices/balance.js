@@ -1,5 +1,10 @@
 const { AppError } = require('../../lib/app-error');
-const { computeRequestBreakdown, shiftDailyHours } = require('../../lib/request-breakdown');
+const {
+  computeRequestBreakdown,
+  shiftDailyHours,
+  workHoursOn,
+  workingWeekdays,
+} = require('../../lib/request-breakdown');
 const { EPSILON, toTotalHours, splitHours, describe } = require('../../lib/balance');
 const { holidaysBetween } = require('../../lib/holidays');
 
@@ -137,6 +142,20 @@ class NoticeBalance {
         : null,
       error,
       used: entitlement ? { entitlement, requested, dailyHours } : null,
+    };
+  }
+
+  async shiftInfo(trx, request) {
+    const employee = await this.findEmployee(trx, request.employee_id);
+    const schedule = await this.findSchedule(trx, employee.shift_id);
+    const date = request.absence_start_date;
+    return {
+      work_hours: workHoursOn({
+        schedule,
+        date,
+        holidays: holidaysBetween(date, date).map((holiday) => holiday.date),
+      }),
+      working_weekdays: workingWeekdays(schedule),
     };
   }
 
