@@ -22,7 +22,8 @@ export function EmployeeDashboard() {
   if (!summary) return <EmptyState message="Cargando..." />;
 
   const { profile, balance, requests, notices } = summary;
-  const usedShare = balance && balance.total_days ? (balance.used_days / balance.total_days) * 100 : 0;
+  const usedShare =
+    balance && balance.total_days ? ((balance.used_days + balance.used_hours / balance.daily_hours) / balance.total_days) * 100 : 0;
 
   return (
     <>
@@ -56,8 +57,8 @@ export function EmployeeDashboard() {
           </CardHeader>
           <KeyValueGrid className="mb-3">
             <KeyValue label="Otorgados">{balance.total_days} días</KeyValue>
-            <KeyValue label="Usados">{balance.used_days} días</KeyValue>
-            <KeyValue label="Disponibles">{balance.available.days} días</KeyValue>
+            <KeyValue label="Usados">{formatDaysHours(balance.used_days, balance.used_hours)}</KeyValue>
+            <KeyValue label="Disponibles">{formatDaysHours(balance.available.days, balance.available.hours)}</KeyValue>
           </KeyValueGrid>
           <ProgressBar percent={usedShare} className="mb-4" />
           <Divider />

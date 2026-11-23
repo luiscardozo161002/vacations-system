@@ -62,7 +62,7 @@ export function AbsenceForm({ title, submitLabel, reasons, employee, employees =
   const [form, setForm] = useState<FormState>({
     employee_id: employee ? String(employee.employee_id) : '',
     reason_id: String(vacation?.reason_id ?? reasons[0]?.reason_id ?? ''),
-    range: { start: nextWeekday(todayIso(7)), end: nextWeekday(todayIso(7)), skipSaturdays: true },
+    range: { start: nextWeekday(todayIso()), end: nextWeekday(todayIso()), skipSaturdays: true },
     partial: false,
     hours: null,
     remarks: '',

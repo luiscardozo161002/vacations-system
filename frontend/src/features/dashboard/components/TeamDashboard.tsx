@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router';
 import { sdk } from '../../../services/sdk';
 import { useApiQuery } from '../../../hooks/use-api-query';
-import { formatDate, formatDateTime, initials } from '../../../utils/format';
+import { formatDate, formatDateTime, initial } from '../../../utils/format';
 import { EmptyState } from '../../../components/atoms/EmptyState';
 import { Icon } from '../../../components/atoms/Icon';
 import { PageHeader } from '../../../components/molecules/PageHeader';
@@ -72,7 +72,7 @@ export function TeamDashboard({ firstName, allBranches }: TeamDashboardProps) {
             summary.upcoming_absences.map((absence) => (
               <ListRow
                 key={absence.notice_id}
-                leading={<Avatar>{initials(absence.employee_name)}</Avatar>}
+                leading={<Avatar>{initial(absence.employee_name)}</Avatar>}
                 title={absence.employee_name}
                 subtitle={absence.department_name}
                 meta={
@@ -115,7 +115,7 @@ export function TeamDashboard({ firstName, allBranches }: TeamDashboardProps) {
           summary.recent_activity.map((activity) => (
             <ListRow
               key={activity.notice_id}
-              leading={<Avatar>{initials(activity.employee_name)}</Avatar>}
+              leading={<Avatar>{initial(activity.employee_name)}</Avatar>}
               title={`${ACTIVITY_LABELS[activity.kind][activity.status]} · ${activity.reason_description}`}
               subtitle={activity.employee_name}
               meta={formatDateTime(activity.happened_at)}
