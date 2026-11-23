@@ -12,10 +12,11 @@ import { DataTable, type Column } from '../components/organisms/DataTable';
 import { Select } from '../components/atoms/Select';
 import { PageHeader } from '../components/molecules/PageHeader';
 import { PersonCell } from '../components/molecules/PersonCell';
-import { SearchSelect } from '../components/molecules/SearchSelect';
+import { SearchInput } from '../components/molecules/SearchInput';
+import { OrgFilters } from '../features/organization/components/OrgFilters';
+import { ORG_FILTERS, orgParams } from '../features/organization/org-filters';
 import { StatusBadge } from '../components/atoms/StatusBadge';
 import { useAuth } from '../contexts/auth-context';
-import { useDepartments } from '../features/departments/hooks/useDepartments';
 import { useReasons } from '../features/reasons/hooks/useReasons';
 import { AbsenceForm } from '../features/requests/components/AbsenceForm';
 import { AbsenceDetail } from '../features/requests/components/AbsenceDetail';
@@ -23,7 +24,7 @@ import { IconButton } from '../components/atoms/IconButton';
 import { Button } from '../components/atoms/Button';
 import { RowActions, Toolbar, ToolbarSpacer } from '../components/molecules/Toolbar';
 
-const FILTERS = { estado: '', departamento: '' };
+const FILTERS = { q: '', estado: '', ...ORG_FILTERS };
 
 const STATUS_OPTIONS = [
   { value: '', label: 'Todos los estados' },
@@ -42,7 +43,6 @@ export function RequestsPage() {
   const form = useRecordForm();
   const [selected, setSelected] = useState<Notice | null>(null);
 
-  const { departments } = useDepartments(!isEmployee);
   const { reasons } = useReasons();
 
   const params = useMemo(
@@ -51,18 +51,14 @@ export function RequestsPage() {
       page,
       pageSize: config.pageSize,
       status: filters.estado ? (filters.estado as NoticeStatus) : undefined,
-      department_id: filters.departamento ? Number(filters.departamento) : undefined,
+      search: filters.q || undefined,
+      ...orgParams(filters),
       sort: '-request_date',
     }),
-    [page, filters.estado, filters.departamento],
+    [page, filters],
   );
 
   const { data, loading, error } = usePagedList('notices', sdk.notices, params);
-
-  const departmentOptions = useMemo(
-    () => departments.map((department) => ({ value: String(department.department_id), label: department.department_name })),
-    [departments],
-  );
 
   const columns: Column<Notice>[] = [
     { header: 'Empleado', render: (notice) => <PersonCell name={notice.employee_name} /> },
@@ -106,16 +102,11 @@ export function RequestsPage() {
       </PageHeader>
 
       <Toolbar>
-        <Select compact aria-label="Estado" value={filters.estado} onChange={(estado) => setFilter({ estado })} options={STATUS_OPTIONS} />
         {!isEmployee && (
-          <SearchSelect
-            id="req-dept-filter"
-            options={departmentOptions}
-            value={filters.departamento}
-            onChange={(value) => setFilter({ departamento: value })}
-            placeholder="Todos los departamentos"
-          />
+          <SearchInput id="req-search" placeholder="Buscar por nombre o número..." value={filters.q} onSearch={(q) => setFilter({ q })} />
         )}
+        <Select compact aria-label="Estado" value={filters.estado} onChange={(estado) => setFilter({ estado })} options={STATUS_OPTIONS} />
+        {!isEmployee && <OrgFilters idPrefix="req" filters={filters} setFilter={setFilter} />}
         <ToolbarSpacer />
       </Toolbar>
 

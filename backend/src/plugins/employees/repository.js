@@ -1,8 +1,8 @@
 const CrudRepository = require('../../lib/crud/crud-repository');
-const db = require('../../db');
 const Employee = require('./model');
 const { COLUMNS } = require('./fields');
 const { whereAnyOf, whereDateBetween } = require('../../lib/list-query');
+const { whereEmployee } = require('../../lib/employee-filter');
 
 class EmployeeRepository extends CrudRepository {
   constructor() {
@@ -13,22 +13,8 @@ class EmployeeRepository extends CrudRepository {
     return scope.restrictEmployees(query, 'employees.employee_id');
   }
 
-  applyFilters(query, { search, company_id, department_id, status, hired_from, hired_to }) {
-    if (search) {
-      query.where((match) =>
-        match.whereILike('employees.employee_name', `%${search}%`).orWhereILike('employees.employee_number', `%${search}%`)
-      );
-    }
-    if (company_id !== undefined) {
-      query.whereIn(
-        'employees.department_id',
-        db('departments as d')
-          .join('branches as b', 'b.branch_id', 'd.branch_id')
-          .where('b.company_id', company_id)
-          .select('d.department_id')
-      );
-    }
-    whereAnyOf(query, 'employees.department_id', department_id);
+  applyFilters(query, { status, hired_from, hired_to, ...filters }) {
+    whereEmployee(query, 'employees.employee_id', filters);
     whereAnyOf(query, 'employees.status', status);
     return whereDateBetween(query, 'employees.start_date', hired_from, hired_to);
   }

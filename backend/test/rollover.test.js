@@ -58,13 +58,16 @@ describe('POST /vacation-entitlements/generate', () => {
 
   it('una semana antes del aniversario avisa los días que quedan, una sola vez', async () => {
     const reminderDay = addDays(periodEnd, -6);
+    const { total_days, used_days } = await db('vacation_entitlements')
+      .where({ employee_id: JUAN, status: 'active' })
+      .first('total_days', 'used_days');
     const first = await generate(reminderDay);
     await generate(reminderDay);
 
     const reminders = await juanNotifications('period_expiring');
     assert.ok(first.reminders >= 1);
     assert.equal(reminders.length, 1);
-    assert.match(reminders[0].body, /^Te quedan 8 días y vencen el /);
+    assert.match(reminders[0].body, new RegExp(`^Te quedan ${total_days - used_days} días y vencen el `));
   });
 
   it('el aniversario vence el periodo, cancela pendientes viejas y abre el nuevo sin arrastrar días', async () => {

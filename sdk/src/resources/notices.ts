@@ -1,7 +1,7 @@
 import type { CallOptions } from '../core/api-resource';
 import { ReadResource } from '../core/crud-resource';
 import type { HttpClient } from '../core/http-client';
-import type { DaysAndHours, ListParams, OneOrMany } from '../types/common';
+import type { DaysAndHours, EmployeeFilterParams, ListParams, OneOrMany } from '../types/common';
 
 export type NoticeKind = 'request' | 'notice';
 
@@ -32,9 +32,8 @@ export interface Notice {
   reason_description: string | null;
 }
 
-export interface ListNoticesParams extends ListParams {
+export interface ListNoticesParams extends ListParams, EmployeeFilterParams {
   employee_id?: OneOrMany<number>;
-  department_id?: OneOrMany<number>;
   reason_id?: OneOrMany<number>;
   kind?: OneOrMany<NoticeKind>;
   status?: OneOrMany<NoticeStatus>;

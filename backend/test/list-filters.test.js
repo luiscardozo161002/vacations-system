@@ -62,6 +62,39 @@ describe('filtros con varios valores', () => {
     assert.ok(res.result.data.every((employee) => [1, 2].includes(employee.department_id)));
   });
 
+  it('filtra empleados, avisos y saldos por empresa, sede y departamento', async () => {
+    const inBranch = async (branchId) =>
+      (
+        await db('employees as e')
+          .join('departments as d', 'd.department_id', 'e.department_id')
+          .where('d.branch_id', branchId)
+          .select('e.employee_id')
+      ).map((row) => row.employee_id);
+    const hidalgo = await inBranch(5);
+
+    const employees = await get('/api/v1/employees?branch_id=5&pageSize=100');
+    const notices = await get('/api/v1/notices?branch_id=5&pageSize=100');
+    const balances = await get('/api/v1/vacation-entitlements?branch_id=5&pageSize=100');
+    const company = await get('/api/v1/employees?company_id=2&pageSize=100');
+
+    assert.deepEqual(employees.result.data.map((row) => row.employee_id).sort(), [...hidalgo].sort());
+    assert.ok(notices.result.data.length > 0);
+    assert.ok(notices.result.data.every((notice) => hidalgo.includes(notice.employee_id)));
+    assert.ok(balances.result.data.length > 0);
+    assert.ok(balances.result.data.every((balance) => hidalgo.includes(balance.employee_id)));
+    assert.ok(company.result.data.length >= employees.result.data.length);
+  });
+
+  it('busca avisos y saldos por nombre o número de empleado', async () => {
+    const byName = await get('/api/v1/notices?search=perez&pageSize=100');
+    const byNumber = await get('/api/v1/vacation-entitlements?search=0001&pageSize=100');
+
+    assert.ok(byName.result.data.length > 0);
+    assert.ok(byName.result.data.every((notice) => /perez/i.test(notice.employee_name)));
+    assert.ok(byNumber.result.data.length > 0);
+    assert.ok(byNumber.result.data.every((balance) => balance.employee_number === '0001'));
+  });
+
   it('filtra usuarios por varios estados', async () => {
     const res = await get('/api/v1/users?status=active,locked&pageSize=100');
 

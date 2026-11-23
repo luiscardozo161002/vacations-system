@@ -15,7 +15,8 @@ import { DataTable, type Column } from '../components/organisms/DataTable';
 import { Select } from '../components/atoms/Select';
 import { ConfirmDialog } from '../components/organisms/Dialog';
 import { PageHeader } from '../components/molecules/PageHeader';
-import { SearchSelect } from '../components/molecules/SearchSelect';
+import { OrgFilters } from '../features/organization/components/OrgFilters';
+import { ORG_FILTERS, orgParams } from '../features/organization/org-filters';
 import { SearchInput } from '../components/molecules/SearchInput';
 import { StatusBadge } from '../components/atoms/StatusBadge';
 import { useToast } from '../hooks/use-toast';
@@ -29,7 +30,7 @@ import { IconButton } from '../components/atoms/IconButton';
 import { Button } from '../components/atoms/Button';
 import { RowActions, Toolbar, ToolbarSpacer } from '../components/molecules/Toolbar';
 
-const FILTERS = { q: '', departamento: '', estado: '', perfil: '' };
+const FILTERS = { q: '', ...ORG_FILTERS, estado: '', perfil: '' };
 
 const STATUS_OPTIONS = [
   { value: '', label: 'Todos los estados' },
@@ -51,10 +52,10 @@ export function EmployeesPage() {
       page,
       pageSize: config.pageSize,
       search: filters.q || undefined,
-      department_id: filters.departamento ? Number(filters.departamento) : undefined,
+      ...orgParams(filters),
       status: filters.estado ? (filters.estado as RecordStatus) : undefined,
     }),
-    [page, filters.q, filters.departamento, filters.estado],
+    [page, filters],
   );
 
   const { data, loading, error: listError } = usePagedList('employees', sdk.employees, employeesParams);
@@ -82,11 +83,6 @@ export function EmployeesPage() {
 
   const shiftNames = useMemo(() => new Map(shifts.map((shift) => [shift.shift_id, shift.shift_name])), [shifts]);
 
-  const departmentOptions = useMemo(
-    () => departments.map((department) => ({ value: String(department.department_id), label: department.department_name })),
-    [departments],
-  );
-
   const handleSaved = (message: string, access?: GrantedAccess) => {
     form.saved(message);
     if (access) setCreatedAccess(access);
@@ -112,8 +108,8 @@ export function EmployeesPage() {
   const exportCsv = async () => {
     setExporting(true);
     try {
-      const { search, department_id, status } = employeesParams;
-      saveFile(await sdk.employees.exportCsv({ search, department_id, status }), `empleados-${todayIso()}.csv`);
+      const { page: _page, pageSize: _pageSize, ...exportFilters } = employeesParams;
+      saveFile(await sdk.employees.exportCsv(exportFilters), `empleados-${todayIso()}.csv`);
     } catch (err) {
       showToast(getErrorMessage(err));
     } finally {
@@ -170,13 +166,7 @@ export function EmployeesPage() {
           value={filters.q}
           onSearch={(q) => setFilter({ q })}
         />
-        <SearchSelect
-          id="emp-dept-filter"
-          options={departmentOptions}
-          value={filters.departamento}
-          onChange={(value) => setFilter({ departamento: value })}
-          placeholder="Todos los departamentos"
-        />
+        <OrgFilters idPrefix="emp" filters={filters} setFilter={setFilter} />
         <Select compact aria-label="Estado" value={filters.estado} onChange={(estado) => setFilter({ estado })} options={STATUS_OPTIONS} />
         <ToolbarSpacer />
         <IconButton title="Exportar" onClick={exportCsv} disabled={exporting}>

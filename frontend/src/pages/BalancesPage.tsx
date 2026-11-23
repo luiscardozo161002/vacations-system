@@ -11,13 +11,17 @@ import { DataTable, type Column } from '../components/organisms/DataTable';
 import { Icon } from '../components/atoms/Icon';
 import { PageHeader } from '../components/molecules/PageHeader';
 import { PersonCell } from '../components/molecules/PersonCell';
+import { SearchInput } from '../components/molecules/SearchInput';
+import { Toolbar } from '../components/molecules/Toolbar';
+import { OrgFilters } from '../features/organization/components/OrgFilters';
+import { ORG_FILTERS, orgParams } from '../features/organization/org-filters';
 import { useToast } from '../hooks/use-toast';
 import { useAuth } from '../contexts/auth-context';
 import { EmployeeDashboard } from '../features/dashboard/components/EmployeeDashboard';
 import { Button } from '../components/atoms/Button';
 import { ConfirmDialog } from '../components/organisms/Dialog';
 
-const FILTERS = {};
+const FILTERS = { q: '', ...ORG_FILTERS };
 
 const plural = (count: number, word: string) => `${count} ${word}${count === 1 ? '' : 's'}`;
 
@@ -44,10 +48,13 @@ const columns: Column<VacationEntitlement>[] = [
 
 function BalancesTable({ canGenerate }: { canGenerate: boolean }) {
   const showToast = useToast();
-  const { page, setPage } = usePageFilters(FILTERS);
+  const { filters, page, setFilter, setPage } = usePageFilters(FILTERS);
   const [generating, setGenerating] = useState(false);
   const [confirming, setConfirming] = useState(false);
-  const params = useMemo(() => ({ status: 'active' as const, page, pageSize: config.pageSize }), [page]);
+  const params = useMemo(
+    () => ({ status: 'active' as const, page, pageSize: config.pageSize, search: filters.q || undefined, ...orgParams(filters) }),
+    [page, filters],
+  );
   const { data, loading, error } = usePagedList('balances', sdk.vacationEntitlements, params);
 
   const generate = async () => {
@@ -78,6 +85,11 @@ function BalancesTable({ canGenerate }: { canGenerate: boolean }) {
           </Button>
         )}
       </PageHeader>
+
+      <Toolbar>
+        <SearchInput id="bal-search" placeholder="Buscar por nombre o número..." value={filters.q} onSearch={(q) => setFilter({ q })} />
+        <OrgFilters idPrefix="bal" filters={filters} setFilter={setFilter} />
+      </Toolbar>
 
       <DataTable
         columns={columns}

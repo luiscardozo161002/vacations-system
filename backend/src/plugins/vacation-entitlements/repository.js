@@ -1,6 +1,7 @@
 const CrudRepository = require('../../lib/crud/crud-repository');
 const VacationEntitlement = require('./model');
 const { COLUMNS } = require('./fields');
+const { whereEmployee } = require('../../lib/employee-filter');
 
 class VacationEntitlementRepository extends CrudRepository {
   constructor() {
@@ -14,6 +15,7 @@ class VacationEntitlementRepository extends CrudRepository {
   applyFilters(query, filters) {
     if (filters.employee_id !== undefined) query.where('employee_id', filters.employee_id);
     if (filters.period_year !== undefined) query.where('period_year', filters.period_year);
+    whereEmployee(query, 'employee_id', filters);
     return super.applyFilters(query, filters);
   }
 }
