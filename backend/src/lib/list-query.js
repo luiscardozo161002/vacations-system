@@ -30,7 +30,12 @@ const isoDate = Joi.string()
     return value;
   });
 
-const whereAnyOf = (query, column, values) => (values === undefined ? query : query.whereIn(column, [values].flat()));
+const hexColor = Joi.string()
+  .pattern(/^#[0-9a-fA-F]{6}$/)
+  .message('El color debe tener el formato #RRGGBB')
+  .allow(null);
+
+const whereAnyOf =(query, column, values) => (values === undefined ? query : query.whereIn(column, [values].flat()));
 
 const whereDateBetween = (query, column, from, to) => {
   if (from !== undefined) query.where(column, '>=', from);
@@ -60,4 +65,4 @@ const paginationMeta = (page, pageSize, total) => ({
   totalPages: Math.ceil(total / pageSize),
 });
 
-module.exports = { buildOrderBy, paginationMeta, listOf, pageSize, isoDate, whereAnyOf, whereDateBetween };
+module.exports = { buildOrderBy, paginationMeta, listOf, pageSize, isoDate, hexColor, whereAnyOf, whereDateBetween };

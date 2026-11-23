@@ -52,6 +52,45 @@ describe('Departamentos', () => {
   });
 });
 
+describe('Colores de empresas y sedes', () => {
+  it('los departamentos traen la sede y la empresa con sus colores', async () => {
+    const res = await call('USER', 'GET', `/departments/${EXPLOTACION}`);
+
+    assert.equal(res.result.company_name, 'TRANSPORTES HIDRO HIDALGUENSES S.A. DE C.V.');
+    assert.equal(res.result.company_folio, 'THH');
+    assert.equal(res.result.company_color, '#16a34a');
+    assert.equal(res.result.branch_color, null);
+  });
+
+  it('RH cambia el color de la empresa y de la sede y los dos persisten', async () => {
+    const company = await call('USER', 'PATCH', `/companies/${THH}`, { color: '#9333ea' });
+    const branch = await call('USER', 'PATCH', '/branches/5', { color: '#0ea5e9' });
+    const department = await call('USER', 'GET', `/departments/${EXPLOTACION}`);
+    await call('USER', 'PATCH', `/companies/${THH}`, { color: '#16a34a' });
+    await call('USER', 'PATCH', '/branches/5', { color: null });
+
+    assert.equal(company.statusCode, 200);
+    assert.equal(company.result.color, '#9333ea');
+    assert.equal(branch.result.color, '#0ea5e9');
+    assert.equal(department.result.company_color, '#9333ea');
+    assert.equal(department.result.branch_color, '#0ea5e9');
+  });
+
+  it('las sedes traen la empresa a la que pertenecen', async () => {
+    const res = await call('USER', 'GET', '/branches/5');
+
+    assert.equal(res.result.company_folio, 'THH');
+    assert.equal(res.result.company_color, '#16a34a');
+  });
+
+  it('rechaza un color que no es #RRGGBB', async () => {
+    const res = await call('SUPERUSER', 'PATCH', `/companies/${THH}`, { color: 'rojo' });
+
+    assert.equal(res.statusCode, 400);
+    assert.match(res.result.error.message, /#RRGGBB/);
+  });
+});
+
 describe('Turnos y reglas', () => {
   it('los turnos cuentan sus empleados activos dentro del alcance', async () => {
     const counts = async (role) =>

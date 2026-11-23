@@ -12,4 +12,5 @@ module.exports = new CrudRoutes({
   permissions: { view: 'companies:view', create: 'companies:create', update: 'companies:update', delete: 'companies:delete' },
   schemas,
   service,
+  audit: { entity: 'branch', events: { create: 'BRANCH_CREATED', update: 'BRANCH_UPDATED', remove: 'BRANCH_DEACTIVATED' } },
 }).plugin();

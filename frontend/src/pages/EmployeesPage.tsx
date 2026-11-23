@@ -7,7 +7,9 @@ import { refreshData } from '../services/query-client';
 import { usePageFilters } from '../hooks/use-page-filters';
 import { usePagedList } from '../hooks/use-paged-list';
 import { useRecordForm } from '../hooks/use-record-form';
-import { formatDate, todayIso } from '../utils/format';
+import { formatCode, formatDate, todayIso } from '../utils/format';
+import { departmentColor } from '../features/organization/colors';
+import { ColorBadge } from '../components/atoms/ColorBadge';
 import { PersonCell } from '../components/molecules/PersonCell';
 import { saveFile } from '../utils/save-file';
 import { Icon } from '../components/atoms/Icon';
@@ -76,8 +78,8 @@ export function EmployeesPage() {
 
   const loadError = listError ?? departmentsError ?? shiftsError;
 
-  const departmentNames = useMemo(
-    () => new Map(departments.map((department) => [department.department_id, department.department_name])),
+  const departmentsById = useMemo(
+    () => new Map(departments.map((department) => [department.department_id, department])),
     [departments],
   );
 
@@ -123,7 +125,20 @@ export function EmployeesPage() {
       render: (employee) => <PersonCell name={employee.employee_name} />,
     },
     { header: 'Número', render: (employee) => employee.employee_number },
-    { header: 'Departamento', render: (employee) => departmentNames.get(employee.department_id) ?? '' },
+    {
+      header: 'Departamento',
+      render: (employee) => {
+        const department = departmentsById.get(employee.department_id);
+        return (
+          <span className="flex flex-wrap items-center gap-1.5">
+            {department?.department_name}
+            {department?.branch_code && (
+              <ColorBadge color={departmentColor(department)}>{formatCode(department.branch_code)}</ColorBadge>
+            )}
+          </span>
+        );
+      },
+    },
     { header: 'Turno', render: (employee) => shiftNames.get(employee.shift_id) ?? '' },
     { header: 'Ingreso', render: (employee) => formatDate(employee.start_date) },
     { header: 'Estado', render: (employee) => <StatusBadge status={employee.status} /> },
@@ -200,7 +215,7 @@ export function EmployeesPage() {
       {profileEmployee && (
         <EmployeeProfile
           employee={profileEmployee}
-          departmentName={departmentNames.get(profileEmployee.department_id) ?? ''}
+          departmentName={departmentsById.get(profileEmployee.department_id)?.department_name ?? ''}
           shiftName={shiftNames.get(profileEmployee.shift_id) ?? ''}
           onClose={() => setProfileEmployee(null)}
         />

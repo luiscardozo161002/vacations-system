@@ -6,6 +6,8 @@ export const MODULE_LABELS: Record<string, string> = {
   [SESSION_MODULE]: 'Sesión',
   notice: 'Ausencias',
   employee: 'Empleados',
+  company: 'Empresas',
+  branch: 'Sedes',
   department: 'Departamentos',
   shift: 'Turnos',
   vacation_entitlement: 'Días de vacaciones',
@@ -32,6 +34,12 @@ export const EVENT_LABELS: Record<string, string> = {
   EMPLOYEE_DEACTIVATED: 'Dio de baja un empleado',
   EMPLOYEE_ACCESS_GRANTED: 'Envió acceso a un empleado',
   EMPLOYEES_EXPORTED: 'Exportó empleados a CSV',
+  COMPANY_CREATED: 'Creó una empresa',
+  COMPANY_UPDATED: 'Editó una empresa',
+  COMPANY_DEACTIVATED: 'Desactivó una empresa',
+  BRANCH_CREATED: 'Creó una sede',
+  BRANCH_UPDATED: 'Editó una sede',
+  BRANCH_DEACTIVATED: 'Desactivó una sede',
   DEPARTMENT_CREATED: 'Creó un departamento',
   DEPARTMENT_UPDATED: 'Editó un departamento',
   DEPARTMENT_DEACTIVATED: 'Desactivó un departamento',
@@ -52,6 +60,7 @@ export const EVENT_LABELS: Record<string, string> = {
 };
 
 export const FIELD_LABELS: Record<string, string> = {
+  color: 'Color',
   code: 'Código',
   branch_id: 'Sede',
   calendar_shared: 'Calendario compartido',

@@ -7,10 +7,14 @@ export interface Branch {
   company_id: number;
   code: string;
   branch_name: string;
+  color: string | null;
   status: RecordStatus;
   created_at: string;
   updated_at: string;
   active_employees: number;
+  company_folio: string | null;
+  company_name: string | null;
+  company_color: string | null;
 }
 
 export interface ListBranchesParams extends ListParams {
@@ -22,6 +26,7 @@ export interface CreateBranchInput {
   company_id: number;
   code: string;
   branch_name: string;
+  color?: string | null;
   status?: RecordStatus;
 }
 

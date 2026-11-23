@@ -4,6 +4,9 @@ import { sdk } from '../services/sdk';
 import { config } from '../config';
 import { usePagedList } from '../hooks/use-paged-list';
 import { useRecordForm } from '../hooks/use-record-form';
+import { formatCode } from '../utils/format';
+import { departmentColor } from '../features/organization/colors';
+import { ColorBadge } from '../components/atoms/ColorBadge';
 import { EmptyState } from '../components/atoms/EmptyState';
 import { Icon } from '../components/atoms/Icon';
 import { PageHeader } from '../components/molecules/PageHeader';
@@ -31,7 +34,6 @@ export function DepartmentsPage() {
   const form = useRecordForm<Department>();
 
   const departments = data?.data ?? [];
-  const repeatedNames = new Set(departments.map((department) => department.department_name)).size < departments.length;
 
   return (
     <>
@@ -48,11 +50,15 @@ export function DepartmentsPage() {
       ) : (
         <Grid cols={3}>
           {departments.map((department) => (
-            <Card key={department.department_id}>
+            <Card key={department.department_id} accent={departmentColor(department)}>
               <CardHeader>
-                <CardTitle>
+                <CardTitle className="flex flex-wrap items-center gap-2">
                   {department.department_name}
-                  {repeatedNames && <span className="text-[12.5px] text-muted"> · {department.branch_code}</span>}
+                  {department.branch_code && (
+                    <ColorBadge color={departmentColor(department)} title={`${department.company_name} · ${department.branch_name}`}>
+                      {formatCode(department.branch_code)}
+                    </ColorBadge>
+                  )}
                 </CardTitle>
                 {canEdit && (
                   <IconButton title="Editar" onClick={() => form.open(department)}>

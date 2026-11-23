@@ -18,6 +18,11 @@ export interface Department {
   active_employees: number;
   branch_code: string | null;
   branch_name: string | null;
+  branch_color: string | null;
+  company_id: number | null;
+  company_folio: string | null;
+  company_name: string | null;
+  company_color: string | null;
 }
 
 export interface ListDepartmentsParams extends ListParams {

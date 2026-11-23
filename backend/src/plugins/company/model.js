@@ -24,6 +24,7 @@ class Company extends Model {
         location: { type: ['string', 'null'], maxLength: 255 },
         phone_number: { type: ['string', 'null'], maxLength: 20 },
         rfc: { type: ['string', 'null'], maxLength: 13 },
+        color: { type: ['string', 'null'], maxLength: 7 },
         status: { type: 'string', enum: ['active', 'inactive'] },
         created_at: { type: 'string' },
         updated_at: { type: 'string' },

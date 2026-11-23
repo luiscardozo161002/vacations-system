@@ -14,6 +14,8 @@ const TARGET_NAMES = {
   employee: named('employees', 'employee_id', 'employee_name'),
   user: named('users', 'user_id', 'username'),
   department: named('departments', 'department_id', 'department_name'),
+  company: named('company', 'company_id', 'company_name'),
+  branch: named('branches', 'branch_id', 'branch_name'),
   shift: named('shifts', 'shift_id', 'shift_name'),
   role: named('roles', 'role_id', 'role_code'),
   notice: (ids) =>
