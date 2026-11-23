@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import type { Branch, Department, Employee } from '@vacations/sdk';
 import { sdk } from '../../../services/sdk';
 import { useFormSubmit } from '../../../hooks/use-form-submit';
+import { formatCode } from '../../../utils/format';
 import { FormDrawer } from '../../../components/organisms/FormDrawer';
 import { CheckboxRow } from '../../../components/molecules/CheckboxRow';
 import { SearchSelect } from '../../../components/molecules/SearchSelect';
@@ -81,7 +82,7 @@ export function DepartmentForm({ department, branches, employees, onClose, onSav
         label="Sede"
         value={branchId}
         onChange={setBranchId}
-        options={branches.map((branch) => ({ value: branch.branch_id, label: `${branch.code} · ${branch.branch_name}` }))}
+        options={branches.map((branch) => ({ value: branch.branch_id, label: `${formatCode(branch.code)} · ${branch.branch_name}` }))}
         required
       />
       <FormField label="Responsable" htmlFor="d-manager">

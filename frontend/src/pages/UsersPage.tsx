@@ -3,6 +3,7 @@ import type { User } from '@vacations/sdk';
 import { sdk } from '../services/sdk';
 import { config } from '../config';
 import { getErrorMessage } from '../utils/get-error-message';
+import { formatCode } from '../utils/format';
 import { usePagedList } from '../hooks/use-paged-list';
 import { useApiQuery } from '../hooks/use-api-query';
 import { refreshData } from '../services/query-client';
@@ -39,7 +40,7 @@ const NO_CATALOGS = { roles: [], branches: [], companies: [] };
 
 const branchesLabel = (user: User): string => {
   if (user.role_code === config.roles.global) return 'Todas';
-  return user.branch_codes.join(', ') || '—';
+  return user.branch_codes.map(formatCode).join(', ') || '—';
 };
 
 export function UsersPage() {

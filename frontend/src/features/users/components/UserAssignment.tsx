@@ -3,7 +3,7 @@ import type { Branch, Company, ReviewAction, User } from '@vacations/sdk';
 import { sdk } from '../../../services/sdk';
 import { config } from '../../../config';
 import { useFormSubmit } from '../../../hooks/use-form-submit';
-import { initial } from '../../../utils/format';
+import { formatCode, initial } from '../../../utils/format';
 import { ROLE_LABELS } from '../../../layouts/navigation';
 import { Drawer } from '../../../components/organisms/Drawer';
 import { ConfirmDialog } from '../../../components/organisms/Dialog';
@@ -109,7 +109,7 @@ export function UserAssignment({ user, branches, companies, onClose, onSaved }: 
                 checked={branchIds.includes(branch.branch_id)}
                 onCheckedChange={() => setBranchIds((prev) => toggle(prev, branch.branch_id))}
               >
-                {branch.code} · {branch.branch_name}
+                {formatCode(branch.code)} · {branch.branch_name}
               </CheckboxRow>
             ))}
           </FormField>
