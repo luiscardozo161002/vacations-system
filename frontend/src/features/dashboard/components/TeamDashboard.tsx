@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router';
 import { sdk } from '../../../services/sdk';
 import { useApiQuery } from '../../../hooks/use-api-query';
-import { formatDate, formatDateTime, initial } from '../../../utils/format';
+import { formatCode, formatDate, formatDateTime, initial } from '../../../utils/format';
 import { EmptyState } from '../../../components/atoms/EmptyState';
 import { Icon } from '../../../components/atoms/Icon';
 import { PageHeader } from '../../../components/molecules/PageHeader';
@@ -99,7 +99,7 @@ export function TeamDashboard({ firstName, allBranches }: TeamDashboardProps) {
               <div className="mb-1.5 flex justify-between text-[12.5px]">
                 <span>
                   {department.department_name}
-                  {repeatedNames && <span className="text-[12.5px] text-muted"> · {department.branch_code}</span>}
+                  {repeatedNames && <span className="text-[12.5px] text-muted"> · {formatCode(department.branch_code ?? '')}</span>}
                 </span>
                 <span className="text-[12.5px] text-muted">{department.active_employees}</span>
               </div>
