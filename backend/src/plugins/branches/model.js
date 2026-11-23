@@ -21,6 +21,7 @@ class Branch extends Model {
         company_id: { type: 'integer' },
         code: { type: 'string', maxLength: 20 },
         branch_name: { type: 'string', maxLength: 100 },
+        color: { type: ['string', 'null'], maxLength: 7 },
         status: { type: 'string', enum: ['active', 'inactive'] },
         created_at: { type: 'string' },
         updated_at: { type: 'string' },

@@ -10,6 +10,7 @@ export interface Company {
   location: string | null;
   phone_number: string | null;
   rfc: string | null;
+  color: string | null;
   status: RecordStatus;
   created_at: string;
   updated_at: string;
@@ -26,6 +27,7 @@ export interface CreateCompanyInput {
   location?: string | null;
   phone_number?: string | null;
   rfc?: string | null;
+  color?: string | null;
   status?: RecordStatus;
 }
 

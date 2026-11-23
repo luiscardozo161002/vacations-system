@@ -82,6 +82,7 @@ La implementación y las propiedades disponibles se consultan en el componente c
 - La búsqueda por texto espera 300 ms antes de actualizar los resultados.
 - Empleados, solicitudes, avisos y días de vacaciones se buscan por nombre o número y se filtran por empresa, sede y departamento (`OrgFilters`). Las opciones encadenan: la empresa limita las sedes y la sede limita los departamentos. Cada usuario solo ve las empresas, sedes y registros de las sedes que tiene asignadas. Los códigos de sede se muestran sin guion bajo (THH HGO) y los departamentos con el mismo nombre se distinguen con la sede.
 - No hay fotos de perfil: el avatar es la primera letra del nombre (`PersonCell`).
+- Cada empresa y cada sede tiene un color que se guarda en su registro y se cambia con `ColorPopover` en su tarjeta. La sede usa el de su empresa hasta que se le asigna uno propio, con la opción «Quitar color» para volver al de la empresa. Las tarjetas llevan una franja de ese color y `ColorBadge` muestra el código de sede y la empresa; los departamentos y los empleados muestran la insignia de su sede, para distinguir departamentos que comparten nombre.
 - Los saldos se muestran siempre como días y horas, tanto lo usado como lo disponible.
 - Las tablas distinguen carga y ausencia de resultados.
 - Los campos tienen una etiqueta visible y la ayuda se vincula al control.

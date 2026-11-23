@@ -1,8 +1,18 @@
 import type { HTMLAttributes } from 'react';
 import { cn } from '../../utils/cn';
 
-export function Card({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn('rounded-lg border border-line bg-surface p-[18px] shadow-sm', className)} {...props} />;
+interface CardProps extends HTMLAttributes<HTMLDivElement> {
+  accent?: string | null;
+}
+
+export function Card({ className, accent, style, ...props }: CardProps) {
+  return (
+    <div
+      className={cn('rounded-lg border border-line bg-surface p-[18px] shadow-sm', className)}
+      style={accent ? { ...style, borderTop: `4px solid ${accent}` } : style}
+      {...props}
+    />
+  );
 }
 
 export function CardHeader({ className, ...props }: HTMLAttributes<HTMLDivElement>) {

@@ -49,21 +49,39 @@ class DepartmentService extends CrudService {
       db('employees')
         .whereIn('employee_id', departments.map((department) => department.manager_employee_id).filter(Boolean))
         .select('employee_id', 'employee_name'),
-      db('branches')
-        .whereIn('branch_id', departments.map((department) => department.branch_id))
-        .select('branch_id', 'code', 'branch_name'),
+      db('branches as b')
+        .join('company as c', 'c.company_id', 'b.company_id')
+        .whereIn('b.branch_id', departments.map((department) => department.branch_id))
+        .select(
+          'b.branch_id',
+          'b.code',
+          'b.branch_name',
+          'b.color as branch_color',
+          'c.company_id',
+          'c.folio as company_folio',
+          'c.company_name',
+          'c.color as company_color'
+        ),
     ]);
     const countOf = byKey(counts, 'department_id');
     const managerOf = byKey(managers, 'employee_id');
     const branchOf = byKey(branches, 'branch_id');
 
-    return departments.map((department) => ({
-      ...department,
-      manager_name: managerOf.get(department.manager_employee_id)?.employee_name ?? null,
-      active_employees: countOf.get(department.department_id)?.total ?? 0,
-      branch_code: branchOf.get(department.branch_id)?.code ?? null,
-      branch_name: branchOf.get(department.branch_id)?.branch_name ?? null,
-    }));
+    return departments.map((department) => {
+      const branch = branchOf.get(department.branch_id);
+      return {
+        ...department,
+        manager_name: managerOf.get(department.manager_employee_id)?.employee_name ?? null,
+        active_employees: countOf.get(department.department_id)?.total ?? 0,
+        branch_code: branch?.code ?? null,
+        branch_name: branch?.branch_name ?? null,
+        branch_color: branch?.branch_color ?? null,
+        company_id: branch?.company_id ?? null,
+        company_folio: branch?.company_folio ?? null,
+        company_name: branch?.company_name ?? null,
+        company_color: branch?.company_color ?? null,
+      };
+    });
   }
 }
 

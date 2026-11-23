@@ -1,7 +1,7 @@
 'use strict';
 
 const Joi = require('joi');
-const { pageSize } = require('../../lib/list-query');
+const { pageSize, hexColor } = require('../../lib/list-query');
 
 const id = Joi.number().integer().positive();
 
@@ -12,6 +12,7 @@ const fields = {
   location: Joi.string().max(255).allow(null),
   phone_number: Joi.string().max(20).allow(null),
   rfc: Joi.string().max(13).allow(null),
+  color: hexColor,
   status: Joi.string().valid('active', 'inactive'),
 };
 
@@ -22,6 +23,7 @@ const create = Joi.object({
   location: fields.location,
   phone_number: fields.phone_number,
   rfc: fields.rfc,
+  color: fields.color,
   status: fields.status.default('active'),
 }).unknown(false);
 
