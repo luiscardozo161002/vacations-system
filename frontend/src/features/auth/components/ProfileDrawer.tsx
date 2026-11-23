@@ -3,7 +3,7 @@ import type { CurrentUser } from '@vacations/sdk';
 import { sdk } from '../../../services/sdk';
 import { config } from '../../../config';
 import { useFormSubmit } from '../../../hooks/use-form-submit';
-import { initials } from '../../../utils/format';
+import { initial } from '../../../utils/format';
 import { FormDrawer } from '../../../components/organisms/FormDrawer';
 import { TextField } from '../../../components/molecules/FormField';
 import { useToast } from '../../../hooks/use-toast';
@@ -76,7 +76,7 @@ export function ProfileDrawer({ user, roleLabel, onClose }: ProfileDrawerProps) 
       onSubmit={handleSubmit}
     >
       <div className="mb-[18px] flex items-center gap-3.5">
-        <Avatar size="lg">{initials(displayName)}</Avatar>
+        <Avatar size="lg">{initial(displayName)}</Avatar>
         <div>
           <h2 className="text-lg">{displayName}</h2>
           <p className="text-[12.5px] text-muted">{roleLabel}</p>

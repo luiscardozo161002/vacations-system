@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { formatAbsenceRange, formatDaysHours, initials } from './format';
+import { formatAbsenceRange, formatDaysHours, initial } from './format';
 
 describe('formatDaysHours', () => {
   it('junta días y horas con singular y plural', () => {
@@ -21,8 +21,10 @@ describe('formatAbsenceRange', () => {
   });
 });
 
-describe('initials', () => {
-  it('toma las dos primeras palabras', () => {
-    expect(initials('Maria Garcia Hernandez')).toBe('MG');
+describe('initial', () => {
+  it('toma solo la primera letra del nombre, en mayúscula', () => {
+    expect(initial('Maria Garcia Hernandez')).toBe('M');
+    expect(initial('  carlos ramirez')).toBe('C');
+    expect(initial('')).toBe('');
   });
 });

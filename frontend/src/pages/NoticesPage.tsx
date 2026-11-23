@@ -11,6 +11,7 @@ import { Icon } from '../components/atoms/Icon';
 import { DataTable, type Column } from '../components/organisms/DataTable';
 import { Select } from '../components/atoms/Select';
 import { PageHeader } from '../components/molecules/PageHeader';
+import { PersonCell } from '../components/molecules/PersonCell';
 import { StatusBadge } from '../components/atoms/StatusBadge';
 import { useAuth } from '../contexts/auth-context';
 import { useActiveEmployees } from '../features/employees/hooks/useActiveEmployees';
@@ -54,7 +55,7 @@ export function NoticesPage() {
   const { data, loading, error } = usePagedList('notices', sdk.notices, params);
 
   const columns: Column<Notice>[] = [
-    { header: 'Empleado', render: (notice) => notice.employee_name, className: 'font-medium' },
+    { header: 'Empleado', render: (notice) => <PersonCell name={notice.employee_name} /> },
     { header: 'Motivo', render: (notice) => notice.reason_description },
     { header: 'Fecha', render: (notice) => formatAbsenceRange(notice) },
     { header: 'Estado', render: (notice) => <StatusBadge status={notice.status} /> },

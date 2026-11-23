@@ -4,7 +4,7 @@ import { sdk } from '../../../services/sdk';
 import { getErrorMessage } from '../../../utils/get-error-message';
 import { useApiQuery } from '../../../hooks/use-api-query';
 import { saveFile } from '../../../utils/save-file';
-import { formatAbsenceRange, formatDaysHours, initials, todayIso } from '../../../utils/format';
+import { formatAbsenceRange, formatDaysHours, initial, todayIso } from '../../../utils/format';
 import { Drawer } from '../../../components/organisms/Drawer';
 import { ConfirmDialog } from '../../../components/organisms/Dialog';
 import { Icon } from '../../../components/atoms/Icon';
@@ -142,7 +142,7 @@ export function AbsenceDetail({ notice, user, can, onClose, onChanged }: Absence
       >
         {notice.kind === 'request' && (
           <div className="mb-[18px] flex items-center gap-3.5">
-            <Avatar size="lg">{initials(notice.employee_name ?? '')}</Avatar>
+            <Avatar size="lg">{initial(notice.employee_name ?? '')}</Avatar>
             <div>
               <h2 className="text-lg">{notice.employee_name}</h2>
               <p className="text-[12.5px] text-muted">{notice.department_name}</p>

@@ -5,7 +5,7 @@ import { config } from '../../../config';
 import { getErrorMessage } from '../../../utils/get-error-message';
 import { useApiQuery } from '../../../hooks/use-api-query';
 import { refreshData } from '../../../services/query-client';
-import { formatAbsenceRange, formatDate, initials } from '../../../utils/format';
+import { formatAbsenceRange, formatDate, formatDaysHours, initial } from '../../../utils/format';
 import { Drawer } from '../../../components/organisms/Drawer';
 import { ConfirmDialog } from '../../../components/organisms/Dialog';
 import { EmptyState } from '../../../components/atoms/EmptyState';
@@ -109,7 +109,7 @@ export function EmployeeProfile({ employee, departmentName, shiftName, onClose }
         }
       >
         <div className="mb-[18px] flex items-center gap-3.5">
-          <Avatar size="lg">{initials(employee.employee_name)}</Avatar>
+          <Avatar size="lg">{initial(employee.employee_name)}</Avatar>
           <div>
             <h2 className="text-lg">{employee.employee_name}</h2>
             <p className="text-[12.5px] text-muted">{employee.employee_number}</p>
@@ -160,10 +160,13 @@ export function EmployeeProfile({ employee, departmentName, shiftName, onClose }
           <>
             <KeyValueGrid>
               <KeyValue label="Otorgados">{balance.total_days}</KeyValue>
-              <KeyValue label="Usados">{balance.used_days}</KeyValue>
-              <KeyValue label="Disponibles">{balance.available.days}</KeyValue>
+              <KeyValue label="Usados">{formatDaysHours(balance.used_days, balance.used_hours)}</KeyValue>
+              <KeyValue label="Disponibles">{formatDaysHours(balance.available.days, balance.available.hours)}</KeyValue>
             </KeyValueGrid>
-            <ProgressBar percent={balance.total_days ? (balance.used_days / balance.total_days) * 100 : 0} className="mt-2.5" />
+            <ProgressBar
+              percent={balance.total_days ? ((balance.used_days + balance.used_hours / balance.daily_hours) / balance.total_days) * 100 : 0}
+              className="mt-2.5"
+            />
           </>
         ) : (
           <p className="text-[12.5px] text-muted">{data ? 'Sin saldo registrado todavía.' : 'Cargando...'}</p>

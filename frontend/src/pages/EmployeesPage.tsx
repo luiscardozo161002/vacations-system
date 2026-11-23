@@ -7,7 +7,8 @@ import { refreshData } from '../services/query-client';
 import { usePageFilters } from '../hooks/use-page-filters';
 import { usePagedList } from '../hooks/use-paged-list';
 import { useRecordForm } from '../hooks/use-record-form';
-import { formatDate, initials, todayIso } from '../utils/format';
+import { formatDate, todayIso } from '../utils/format';
+import { PersonCell } from '../components/molecules/PersonCell';
 import { saveFile } from '../utils/save-file';
 import { Icon } from '../components/atoms/Icon';
 import { DataTable, type Column } from '../components/organisms/DataTable';
@@ -26,7 +27,6 @@ import { AccessDialog, type GrantedAccess } from '../features/employees/componen
 import { useAuth } from '../contexts/auth-context';
 import { IconButton } from '../components/atoms/IconButton';
 import { Button } from '../components/atoms/Button';
-import { Avatar } from '../components/atoms/Avatar';
 import { RowActions, Toolbar, ToolbarSpacer } from '../components/molecules/Toolbar';
 
 const FILTERS = { q: '', departamento: '', estado: '', perfil: '' };
@@ -124,12 +124,7 @@ export function EmployeesPage() {
   const columns: Column<Employee>[] = [
     {
       header: 'Nombre',
-      render: (employee) => (
-        <div className="flex items-center gap-2.5">
-          <Avatar>{initials(employee.employee_name)}</Avatar>
-          <span className="font-medium">{employee.employee_name}</span>
-        </div>
-      ),
+      render: (employee) => <PersonCell name={employee.employee_name} />,
     },
     { header: 'Número', render: (employee) => employee.employee_number },
     { header: 'Departamento', render: (employee) => departmentNames.get(employee.department_id) ?? '' },

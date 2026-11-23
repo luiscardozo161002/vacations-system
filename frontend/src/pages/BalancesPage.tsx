@@ -6,10 +6,11 @@ import { getErrorMessage } from '../utils/get-error-message';
 import { refreshData } from '../services/query-client';
 import { usePageFilters } from '../hooks/use-page-filters';
 import { usePagedList } from '../hooks/use-paged-list';
-import { formatDate } from '../utils/format';
+import { formatDate, formatDaysHours } from '../utils/format';
 import { DataTable, type Column } from '../components/organisms/DataTable';
 import { Icon } from '../components/atoms/Icon';
 import { PageHeader } from '../components/molecules/PageHeader';
+import { PersonCell } from '../components/molecules/PersonCell';
 import { useToast } from '../hooks/use-toast';
 import { useAuth } from '../contexts/auth-context';
 import { EmployeeDashboard } from '../features/dashboard/components/EmployeeDashboard';
@@ -21,13 +22,12 @@ const FILTERS = {};
 const plural = (count: number, word: string) => `${count} ${word}${count === 1 ? '' : 's'}`;
 
 const columns: Column<VacationEntitlement>[] = [
-  { header: 'Empleado', render: (balance) => balance.employee_name, className: 'font-medium' },
+  { header: 'Empleado', render: (balance) => <PersonCell name={balance.employee_name} /> },
   { header: 'Departamento', render: (balance) => balance.department_name },
   { header: 'Antigüedad', render: (balance) => plural(balance.years_of_service, 'año') },
   { header: 'Otorgados', render: (balance) => `${balance.total_days} días` },
-  { header: 'Días usados', render: (balance) => `${balance.used_days} días` },
-  { header: 'Días disponibles', render: (balance) => `${balance.available.days} días` },
-  { header: 'Horas usadas', render: (balance) => `${balance.used_hours} h` },
+  { header: 'Usados', render: (balance) => formatDaysHours(balance.used_days, balance.used_hours) },
+  { header: 'Disponibles', render: (balance) => formatDaysHours(balance.available.days, balance.available.hours) },
   {
     header: 'Horas disponibles',
     render: (balance) => (

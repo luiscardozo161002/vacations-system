@@ -1,6 +1,6 @@
 import { useLocation } from 'react-router';
 import { cn } from '../utils/cn';
-import { initials } from '../utils/format';
+import { initial } from '../utils/format';
 import { Avatar } from '../components/atoms/Avatar';
 import { BrandMark } from '../components/atoms/BrandMark';
 import { Icon } from '../components/atoms/Icon';
@@ -68,7 +68,7 @@ export function Sidebar({ collapsed, mobileOpen, displayName, roleLabel, onNavig
           onClick={onOpenProfile}
           className="flex min-w-0 flex-1 cursor-pointer items-center gap-2.5 rounded-sm p-1.5 text-left hover:bg-subtle"
         >
-          <Avatar>{initials(displayName)}</Avatar>
+          <Avatar>{initial(displayName)}</Avatar>
           <div className="min-w-0 flex-1 collapsed:hidden">
             <div className="truncate text-[13px] font-semibold whitespace-nowrap">{displayName}</div>
             <div className="text-xs text-muted">{roleLabel}</div>

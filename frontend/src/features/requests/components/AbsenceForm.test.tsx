@@ -54,12 +54,12 @@ describe('Solicitud por horas', () => {
     preview.mockResolvedValue({ ...withoutBalance, error: null });
   });
 
-  it('por omisión pide un solo día laborable con el sábado sin habilitar', async () => {
+  it('por omisión pide el día de hoy, o el siguiente laborable, con el sábado sin habilitar', async () => {
     renderForm();
 
     await waitFor(() =>
       expect(preview).toHaveBeenLastCalledWith(
-        expect.objectContaining({ absence_start_date: nextWeekday(todayIso(7)), absence_end_date: nextWeekday(todayIso(7)), skip_saturdays: false }),
+        expect.objectContaining({ absence_start_date: nextWeekday(todayIso()), absence_end_date: nextWeekday(todayIso()), skip_saturdays: false }),
         expect.anything(),
       ),
     );

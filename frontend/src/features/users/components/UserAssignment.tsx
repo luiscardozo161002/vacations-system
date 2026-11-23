@@ -3,7 +3,7 @@ import type { Branch, Company, ReviewAction, User } from '@vacations/sdk';
 import { sdk } from '../../../services/sdk';
 import { config } from '../../../config';
 import { useFormSubmit } from '../../../hooks/use-form-submit';
-import { initials } from '../../../utils/format';
+import { initial } from '../../../utils/format';
 import { ROLE_LABELS } from '../../../layouts/navigation';
 import { Drawer } from '../../../components/organisms/Drawer';
 import { ConfirmDialog } from '../../../components/organisms/Dialog';
@@ -88,7 +88,7 @@ export function UserAssignment({ user, branches, companies, onClose, onSaved }: 
       {error && <FieldError>{error}</FieldError>}
 
       <div className="mb-[18px] flex items-center gap-3.5">
-        <Avatar size="lg">{initials(name)}</Avatar>
+        <Avatar size="lg">{initial(name)}</Avatar>
         <div>
           <h2 className="text-lg">{name}</h2>
           <p className="text-[12.5px] text-muted">{ROLE_LABELS[user.role_code ?? ''] ?? user.role_code}</p>

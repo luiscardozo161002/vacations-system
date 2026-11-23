@@ -11,6 +11,7 @@ import { Icon } from '../components/atoms/Icon';
 import { DataTable, type Column } from '../components/organisms/DataTable';
 import { Select } from '../components/atoms/Select';
 import { PageHeader } from '../components/molecules/PageHeader';
+import { PersonCell } from '../components/molecules/PersonCell';
 import { SearchSelect } from '../components/molecules/SearchSelect';
 import { StatusBadge } from '../components/atoms/StatusBadge';
 import { useAuth } from '../contexts/auth-context';
@@ -64,7 +65,7 @@ export function RequestsPage() {
   );
 
   const columns: Column<Notice>[] = [
-    { header: 'Empleado', render: (notice) => notice.employee_name, className: 'font-medium' },
+    { header: 'Empleado', render: (notice) => <PersonCell name={notice.employee_name} /> },
     { header: 'Departamento', render: (notice) => notice.department_name },
     { header: 'Fecha y horario', render: (notice) => formatAbsenceRange(notice) },
     { header: 'Días', render: (notice) => formatDaysHours(notice.days_taken, notice.hours_taken) },
