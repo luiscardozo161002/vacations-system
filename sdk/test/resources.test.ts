@@ -138,6 +138,9 @@ describe('rutas especiales', () => {
     await sdk.employees.exportCsv({ status: 'active', department_id: 2 });
     await sdk.notifications.markAllRead();
     await sdk.vacationEntitlements.generate('2027-08-01');
+    await sdk.settings.get();
+    await sdk.settings.save({ theme: 'dark', window_alpha: 0.8 });
+    await sdk.vacationEntitlements.list({ search: 'perez', branch_id: [5], company_id: 2 });
 
     assert.deepEqual(sent(calls), [
       'GET /api/v1/users/2/branches',
@@ -155,8 +158,12 @@ describe('rutas especiales', () => {
       'GET /api/v1/employees/export?status=active&department_id=2',
       'POST /api/v1/me/notifications/read',
       'POST /api/v1/vacation-entitlements/generate',
+      'GET /api/v1/me/settings',
+      'PUT /api/v1/me/settings',
+      'GET /api/v1/vacation-entitlements?search=perez&branch_id=5&company_id=2',
     ]);
     assert.deepEqual(calls[1].body, { branch_ids: [5, 3] });
     assert.deepEqual(calls[11].body, { email: 'a.torres@thh.com.mx' });
+    assert.deepEqual(calls[16].body, { theme: 'dark', window_alpha: 0.8 });
   });
 });

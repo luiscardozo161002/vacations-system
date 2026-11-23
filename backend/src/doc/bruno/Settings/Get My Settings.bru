@@ -1,0 +1,15 @@
+meta {
+  name: Get My Settings
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/v1/me/settings
+  body: none
+  auth: inherit
+}
+
+docs {
+  Preferencias de apariencia guardadas para el usuario actual: `theme`, `backdrop_light`, `backdrop_dark`, `button_color` y `window_alpha`. Lo que nunca se ha guardado viene en `null`. Requiere sesion, sin permiso especifico.
+}

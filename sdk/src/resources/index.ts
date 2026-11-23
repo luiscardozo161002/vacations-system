@@ -17,3 +17,4 @@ export * from './audit-log';
 export * from './calendar';
 export * from './dashboard';
 export * from './notifications';
+export * from './settings';

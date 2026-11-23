@@ -3,6 +3,7 @@ import type { CurrentUser } from '@vacations/sdk';
 import { sdk, sessionEvents } from '../services/sdk';
 import { rememberSession } from '../services/session-storage';
 import { queryClient } from '../services/query-client';
+import { startSettingsSync } from '../services/settings-sync';
 import { AuthContext, type AuthStatus } from './auth-context';
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -20,6 +21,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       })
       .catch(() => setStatus('anonymous'));
   }, []);
+
+  useEffect(() => {
+    if (status !== 'authenticated') return;
+    return startSettingsSync();
+  }, [status]);
 
   useEffect(() => {
     const handleExpired = () => {
