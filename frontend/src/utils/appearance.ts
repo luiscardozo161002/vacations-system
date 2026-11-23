@@ -1,3 +1,5 @@
+import type { UserSettings } from '@vacations/sdk';
+
 export type Theme = 'light' | 'dark';
 
 export const BACKDROP_PRESETS: Record<Theme, string[]> = {
@@ -62,6 +64,20 @@ export const subscribeTheme = (listener: () => void) => {
   };
 };
 
+const changeListeners = new Set<() => void>();
+let importing = false;
+
+export const subscribeAppearance = (listener: () => void) => {
+  changeListeners.add(listener);
+  return () => {
+    changeListeners.delete(listener);
+  };
+};
+
+const notifyChange = () => {
+  if (!importing) changeListeners.forEach((listener) => listener());
+};
+
 export const getTheme = (): Theme => (root().dataset.theme === 'dark' ? 'dark' : 'light');
 
 const backdropFor = (theme: Theme): string => readStored(KEYS.backdrop[theme], BACKDROP_PRESETS[theme][0]);
@@ -85,6 +101,7 @@ export const setTheme = (theme: Theme): void => {
   writeStored(KEYS.theme, theme);
   applyWindow();
   themeListeners.forEach((listener) => listener());
+  notifyChange();
 };
 
 export const toggleTheme = (): Theme => {
@@ -114,16 +131,41 @@ export const getAppearance = () => {
 export const setBackdrop = (color: string): void => {
   writeStored(KEYS.backdrop[getTheme()], color);
   applyWindow();
+  notifyChange();
 };
 
 export const setButtonColor = (hex: string): void => {
   applyButtonColor(hex);
   writeStored(KEYS.buttonColor, hex);
+  notifyChange();
 };
 
 export const setWindowAlpha = (alpha: number): void => {
   writeStored(KEYS.windowAlpha, String(alpha));
   applyWindow();
+  notifyChange();
+};
+
+export const exportAppearance = (): UserSettings => ({
+  theme: getTheme(),
+  backdrop_light: backdropFor('light'),
+  backdrop_dark: backdropFor('dark'),
+  button_color: readStored(KEYS.buttonColor, DEFAULT_BUTTON_COLOR),
+  window_alpha: requestedAlpha(),
+});
+
+export const importAppearance = (settings: UserSettings): void => {
+  importing = true;
+  try {
+    if (settings.backdrop_light) writeStored(KEYS.backdrop.light, settings.backdrop_light);
+    if (settings.backdrop_dark) writeStored(KEYS.backdrop.dark, settings.backdrop_dark);
+    if (settings.button_color) setButtonColor(settings.button_color);
+    if (settings.window_alpha !== null) writeStored(KEYS.windowAlpha, String(settings.window_alpha));
+    if (settings.theme) setTheme(settings.theme);
+    else applyWindow();
+  } finally {
+    importing = false;
+  }
 };
 
 export const initAppearance = (): void => {

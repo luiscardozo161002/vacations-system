@@ -37,7 +37,7 @@ Los tokens expresan la función de cada color. El tema oscuro cambia sus valores
 
 Los colores de éxito, advertencia, error y estado neutral tienen tokens propios para texto y fondo. Las preferencias de apariencia permiten cambiar el fondo exterior, el color del botón principal y la opacidad de la ventana.
 
-Cada tema recuerda su propio fondo exterior. Si el fondo elegido contradice el tema, como un fondo claro con el tema oscuro, la opacidad de la ventana no baja de 85 % para que el texto siga legible, y Configuración lo indica. [Reglas de apariencia](../frontend/src/utils/appearance.ts)
+Las preferencias de apariencia se guardan por usuario en la base de datos (`user_settings`, mediante `GET` y `PUT /me/settings`) y se aplican al iniciar sesión en cualquier navegador; el navegador conserva una copia local para pintar la interfaz sin esperar y los cambios se envían al servidor tras una breve espera. Si el servidor no responde, la interfaz sigue con la copia local. Cada tema recuerda su propio fondo exterior. Si el fondo elegido contradice el tema, como un fondo claro con el tema oscuro, la opacidad de la ventana no baja de 85 % para que el texto siga legible, y Configuración lo indica. [Reglas de apariencia](../frontend/src/utils/appearance.ts)
 
 ### Tipografía y forma
 

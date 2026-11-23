@@ -16,6 +16,7 @@ import {
   ReasonsResource,
   RolePermissionsResource,
   RolesResource,
+  SettingsResource,
   ShiftsResource,
   UsersResource,
   VacationEntitlementsResource,
@@ -49,6 +50,7 @@ export class VacationsSdk {
   readonly calendar: CalendarResource;
   readonly dashboard: DashboardResource;
   readonly notifications: NotificationsResource;
+  readonly settings: SettingsResource;
 
   constructor(options: SdkClientOptions) {
     const http = new HttpClient(options);
@@ -71,5 +73,6 @@ export class VacationsSdk {
     this.calendar = new CalendarResource(http);
     this.dashboard = new DashboardResource(http);
     this.notifications = new NotificationsResource(http);
+    this.settings = new SettingsResource(http);
   }
 }

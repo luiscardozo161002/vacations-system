@@ -1,0 +1,27 @@
+meta {
+  name: Save My Settings
+  type: http
+  seq: 2
+}
+
+put {
+  url: {{baseUrl}}/api/v1/me/settings
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "theme": "dark",
+    "button_color": "#7c3aed",
+    "window_alpha": 0.9
+  }
+}
+
+docs {
+  Guarda las preferencias de apariencia del usuario actual; solo cambian los campos enviados (al menos uno). `theme`: `light` o `dark`. Los colores son `#RRGGBB`. `window_alpha` va de 0.4 a 1. Responde las preferencias completas. Un valor fuera de rango responde 400.
+}

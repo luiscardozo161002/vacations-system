@@ -28,6 +28,7 @@ const noticesPlugin = require('./plugins/notices/routes');
 const calendarPlugin = require('./plugins/calendar/routes');
 const dashboardPlugin = require('./plugins/dashboard/routes');
 const notificationsPlugin = require('./plugins/notifications/routes');
+const userSettingsPlugin = require('./plugins/user-settings/routes');
 const usersPlugin = require('./plugins/users/routes');
 const authAuditLogPlugin = require('./plugins/auth-audit-log/routes');
 const authPlugin = require('./plugins/auth/routes');
@@ -125,6 +126,7 @@ class ApiServer {
       calendarPlugin,
       dashboardPlugin,
       notificationsPlugin,
+      userSettingsPlugin,
       usersPlugin,
       authAuditLogPlugin,
       authPlugin,
