@@ -2,6 +2,7 @@
 
 const Joi = require('joi');
 const { listOf, isoDate, pageSize } = require('../../lib/list-query');
+const employeeFilter = require('../../lib/employee-filter');
 
 const id = Joi.number().integer().positive();
 const timeString = Joi.string().pattern(/^\d{2}:\d{2}(:\d{2})?$/).message('El formato es HH:MM').allow(null);
@@ -42,7 +43,7 @@ const params = Joi.object({
 
 const list = Joi.object({
   employee_id: listOf(id),
-  department_id: listOf(id),
+  ...employeeFilter.schema,
   reason_id: listOf(id),
   kind: listOf(Joi.string().valid('request', 'notice')),
   status: listOf(Joi.string().valid('pending', 'approved', 'rejected', 'cancelled')),

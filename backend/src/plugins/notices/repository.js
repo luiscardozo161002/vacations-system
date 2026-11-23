@@ -3,6 +3,7 @@ const db = require('../../db');
 const Notice = require('./model');
 const { COLUMNS } = require('./fields');
 const { whereAnyOf } = require('../../lib/list-query');
+const { whereEmployee } = require('../../lib/employee-filter');
 
 class NoticeRepository extends CrudRepository {
   constructor() {
@@ -14,12 +15,10 @@ class NoticeRepository extends CrudRepository {
   }
 
   applyFilters(query, filters) {
-    const { employee_id, department_id, reason_id, kind, status, from, to } = filters;
+    const { employee_id, reason_id, kind, status, from, to } = filters;
 
     whereAnyOf(query, 'employee_id', employee_id);
-    if (department_id !== undefined) {
-      query.whereIn('employee_id', whereAnyOf(db('employees'), 'department_id', department_id).select('employee_id'));
-    }
+    whereEmployee(query, 'employee_id', filters);
     whereAnyOf(query, 'reason_id', reason_id);
     whereAnyOf(query, 'kind', kind);
     whereAnyOf(query, 'status', status);

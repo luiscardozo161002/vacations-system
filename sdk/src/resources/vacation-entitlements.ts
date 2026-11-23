@@ -1,6 +1,6 @@
 import { HttpClient } from '../core/http-client';
 import { CrudResource } from '../core/crud-resource';
-import type { DaysAndHours, ListParams, OneOrMany, RecordStatus } from '../types/common';
+import type { DaysAndHours, EmployeeFilterParams, ListParams, OneOrMany, RecordStatus } from '../types/common';
 
 export interface VacationEntitlement {
   entitlement_id: number;
@@ -22,7 +22,7 @@ export interface VacationEntitlement {
   available: DaysAndHours;
 }
 
-export interface ListVacationEntitlementsParams extends ListParams {
+export interface ListVacationEntitlementsParams extends ListParams, EmployeeFilterParams {
   employee_id?: number;
   period_year?: number;
   status?: OneOrMany<RecordStatus>;

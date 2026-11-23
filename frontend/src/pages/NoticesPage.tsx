@@ -12,6 +12,9 @@ import { DataTable, type Column } from '../components/organisms/DataTable';
 import { Select } from '../components/atoms/Select';
 import { PageHeader } from '../components/molecules/PageHeader';
 import { PersonCell } from '../components/molecules/PersonCell';
+import { SearchInput } from '../components/molecules/SearchInput';
+import { OrgFilters } from '../features/organization/components/OrgFilters';
+import { ORG_FILTERS, orgParams } from '../features/organization/org-filters';
 import { StatusBadge } from '../components/atoms/StatusBadge';
 import { useAuth } from '../contexts/auth-context';
 import { useActiveEmployees } from '../features/employees/hooks/useActiveEmployees';
@@ -22,7 +25,7 @@ import { IconButton } from '../components/atoms/IconButton';
 import { Button } from '../components/atoms/Button';
 import { RowActions, Toolbar, ToolbarSpacer } from '../components/molecules/Toolbar';
 
-const FILTERS = { estado: '' };
+const FILTERS = { q: '', estado: '', ...ORG_FILTERS };
 
 const STATUS_OPTIONS = [
   { value: '', label: 'Todos los estados' },
@@ -47,9 +50,11 @@ export function NoticesPage() {
       page,
       pageSize: config.pageSize,
       status: filters.estado ? (filters.estado as NoticeStatus) : undefined,
+      search: filters.q || undefined,
+      ...orgParams(filters),
       sort: '-request_date',
     }),
-    [page, filters.estado],
+    [page, filters],
   );
 
   const { data, loading, error } = usePagedList('notices', sdk.notices, params);
@@ -94,7 +99,11 @@ export function NoticesPage() {
       </PageHeader>
 
       <Toolbar>
+        {canRegister && (
+          <SearchInput id="not-search" placeholder="Buscar por nombre o número..." value={filters.q} onSearch={(q) => setFilter({ q })} />
+        )}
         <Select compact aria-label="Estado" value={filters.estado} onChange={(estado) => setFilter({ estado })} options={STATUS_OPTIONS} />
+        {canRegister && <OrgFilters idPrefix="not" filters={filters} setFilter={setFilter} />}
         <ToolbarSpacer />
       </Toolbar>
 

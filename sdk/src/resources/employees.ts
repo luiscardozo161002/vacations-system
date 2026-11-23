@@ -1,6 +1,6 @@
 import { HttpClient } from '../core/http-client';
 import { CrudResource } from '../core/crud-resource';
-import type { AccountStatus, ListParams, OneOrMany, RecordStatus } from '../types/common';
+import type { AccountStatus, EmployeeFilterParams, ListParams, OneOrMany, RecordStatus } from '../types/common';
 
 export type EmployeeStatus = RecordStatus;
 
@@ -37,10 +37,7 @@ export interface CreatedEmployee extends Employee {
   temporary_password?: string;
 }
 
-export interface ListEmployeesParams extends ListParams {
-  search?: string;
-  company_id?: number;
-  department_id?: OneOrMany<number>;
+export interface ListEmployeesParams extends ListParams, EmployeeFilterParams {
   status?: OneOrMany<RecordStatus>;
   hired_from?: string;
   hired_to?: string;

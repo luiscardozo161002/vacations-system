@@ -21,6 +21,13 @@ export type AccountStatus = RecordStatus | 'locked';
 
 export type OneOrMany<T> = T | T[];
 
+export interface EmployeeFilterParams {
+  search?: string;
+  company_id?: OneOrMany<number>;
+  branch_id?: OneOrMany<number>;
+  department_id?: OneOrMany<number>;
+}
+
 export interface ListParams {
   sort?: string;
   page?: number;

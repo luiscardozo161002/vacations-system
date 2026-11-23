@@ -3,6 +3,7 @@
 const Joi = require('joi');
 const config = require('../../config');
 const { listOf, isoDate, pageSize } = require('../../lib/list-query');
+const employeeFilter = require('../../lib/employee-filter');
 
 const NAME_MIN = 3;
 const NAME_MAX = 150;
@@ -91,9 +92,7 @@ const params = Joi.object({
 });
 
 const filters = {
-  search: Joi.string().trim().max(100),
-  company_id: id,
-  department_id: listOf(id),
+  ...employeeFilter.schema,
   status: listOf(Joi.string().valid('active', 'inactive')),
   hired_from: isoDate,
   hired_to: isoDate,

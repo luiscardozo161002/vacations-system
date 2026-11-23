@@ -2,6 +2,7 @@
 
 const Joi = require('joi');
 const { listOf, isoDate, pageSize } = require('../../lib/list-query');
+const employeeFilter = require('../../lib/employee-filter');
 
 const id = Joi.number().integer().positive();
 
@@ -39,6 +40,7 @@ const params = Joi.object({
 
 const list = Joi.object({
   employee_id: id,
+  ...employeeFilter.schema,
   period_year: Joi.number().integer().min(2000).max(2100),
   status: listOf(Joi.string().valid('active', 'inactive')),
   sort: Joi.string(),

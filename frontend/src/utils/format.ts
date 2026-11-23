@@ -1,4 +1,6 @@
-export const initial = (name: string): string => name.trim().charAt(0).toUpperCase();
+export const formatCode = (code: string): string => code.replace(/_/g, ' ');
+
+export const initial =(name: string): string => name.trim().charAt(0).toUpperCase();
 
 export const formatDate = (iso: string): string =>
   new Date(iso.length > 10 ? iso : `${iso}T00:00:00`).toLocaleDateString('es-MX', {

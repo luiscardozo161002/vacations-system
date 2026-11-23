@@ -80,6 +80,9 @@ La implementación y las propiedades disponibles se consultan en el componente c
 
 - Los filtros muestran el criterio aplicado y la paginación conserva el contexto del listado.
 - La búsqueda por texto espera 300 ms antes de actualizar los resultados.
+- Empleados, solicitudes, avisos y días de vacaciones se buscan por nombre o número y se filtran por empresa, sede y departamento (`OrgFilters`). Las opciones encadenan: la empresa limita las sedes y la sede limita los departamentos. Cada usuario solo ve las empresas, sedes y registros de las sedes que tiene asignadas. Los códigos de sede se muestran sin guion bajo (THH HGO) y los departamentos con el mismo nombre se distinguen con la sede.
+- No hay fotos de perfil: el avatar es la primera letra del nombre (`PersonCell`).
+- Los saldos se muestran siempre como días y horas, tanto lo usado como lo disponible.
 - Las tablas distinguen carga y ausencia de resultados.
 - Los campos tienen una etiqueta visible y la ayuda se vincula al control.
 - Los formularios presentan los errores de la API junto al contexto de la operación.
