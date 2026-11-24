@@ -60,7 +60,7 @@ export function EmployeeDashboard() {
             <KeyValue label="Usados">{formatDaysHours(balance.used_days, balance.used_hours)}</KeyValue>
             <KeyValue label="Disponibles">{formatDaysHours(balance.available.days, balance.available.hours)}</KeyValue>
           </KeyValueGrid>
-          <ProgressBar percent={usedShare} className="mb-4" />
+          <ProgressBar percent={usedShare} color="var(--chart-3)" className="mb-4" />
           <Divider />
           <CardTitle className="mt-3.5 mb-2.5">Horas de permisos (dentro del día en curso)</CardTitle>
           <p className="mb-2.5 text-[12.5px] text-muted">

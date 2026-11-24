@@ -31,12 +31,12 @@ const columns: Column<VacationEntitlement>[] = [
   { header: 'Antigüedad', render: (balance) => plural(balance.years_of_service, 'año') },
   { header: 'Otorgados', render: (balance) => `${balance.total_days} días` },
   { header: 'Usados', render: (balance) => formatDaysHours(balance.used_days, balance.used_hours) },
-  { header: 'Disponibles', render: (balance) => formatDaysHours(balance.available.days, balance.available.hours) },
   {
-    header: 'Horas disponibles',
+    header: 'Disponibles',
     render: (balance) => (
       <>
-        {balance.available.hours} h <span className="text-[12.5px] text-muted">(de {balance.daily_hours}h/día)</span>
+        {formatDaysHours(balance.available.days, balance.available.hours)}{' '}
+        <span className="text-[12.5px] text-muted">(turno de {balance.daily_hours}h)</span>
       </>
     ),
   },

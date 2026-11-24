@@ -18,7 +18,18 @@ export interface DepartmentHeadcount {
   department_id: number;
   department_name: string;
   branch_code: string;
+  color: string | null;
   active_employees: number;
+}
+
+export interface MonthlyAbsences {
+  month: string;
+  absences: number;
+}
+
+export interface ReasonAbsences {
+  reason_description: string;
+  absences: number;
 }
 
 export interface RecentActivity {
@@ -37,6 +48,8 @@ export interface TeamSummary {
   upcoming_vacations: number;
   upcoming_absences: UpcomingAbsence[];
   by_department: DepartmentHeadcount[];
+  by_month: MonthlyAbsences[];
+  by_reason: ReasonAbsences[];
   recent_activity: RecentActivity[];
 }
 

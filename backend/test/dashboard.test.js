@@ -42,6 +42,36 @@ describe('GET /dashboard/summary', () => {
     assert.ok(res.result.recent_activity.length > 0);
   });
 
+  it('trae las ausencias de los últimos seis meses, mes por mes y sin huecos', async () => {
+    const res = await get('SUPERUSER', '/dashboard/summary');
+    const months = res.result.by_month.map((row) => row.month);
+    const thisMonth = new Date().toISOString().slice(0, 7);
+    const next = (month) => new Date(Date.UTC(Number(month.slice(0, 4)), Number(month.slice(5)), 1)).toISOString().slice(0, 7);
+
+    assert.equal(months.length, 6);
+    assert.equal(months.at(-1), thisMonth);
+    assert.deepEqual(months.slice(1), months.slice(0, -1).map(next));
+    assert.ok(res.result.by_month.every((row) => Number.isInteger(row.absences) && row.absences >= 0));
+  });
+
+  it('cuenta las ausencias del año por motivo, de más a menos', async () => {
+    const all = await get('SUPERUSER', '/dashboard/summary');
+    const scoped = await get('USER', '/dashboard/summary');
+    const counts = all.result.by_reason.map((row) => row.absences);
+    const total = (summary) => summary.result.by_reason.reduce((sum, row) => sum + row.absences, 0);
+
+    assert.ok(all.result.by_reason.length > 0);
+    assert.deepEqual(counts, [...counts].sort((a, b) => b - a));
+    assert.ok(total(scoped) <= total(all));
+  });
+
+  it('cada departamento trae el color de su sede o, si no tiene, el de su empresa', async () => {
+    const res = await get('SUPERUSER', '/dashboard/summary');
+    const explotacion = res.result.by_department.find((department) => department.department_name === 'Explotacion');
+
+    assert.match(explotacion.color, /^#[0-9a-f]{6}$/i);
+  });
+
   it('RH solo cuenta lo de su sede y los pendientes cuadran con la lista', async () => {
     const res = await get('USER', '/dashboard/summary');
     const pending = await get('USER', '/notices?kind=request&status=pending');

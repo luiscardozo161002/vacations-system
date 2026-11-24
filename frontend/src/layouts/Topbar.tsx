@@ -24,7 +24,7 @@ export function Topbar({ companyLabel, onToggleMenu }: TopbarProps) {
         <IconButton title="Mostrar menú" onClick={onToggleMenu} className="hidden mobile:inline-flex">
           <Icon name="menu" />
         </IconButton>
-        <strong className="text-[13.5px] whitespace-nowrap">Vacation Manager</strong>
+        <strong className="text-[13.5px] whitespace-nowrap">Sistema de Vacaciones</strong>
         <span className="text-line">/</span>
         <strong id="breadcrumb-current" className="truncate text-[13.5px] whitespace-nowrap text-fg">
           {findNavItem(pathname)?.title ?? 'Resumen'}

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { CurrentUser } from '@vacations/sdk';
 import { sdk } from '../../../services/sdk';
 import { config } from '../../../config';
@@ -25,10 +25,16 @@ export function ProfileDrawer({ user, roleLabel, onClose }: ProfileDrawerProps) 
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [editing, setEditing] = useState(false);
   const { submitting, error, setError, submit } = useFormSubmit();
 
   const displayName = user.employee?.employee_name ?? user.username;
   const changingPassword = Boolean(currentPassword || newPassword || confirmPassword);
+  const changed = username.trim() !== user.username || email.trim() !== user.email || changingPassword;
+
+  useEffect(() => {
+    if (editing) document.getElementById('pf-name')?.focus();
+  }, [editing]);
 
   const findProblem = (): string | null => {
     if (!username.trim() || !email.trim()) return 'Nombre y correo son obligatorios.';
@@ -66,10 +72,13 @@ export function ProfileDrawer({ user, roleLabel, onClose }: ProfileDrawerProps) 
 
   return (
     <FormDrawer
-      title="Editar mi perfil"
+      title={editing ? 'Editar mi perfil' : 'Mi perfil'}
       submitLabel="Guardar cambios"
       confirm="¿Guardar los cambios de tu perfil?"
       validate={validate}
+      submitDisabled={!changed}
+      readOnly={!editing}
+      onEdit={() => setEditing(true)}
       submitting={submitting}
       error={error}
       onClose={onClose}
@@ -91,37 +100,39 @@ export function ProfileDrawer({ user, roleLabel, onClose }: ProfileDrawerProps) 
         onChange={setEmail}
         maxLength={120}
       />
-      <Divider />
-      <p className="mb-2.5 text-[12.5px] text-muted">
-        Deja la contraseña en blanco si no quieres cambiarla.
-      </p>
-      <TextField
-        id="pf-current-password"
-        label="Contraseña actual"
-        type="password"
-        placeholder="••••••••"
-        autoComplete="current-password"
-        value={currentPassword}
-        onChange={setCurrentPassword}
-      />
-      <TextField
-        id="pf-password"
-        label="Nueva contraseña"
-        type="password"
-        placeholder="••••••••"
-        autoComplete="new-password"
-        value={newPassword}
-        onChange={setNewPassword}
-      />
-      <TextField
-        id="pf-password-confirm"
-        label="Confirmar contraseña"
-        type="password"
-        placeholder="••••••••"
-        autoComplete="new-password"
-        value={confirmPassword}
-        onChange={setConfirmPassword}
-      />
+      {editing && (
+        <>
+          <Divider />
+          <p className="mb-2.5 text-[12.5px] text-muted">Deja la contraseña en blanco si no quieres cambiarla.</p>
+          <TextField
+            id="pf-current-password"
+            label="Contraseña actual"
+            type="password"
+            placeholder="••••••••"
+            autoComplete="current-password"
+            value={currentPassword}
+            onChange={setCurrentPassword}
+          />
+          <TextField
+            id="pf-password"
+            label="Nueva contraseña"
+            type="password"
+            placeholder="••••••••"
+            autoComplete="new-password"
+            value={newPassword}
+            onChange={setNewPassword}
+          />
+          <TextField
+            id="pf-password-confirm"
+            label="Confirmar contraseña"
+            type="password"
+            placeholder="••••••••"
+            autoComplete="new-password"
+            value={confirmPassword}
+            onChange={setConfirmPassword}
+          />
+        </>
+      )}
     </FormDrawer>
   );
 }
