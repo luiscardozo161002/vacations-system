@@ -1,9 +1,50 @@
 const CrudService = require('../../lib/crud/crud-service');
 const repository = require('./repository');
 const db = require('../../db');
+const { AppError } = require('../../lib/app-error');
+const { assertCanEdit } = require('../../lib/org-access');
 const { EDITABLE_FIELDS } = require('./fields');
 
 class BranchService extends CrudService {
+  async assertCompanyIsActive(companyId) {
+    const company = await db('company').where('company_id', companyId).first('status');
+    if (!company) throw new AppError('INVALID_COMPANY', 'La empresa no existe');
+    if (company.status !== 'active') throw new AppError('INVALID_COMPANY', 'La empresa está dada de baja');
+  }
+
+  async assertNoActiveDepartments(branchId) {
+    const row = await db('departments').where({ branch_id: branchId, status: 'active' }).count('* as total').first();
+    if (Number(row.total) > 0) {
+      throw new AppError('BRANCH_HAS_DEPARTMENTS', 'Primero da de baja los departamentos activos de la sede');
+    }
+  }
+
+  async create(data) {
+    await this.assertCompanyIsActive(data.company_id);
+    return super.create(data);
+  }
+
+  async update(id, data, scope) {
+    assertCanEdit(data, scope);
+    if (data.company_id !== undefined) {
+      const current = await this.found(await this.repository.findById(id, scope));
+      if (data.company_id !== current.company_id) {
+        throw new AppError('INVALID_COMPANY', 'Una sede no puede cambiar de empresa');
+      }
+    }
+    if (data.status === 'inactive') await this.assertNoActiveDepartments(id);
+    if (data.status === 'active') {
+      const branch = await this.repository.findById(id, scope);
+      if (branch) await this.assertCompanyIsActive(data.company_id ?? branch.company_id);
+    }
+    return super.update(id, data, scope);
+  }
+
+  async remove(id, scope) {
+    await this.assertNoActiveDepartments(id);
+    return super.remove(id, scope);
+  }
+
   async list(filters, scope) {
     const page = await super.list(filters, scope);
     return { ...page, data: await this.withEmployeeCounts(page.data) };
