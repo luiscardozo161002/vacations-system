@@ -1,4 +1,6 @@
+import { useState } from 'react';
 import { useLocation } from 'react-router';
+import { LogoutConfirm } from '../features/auth/components/LogoutConfirm';
 import { cn } from '../utils/cn';
 import { initial } from '../utils/format';
 import { Avatar } from '../components/atoms/Avatar';
@@ -21,6 +23,7 @@ interface SidebarProps {
 export function Sidebar({ collapsed, mobileOpen, displayName, roleLabel, onNavigate, onToggleCollapsed, onOpenProfile }: SidebarProps) {
   const { logout, can } = useAuth();
   const { pathname } = useLocation();
+  const [leaving, setLeaving] = useState(false);
 
   return (
     <aside
@@ -33,7 +36,7 @@ export function Sidebar({ collapsed, mobileOpen, displayName, roleLabel, onNavig
     >
       <div className="flex h-[var(--topbar-h)] shrink-0 items-center gap-2 border-b border-divider px-4 collapsed:justify-center">
         <BrandMark />
-        <span className="flex-1 truncate text-sm font-semibold collapsed:hidden">Vacation Manager</span>
+        <span className="flex-1 truncate text-sm font-semibold collapsed:hidden">Sistema de Vacaciones</span>
       </div>
 
       <nav className="flex-1 overflow-x-hidden overflow-y-auto px-2.5 py-3">
@@ -74,10 +77,11 @@ export function Sidebar({ collapsed, mobileOpen, displayName, roleLabel, onNavig
             <div className="text-xs text-muted">{roleLabel}</div>
           </div>
         </button>
-        <IconButton id="logout-btn" title="Cerrar sesión" onClick={logout} className="collapsed:hidden">
+        <IconButton id="logout-btn" title="Cerrar sesión" onClick={() => setLeaving(true)} className="collapsed:hidden">
           <Icon name="log-out" />
         </IconButton>
       </div>
+      {leaving && <LogoutConfirm onConfirm={logout} onCancel={() => setLeaving(false)} />}
 
       <button
         type="button"

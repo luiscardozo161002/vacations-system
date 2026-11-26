@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router';
 import { sdk } from '../../../services/sdk';
 import { useApiQuery } from '../../../hooks/use-api-query';
-import { formatCode, formatDate, formatDateTime, initial } from '../../../utils/format';
+import { formatCode, formatDate, formatDateTime, formatDaysHours, initial } from '../../../utils/format';
 import { EmptyState } from '../../../components/atoms/EmptyState';
 import { Icon } from '../../../components/atoms/Icon';
 import { PageHeader } from '../../../components/molecules/PageHeader';
@@ -13,6 +13,8 @@ import { FieldError } from '../../../components/atoms/FieldText';
 import { Grid } from '../../../components/molecules/Grid';
 import { ListRow } from '../../../components/molecules/ListRow';
 import { ProgressBar } from '../../../components/atoms/ProgressBar';
+import { MonthlyAbsences } from './MonthlyAbsences';
+import { ReasonBars } from './ReasonBars';
 
 const ACTIVITY_LABELS = {
   request: { pending: 'Solicitud pendiente', approved: 'Solicitud aprobada', rejected: 'Solicitud rechazada', cancelled: 'Solicitud cancelada' },
@@ -44,15 +46,23 @@ export function TeamDashboard({ firstName, allBranches }: TeamDashboardProps) {
       {error && <FieldError>{error}</FieldError>}
 
       <Grid cols={4} className="mb-4">
-        <StatCard icon="users" label="Empleados activos" value={summary?.active_employees ?? '—'} delta={allBranches ? 'En todas las sedes' : 'En tus sedes'} />
-        <StatCard icon="bell-ring" label="Ausentes hoy" value={summary?.absent_today ?? '—'} delta={`${absentShare}% del equipo`} />
         <StatCard
+          tone="blue"
+          icon="users"
+          label="Empleados activos"
+          value={summary?.active_employees ?? '—'}
+          delta={allBranches ? 'En todas las sedes' : 'En tus sedes'}
+        />
+        <StatCard tone="orange" icon="bell-ring" label="Ausentes hoy" value={summary?.absent_today ?? '—'} delta={`${absentShare}% del equipo`} />
+        <StatCard
+          tone="violet"
           icon="inbox"
           label="Solicitudes pendientes"
           value={summary?.pending_requests ?? '—'}
           delta={`${summary?.pending_requests ?? 0} requieren atención`}
         />
         <StatCard
+          tone="aqua"
           icon="pie-chart"
           label="Próximas vacaciones"
           value={summary?.upcoming_vacations ?? '—'}
@@ -80,7 +90,7 @@ export function TeamDashboard({ firstName, allBranches }: TeamDashboardProps) {
                     <strong>
                       {formatDate(absence.absence_start_date)} – {formatDate(absence.absence_end_date)}
                     </strong>
-                    {absence.days_taken} día{absence.days_taken === 1 ? '' : 's'}
+                    {formatDaysHours(absence.days_taken, absence.hours_taken)}
                   </>
                 }
               />
@@ -103,9 +113,30 @@ export function TeamDashboard({ firstName, allBranches }: TeamDashboardProps) {
                 </span>
                 <span className="text-[12.5px] text-muted">{department.active_employees}</span>
               </div>
-              <ProgressBar percent={(department.active_employees / maxCount) * 100} />
+              <ProgressBar percent={(department.active_employees / maxCount) * 100} color={department.color ?? 'var(--chart-1)'} />
             </div>
           ))}
+        </Card>
+      </Grid>
+
+      <Grid cols={2} className="mt-4">
+        <Card>
+          <CardHeader>
+            <CardTitle>Ausencias por mes</CardTitle>
+            <span className="text-xs text-muted">Últimos 6 meses, aprobadas</span>
+          </CardHeader>
+          {summary ? <MonthlyAbsences months={summary.by_month} /> : <EmptyState message="Cargando..." />}
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>Ausencias por motivo</CardTitle>
+            <span className="text-xs text-muted">Este año</span>
+          </CardHeader>
+          {summary?.by_reason.length ? (
+            <ReasonBars reasons={summary.by_reason} />
+          ) : (
+            <EmptyState message={summary ? 'Aún no hay ausencias este año.' : 'Cargando...'} />
+          )}
         </Card>
       </Grid>
 

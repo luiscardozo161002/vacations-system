@@ -6,7 +6,7 @@ Define los estilos, componentes y patrones de interacción compartidos por el fr
 
 ## Referencias del proyecto
 
-El prototipo de Vacation Manager es la referencia visual. La interfaz usa Tailwind CSS, componentes de Radix UI y Atomic Design, y el tema de Tailwind es la fuente de verdad de los tokens.
+El prototipo del Sistema de Vacaciones es la referencia visual. La interfaz usa Tailwind CSS, componentes de Radix UI y Atomic Design, y el tema de Tailwind es la fuente de verdad de los tokens.
 
 | Recurso | Referencia |
 | --- | --- |
@@ -83,13 +83,15 @@ La implementación y las propiedades disponibles se consultan en el componente c
 - Empleados, solicitudes, avisos y días de vacaciones se buscan por nombre o número y se filtran por empresa, sede y departamento (`OrgFilters`). Las opciones encadenan: la empresa limita las sedes y la sede limita los departamentos. Cada usuario solo ve las empresas, sedes y registros de las sedes que tiene asignadas. Los códigos de sede se muestran sin guion bajo (THH HGO) y los departamentos con el mismo nombre se distinguen con la sede.
 - No hay fotos de perfil: el avatar es la primera letra del nombre (`PersonCell`).
 - Cada empresa y cada sede tiene un color que se guarda en su registro y se cambia con `ColorPopover` en su tarjeta. La sede usa el de su empresa hasta que se le asigna uno propio, con la opción «Quitar color» para volver al de la empresa. Las tarjetas llevan una franja de ese color y `ColorBadge` muestra el código de sede y la empresa; los departamentos y los empleados muestran la insignia de su sede, para distinguir departamentos que comparten nombre.
-- Los saldos se muestran siempre como días y horas, tanto lo usado como lo disponible.
+- Los saldos se muestran siempre como días y horas, tanto lo usado como lo disponible; la misma regla aplica a lo que dura cada ausencia (perfil, dashboards, solicitudes, avisos, notificaciones y días de vacaciones).
+- El dashboard del equipo usa color con sentido: cada indicador tiene su tono, las barras por departamento llevan el color de su sede o empresa, y las gráficas de ausencias por mes (últimos seis meses, columnas) y por motivo (barras ordenadas, las colas agrupadas en «Otros») usan el azul de los tokens `--chart-1` a `--chart-4`, que cambian con el tema claro y oscuro.
 - Las tablas distinguen carga y ausencia de resultados.
 - Los campos tienen una etiqueta visible y la ayuda se vincula al control.
 - Los formularios presentan los errores de la API junto al contexto de la operación.
 - Las fechas se muestran como dd/mm/aaaa y se eligen en el calendario; el calendario deshabilita los días fuera del mínimo y el máximo permitidos. En las ausencias, los días de descanso del turno del empleado se marcan en rojo, no se pueden elegir y no se cuentan en el resumen del rango. Por omisión el sábado y el domingo vienen en rojo y no se cuentan. Si el turno trabaja sábados, el selector ofrece «Habilitar día sábado para este empleado»; al marcarlo el sábado se puede elegir, incluso como único día, y se descuenta. El aviso guarda lo contrario como `skip_saturdays`, y el formulario arranca con un solo día laborable. Las ausencias por horas son de un solo día y la casilla «Solo unas horas del día» está siempre disponible: cambia el rango por un selector de un día, que puede ser pasado, hoy o futuro, y después se elige la hora de inicio y la de fin entre las horas del turno del empleado, que devuelve la vista previa de la API.
 - Los campos validan en el cliente con las mismas reglas que la API y muestran bajo cada control qué falló. Los controles limitan lo que se puede escribir: solo dígitos en números y solo letras en nombres.
-- Al editar un registro el formulario se abre en solo lectura. `Editar` habilita los campos y `Guardar cambios` solo se activa cuando hay algún cambio. [FormDrawer](../frontend/src/components/organisms/FormDrawer.tsx), [validación de empleados](../frontend/src/features/employees/validation.ts)
+- Los campos de contraseña llevan un ojito para ver lo escrito. Cerrar sesión pide confirmación («¿Estás seguro de querer salir del sistema?»). Los botones de icono son redondos y de 40 px, y el logotipo del sistema es de 40 px en el menú y de 56 px en el inicio de sesión.
+- Al editar un registro, incluido el perfil propio, el formulario se abre en solo lectura. `Editar` habilita los campos y `Guardar cambios` solo se activa cuando hay algún cambio. [FormDrawer](../frontend/src/components/organisms/FormDrawer.tsx), [validación de empleados](../frontend/src/features/employees/validation.ts)
 
 ### Paneles y confirmaciones
 

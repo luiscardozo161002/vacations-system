@@ -8,6 +8,7 @@ const { holidaysBetween } = require('../../lib/holidays');
 
 const { upcomingDays, listLimit, myListLimit } = config.dashboard;
 const TODAY = db.raw('CURRENT_DATE');
+const MONTHS_BACK = 6;
 
 class DashboardService {
   constructor({ notices, entitlements }) {
@@ -34,16 +35,44 @@ class DashboardService {
     return scope
       .restrictDepartments(db('departments as d'), 'd.department_id')
       .join('branches as b', 'b.branch_id', 'd.branch_id')
+      .join('company as c', 'c.company_id', 'b.company_id')
       .leftJoin('employees as e', (join) => join.on('e.department_id', 'd.department_id').andOnVal('e.status', 'active'))
       .where('d.status', 'active')
-      .groupBy('d.department_id', 'd.department_name', 'b.code')
+      .groupBy('d.department_id', 'd.department_name', 'b.code', 'b.color', 'c.color')
       .orderBy(['d.department_name', 'b.code'])
       .select(
         'd.department_id',
         'd.department_name',
         'b.code as branch_code',
+        db.raw('COALESCE(b.color, c.color) AS color'),
         db.raw('COUNT(e.employee_id)::int AS active_employees')
       );
+  }
+
+  async absencesByMonth(scope) {
+    const rows = await this.scopedNotices(scope)
+      .where('n.status', 'approved')
+      .where('n.absence_start_date', '>=', db.raw(`date_trunc('month', CURRENT_DATE) - ?::integer * interval '1 month'`, [MONTHS_BACK - 1]))
+      .groupByRaw(`to_char(n.absence_start_date, 'YYYY-MM')`)
+      .select(db.raw(`to_char(n.absence_start_date, 'YYYY-MM') AS month`), db.raw('COUNT(*)::int AS absences'));
+    const countOf = new Map(rows.map((row) => [row.month, row.absences]));
+    const { month: current } = await db.first(db.raw(`to_char(CURRENT_DATE, 'YYYY-MM') AS month`));
+    const [year, number] = current.split('-').map(Number);
+
+    return Array.from({ length: MONTHS_BACK }, (_, index) => {
+      const date = new Date(Date.UTC(year, number - 1 - (MONTHS_BACK - 1 - index), 1));
+      const month = date.toISOString().slice(0, 7);
+      return { month, absences: countOf.get(month) ?? 0 };
+    });
+  }
+
+  absencesByReason(scope) {
+    return this.withNames(this.scopedNotices(scope))
+      .whereIn('n.status', ['approved', 'pending'])
+      .where('n.absence_start_date', '>=', db.raw(`date_trunc('year', CURRENT_DATE)`))
+      .groupBy('r.reason_id', 'r.description')
+      .orderBy([{ column: 'absences', order: 'desc' }, 'r.description'])
+      .select('r.description as reason_description', db.raw('COUNT(*)::int AS absences'));
   }
 
   upcomingAbsences(scope) {
@@ -107,7 +136,7 @@ class DashboardService {
   }
 
   async teamSummary(scope) {
-    const [activeEmployees, absentToday, pendingRequests, upcomingVacations, absences, departments, activity] =
+    const [activeEmployees, absentToday, pendingRequests, upcomingVacations, absences, departments, activity, byMonth, byReason] =
       await Promise.all([
         this.count(scope.restrictEmployees(db('employees'), 'employee_id').where('status', 'active')),
         this.countAbsentToday(scope),
@@ -116,6 +145,8 @@ class DashboardService {
         this.upcomingAbsences(scope),
         this.departmentsWithEmployees(scope),
         this.recentActivity(scope),
+        this.absencesByMonth(scope),
+        this.absencesByReason(scope),
       ]);
 
     return {
@@ -125,6 +156,8 @@ class DashboardService {
       upcoming_vacations: upcomingVacations,
       upcoming_absences: absences,
       by_department: departments,
+      by_month: byMonth,
+      by_reason: byReason,
       recent_activity: activity,
     };
   }

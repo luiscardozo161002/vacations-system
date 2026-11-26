@@ -42,6 +42,11 @@
     --neutral-bg: #f1f5f9;
     --neutral-text: #475569;
 
+    --chart-1: #2a78d6;
+    --chart-2: #eb6834;
+    --chart-3: #1baf7a;
+    --chart-4: #6250d6;
+
     --sidebar-w: 248px;
     --sidebar-w-collapsed: 76px;
     --topbar-h: 60px;
@@ -77,6 +82,11 @@
     --danger-text: #f87171;
     --neutral-bg: #1e293b;
     --neutral-text: #cbd5e1;
+
+    --chart-1: #3987e5;
+    --chart-2: #d95926;
+    --chart-3: #199e70;
+    --chart-4: #9085e9;
 
     --window-bg-rgb: 26, 34, 50;
   }
@@ -175,6 +185,11 @@
   --color-danger-fg: var(--danger-text);
   --color-neutral: var(--neutral-bg);
   --color-neutral-fg: var(--neutral-text);
+
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
 
   --font-sans: 'Inter', system-ui, 'Segoe UI', Roboto, sans-serif;
 

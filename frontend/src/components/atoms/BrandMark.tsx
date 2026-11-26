@@ -4,8 +4,8 @@ import { Icon } from './Icon';
 const mark = cva('flex shrink-0 items-center justify-center rounded-full bg-primary text-primary-fg', {
   variants: {
     size: {
-      default: 'size-7',
-      lg: 'size-8',
+      default: 'size-10 [&_svg]:size-5',
+      lg: 'size-14 [&_svg]:size-7',
     },
   },
   defaultVariants: { size: 'default' },
