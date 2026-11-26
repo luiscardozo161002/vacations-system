@@ -10,6 +10,7 @@ import { formatDate, formatDaysHours } from '../utils/format';
 import { DataTable, type Column } from '../components/organisms/DataTable';
 import { Icon } from '../components/atoms/Icon';
 import { PageHeader } from '../components/molecules/PageHeader';
+import { ClearFilters } from '../components/molecules/ClearFilters';
 import { PersonCell } from '../components/molecules/PersonCell';
 import { SearchInput } from '../components/molecules/SearchInput';
 import { Toolbar } from '../components/molecules/Toolbar';
@@ -48,7 +49,7 @@ const columns: Column<VacationEntitlement>[] = [
 
 function BalancesTable({ canGenerate }: { canGenerate: boolean }) {
   const showToast = useToast();
-  const { filters, page, setFilter, setPage } = usePageFilters(FILTERS);
+  const { filters, page, setFilter, setPage, clear, active } = usePageFilters(FILTERS);
   const [generating, setGenerating] = useState(false);
   const [confirming, setConfirming] = useState(false);
   const params = useMemo(
@@ -77,7 +78,7 @@ function BalancesTable({ canGenerate }: { canGenerate: boolean }) {
     <>
       <PageHeader
         title="Días de vacaciones"
-        subtitle="Saldo por empleado: días y horas otorgados, usados y disponibles, por periodo."
+        subtitle="Días de vacaciones por empleado: días y horas otorgados, usados y disponibles, por periodo."
       >
         {canGenerate && (
           <Button variant="secondary" onClick={() => setConfirming(true)} disabled={generating}>
@@ -89,6 +90,7 @@ function BalancesTable({ canGenerate }: { canGenerate: boolean }) {
       <Toolbar>
         <SearchInput id="bal-search" placeholder="Buscar por nombre o número..." value={filters.q} onSearch={(q) => setFilter({ q })} />
         <OrgFilters idPrefix="bal" filters={filters} setFilter={setFilter} />
+        <ClearFilters active={active} onClear={clear} />
       </Toolbar>
 
       <DataTable
@@ -98,7 +100,7 @@ function BalancesTable({ canGenerate }: { canGenerate: boolean }) {
         page={page}
         onPageChange={setPage}
         loading={loading}
-        emptyMessage={error ?? 'No hay saldos generados.'}
+        emptyMessage={error ?? 'No hay días de vacaciones generados.'}
       />
       {confirming && (
         <ConfirmDialog

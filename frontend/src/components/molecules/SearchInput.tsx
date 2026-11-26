@@ -20,5 +20,15 @@ export function SearchInput({ value, onSearch, placeholder, id }: SearchInputPro
     return () => clearTimeout(timer);
   }, [text, value]);
 
-  return <SearchBox id={id} aria-label={placeholder} placeholder={placeholder} value={text} onChange={(e) => setText(e.target.value)} />;
+  return (
+    <SearchBox
+      wrapperClassName="min-w-60 flex-1"
+      id={id}
+      aria-label={placeholder}
+      placeholder={placeholder}
+      value={text}
+      onChange={(e) => setText(e.target.value)}
+      onClear={() => setText('')}
+    />
+  );
 }

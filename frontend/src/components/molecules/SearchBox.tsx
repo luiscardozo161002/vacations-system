@@ -6,10 +6,13 @@ interface SearchBoxProps extends InputHTMLAttributes<HTMLInputElement> {
   wrapperClassName?: string;
   wrapperId?: string;
   wrapperRef?: Ref<HTMLDivElement>;
+  onClear?: () => void;
   children?: ReactNode;
 }
 
-export function SearchBox({ wrapperClassName, wrapperId, wrapperRef, children, className, ...input }: SearchBoxProps) {
+export function SearchBox({ wrapperClassName, wrapperId, wrapperRef, onClear, children, className, ...input }: SearchBoxProps) {
+  const canClear = Boolean(onClear) && typeof input.value === 'string' && input.value !== '' && !input.disabled;
+
   return (
     <div
       id={wrapperId}
@@ -20,7 +23,19 @@ export function SearchBox({ wrapperClassName, wrapperId, wrapperRef, children, c
       )}
     >
       <Icon name="search" />
-      <input type="text" className={cn('h-full flex-1 border-none bg-transparent text-base text-fg outline-none', className)} {...input} />
+      <input type="text" className={cn('h-full min-w-0 flex-1 border-none bg-transparent text-base text-fg outline-none', className)} {...input} />
+      {canClear && (
+        <button
+          type="button"
+          aria-label="Borrar"
+          title="Borrar"
+          onMouseDown={(event) => event.preventDefault()}
+          onClick={onClear}
+          className="inline-flex size-6 shrink-0 cursor-pointer items-center justify-center rounded-full text-muted transition-colors hover:bg-line hover:text-fg"
+        >
+          <Icon name="x" />
+        </button>
+      )}
       {children}
     </div>
   );

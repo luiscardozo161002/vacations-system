@@ -105,6 +105,10 @@ export function SearchSelect({
       placeholder={placeholder}
       value={typed ?? selectedLabel}
       onChange={(e) => change(e.target.value)}
+      onClear={() => {
+        change('');
+        document.getElementById(id)?.focus();
+      }}
       onFocus={() => setOpen(true)}
       onClick={() => setOpen(true)}
       onBlur={close}

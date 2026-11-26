@@ -17,6 +17,7 @@ import { DataTable, type Column } from '../components/organisms/DataTable';
 import { Select } from '../components/atoms/Select';
 import { ConfirmDialog } from '../components/organisms/Dialog';
 import { PageHeader } from '../components/molecules/PageHeader';
+import { ClearFilters } from '../components/molecules/ClearFilters';
 import { OrgFilters } from '../features/organization/components/OrgFilters';
 import { ORG_FILTERS, orgParams } from '../features/organization/org-filters';
 import { SearchInput } from '../components/molecules/SearchInput';
@@ -30,7 +31,7 @@ import { AccessDialog, type GrantedAccess } from '../features/employees/componen
 import { useAuth } from '../contexts/auth-context';
 import { IconButton } from '../components/atoms/IconButton';
 import { Button } from '../components/atoms/Button';
-import { RowActions, Toolbar, ToolbarSpacer } from '../components/molecules/Toolbar';
+import { RowActions, Toolbar } from '../components/molecules/Toolbar';
 
 const FILTERS = { q: '', ...ORG_FILTERS, estado: '', perfil: '' };
 
@@ -43,7 +44,7 @@ const STATUS_OPTIONS = [
 export function EmployeesPage() {
   const showToast = useToast();
   const { can } = useAuth();
-  const { filters, page, setFilter, setPage } = usePageFilters(FILTERS);
+  const { filters, page, setFilter, setPage, clear, active } = usePageFilters(FILTERS);
   const form = useRecordForm<Employee>();
 
   const { departments, error: departmentsError } = useDepartments();
@@ -183,7 +184,7 @@ export function EmployeesPage() {
         />
         <OrgFilters idPrefix="emp" filters={filters} setFilter={setFilter} />
         <Select compact aria-label="Estado" value={filters.estado} onChange={(estado) => setFilter({ estado })} options={STATUS_OPTIONS} />
-        <ToolbarSpacer />
+        <ClearFilters active={active} onClear={clear} />
         <IconButton title="Exportar" onClick={exportCsv} disabled={exporting}>
           <Icon name="download" />
         </IconButton>
