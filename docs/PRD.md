@@ -49,7 +49,7 @@ El Superusuario administra los permisos por rol y las acciones de revisión de c
 | Avisos | Registrar, consultar y editar dentro de las reglas del flujo | Consultar los propios |
 | Saldo | Consultar y ajustar en sus sedes | Consultar el propio |
 | Departamentos | Consultar y editar en sus sedes | Consultar el calendario compartido |
-| Empresas | Consultar las correspondientes a sus sedes | Acceso mediante sus documentos |
+| Empresas y sedes | Consultar las de sus sedes y elegir su color; el alta, la edición y la baja son del Superusuario | Acceso mediante sus documentos |
 | Turnos y reglas | Consultar y editar | Uso al calcular sus ausencias |
 | Usuarios, permisos y auditoría | Administración del Superusuario | Acceso a su cuenta |
 
