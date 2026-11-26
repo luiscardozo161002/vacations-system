@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import type { NoticePreview } from '@vacations/sdk';
 import { cva } from 'class-variance-authority';
 import { formatDaysHours } from '../../../utils/format';
+import { BalanceBadges } from './BalanceBadges';
 
 interface BreakdownBoxProps {
   preview: NoticePreview | null;
@@ -45,16 +46,27 @@ export function BreakdownBox({ preview, verb = 'Vas a tomar', placeholder }: Bre
 
   const taken = formatDaysHours(breakdown.days, breakdown.hours);
   const note = restNote(breakdown.rest_days, breakdown.holidays);
+  const badges = balance && (
+    <div className="mt-2 text-fg">
+      <BalanceBadges
+        total={balance.total_days}
+        used={balance.used}
+        available={balance.available}
+        remaining={preview.affects_balance ? balance.remaining : null}
+      />
+    </div>
+  );
 
   if (error?.code === 'INSUFFICIENT_BALANCE' && balance) {
     return (
       <Box tone="danger">
-        <strong>Esta solicitud excede el saldo disponible.</strong>
+        <strong>Esta solicitud excede los días de vacaciones disponibles.</strong>
         <br />
         {verb}: {taken}
         {note}.
         <br />
-        Saldo actual: {formatDaysHours(balance.available.days, balance.available.hours)} (turno {breakdown.daily_hours}h/día).
+        Turno de {breakdown.daily_hours} h por día.
+        {badges}
       </Box>
     );
   }
@@ -74,13 +86,13 @@ export function BreakdownBox({ preview, verb = 'Vas a tomar', placeholder }: Bre
     <Box>
       {verb}: <strong>{taken}</strong>
       {note}.
-      {balance && (
+      {!preview.affects_balance && (
         <>
           <br />
-          Saldo actual: {formatDaysHours(balance.available.days, balance.available.hours)} · Saldo restante:{' '}
-          <strong>{formatDaysHours(balance.remaining.days, balance.remaining.hours)}</strong>.
+          Este motivo no descuenta de las vacaciones.
         </>
       )}
+      {badges}
     </Box>
   );
 }

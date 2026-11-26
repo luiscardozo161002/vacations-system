@@ -12,6 +12,7 @@ const BUSINESS_STATUS = {
   COMPANY_NOT_FOUND: 404,
   BRANCH_NOT_FOUND: 404,
   INVALID_BRANCH: 422,
+  HOURS_OVERLAP: 409,
   INVALID_COMPANY: 422,
   COMPANY_HAS_BRANCHES: 409,
   BRANCH_HAS_DEPARTMENTS: 409,
@@ -77,7 +78,7 @@ const DB_ERRORS = {
   vacation_entitlements_rule_id_foreign: missingReference('INVALID_RULE', 'La regla de acumulación no existe'),
   uq_vacation_entitlements: duplicate(
     'VACATION_ENTITLEMENT_EXISTS',
-    'Ya existe un saldo de vacaciones para ese empleado en ese periodo'
+    'Ya existen días de vacaciones para ese empleado en ese periodo'
   ),
   notices_employee_id_foreign: missingReference('INVALID_EMPLOYEE', 'El empleado no existe'),
   notices_reason_id_foreign: missingReference('INVALID_REASON', 'El motivo no existe'),

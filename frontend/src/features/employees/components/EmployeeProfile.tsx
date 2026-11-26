@@ -153,7 +153,7 @@ export function EmployeeProfile({ employee, departmentName, shiftName, onClose }
         )}
         <Divider />
         <CardTitle className="mb-2.5">
-          Saldo de vacaciones{' '}
+          Días de vacaciones{' '}
           {balance ? `${formatDate(balance.period_start)} – ${formatDate(balance.period_end)}` : ''}
         </CardTitle>
         {balance ? (
@@ -169,7 +169,7 @@ export function EmployeeProfile({ employee, departmentName, shiftName, onClose }
             />
           </>
         ) : (
-          <p className="text-[12.5px] text-muted">{data ? 'Sin saldo registrado todavía.' : 'Cargando...'}</p>
+          <p className="text-[12.5px] text-muted">{data ? 'Sin días de vacaciones registrados todavía.' : 'Cargando...'}</p>
         )}
         <Divider />
         <CardTitle className="mb-2.5">

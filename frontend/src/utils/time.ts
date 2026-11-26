@@ -29,3 +29,15 @@ export const firstHour = (limits: TimeRange): TimeRange => ({
   start: limits.start,
   end: toClock(Math.min(toMinutes(limits.start) + HOUR, toMinutes(limits.end))),
 });
+
+export const overlapsAny = (range: TimeRange, busy: TimeRange[]) =>
+  busy.some((taken) => range.start < taken.end && range.end > taken.start);
+
+export const firstFreeHour = (limits: TimeRange, busy: TimeRange[]): TimeRange | null => {
+  const last = toMinutes(limits.end);
+  for (let minutes = toMinutes(limits.start); minutes < last; minutes += HOUR) {
+    const slot = { start: toClock(minutes), end: toClock(Math.min(minutes + HOUR, last)) };
+    if (!overlapsAny(slot, busy)) return slot;
+  }
+  return null;
+};

@@ -4,13 +4,14 @@ import { sdk } from '../../../services/sdk';
 import { getErrorMessage } from '../../../utils/get-error-message';
 import { useApiQuery } from '../../../hooks/use-api-query';
 import { saveFile } from '../../../utils/save-file';
-import { formatAbsenceRange, formatDaysHours, initial, todayIso } from '../../../utils/format';
+import { absenceDates, absenceHours, formatAbsenceRange, formatDate, formatDaysHours, initial, todayIso } from '../../../utils/format';
 import { Drawer } from '../../../components/organisms/Drawer';
 import { ConfirmDialog } from '../../../components/organisms/Dialog';
 import { Icon } from '../../../components/atoms/Icon';
 import { StatusBadge } from '../../../components/atoms/StatusBadge';
 import { useToast } from '../../../hooks/use-toast';
 import { BreakdownBox } from './BreakdownBox';
+import { BalanceBadges } from './BalanceBadges';
 import { Button } from '../../../components/atoms/Button';
 import { KeyValue, KeyValueGrid } from '../../../components/molecules/KeyValue';
 import { Avatar } from '../../../components/atoms/Avatar';
@@ -49,6 +50,7 @@ export function AbsenceDetail({ notice, user, can, onClose, onChanged }: Absence
   const [confirming, setConfirming] = useState<Action | null>(null);
   const [working, setWorking] = useState(false);
 
+  const sameDayHours = notice.absence_start_date === notice.absence_end_date && absenceHours(notice) !== null;
   const isPending = notice.status === 'pending';
   const isReviewer = can('approvals:review');
   const allows = (action: Action) => isReviewer && user.review_actions.includes(action);
@@ -76,6 +78,14 @@ export function AbsenceDetail({ notice, user, can, onClose, onChanged }: Absence
       ),
     canPreview,
   );
+
+  const { data: balances } = useApiQuery(
+    ['balances', 'employee', notice.employee_id],
+    (signal) =>
+      sdk.vacationEntitlements.list({ employee_id: notice.employee_id, status: 'active', sort: '-period_start', pageSize: 1 }, { signal }),
+    can('balances:view'),
+  );
+  const balance = balances?.data[0] ?? null;
 
   const run = async (action: Action) => {
     setConfirming(null);
@@ -153,11 +163,31 @@ export function AbsenceDetail({ notice, user, can, onClose, onChanged }: Absence
           {notice.kind === 'notice' && (
             <KeyValue label="Empleado">{notice.employee_name}</KeyValue>
           )}
-          <KeyValue label="Fecha y horario">{formatAbsenceRange(notice)}</KeyValue>
+          {sameDayHours ? (
+            <>
+              <KeyValue label="Fecha">{absenceDates(notice)}</KeyValue>
+              <KeyValue label="Horario">{absenceHours(notice)}</KeyValue>
+            </>
+          ) : (
+            <KeyValue label="Fechas">{formatAbsenceRange(notice)}</KeyValue>
+          )}
           <KeyValue label={labels.days}>{formatDaysHours(notice.days_taken, notice.hours_taken)}</KeyValue>
           <KeyValue label="Motivo">{notice.reason_description}</KeyValue>
           <KeyValue label="Estado"><StatusBadge status={notice.status} /></KeyValue>
         </KeyValueGrid>
+        {balance && !preview && (
+          <>
+            <Divider />
+            <p className="mt-3 mb-2 text-xs font-semibold text-muted uppercase">
+              Días de vacaciones · {formatDate(balance.period_start)} – {formatDate(balance.period_end)}
+            </p>
+            <BalanceBadges
+              total={balance.total_days}
+              used={{ days: balance.used_days, hours: balance.used_hours }}
+              available={balance.available}
+            />
+          </>
+        )}
         {notice.remarks && (
           <>
             <Divider />

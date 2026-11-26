@@ -33,6 +33,7 @@ const preview = Joi.object({
   absence_start_time: fields.absence_start_time,
   absence_end_time: fields.absence_end_time,
   skip_saturdays: fields.skip_saturdays,
+  ignore_notice_id: id,
 }).unknown(false);
 
 const update = Joi.object(fields).min(1).unknown(false);

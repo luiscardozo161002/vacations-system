@@ -58,6 +58,11 @@ before(async () => {
 });
 
 beforeEach(async () => {
+  await db('notices')
+    .where({ employee_id: EMPLOYEE })
+    .whereIn('status', ['pending', 'approved'])
+    .whereBetween('absence_start_date', [MONDAY, NEXT_FRIDAY])
+    .update({ status: 'cancelled' });
   await db('vacation_entitlements')
     .where({ employee_id: EMPLOYEE })
     .update({
@@ -137,6 +142,57 @@ describe('POST /notices/preview', () => {
     assert.deepEqual(withoutSaturday.result.breakdown, { days: 2, hours: 0, rest_days: 2, holidays: 0, daily_hours: 8 });
   });
 
+  it('un motivo que no descuenta igual muestra el saldo, lo usado y lo disponible', async () => {
+    const res = await call('EMPLOYEE', 'POST', '/notices/preview', { ...vacation(MONDAY), reason_id: PERSONAL_LEAVE });
+
+    assert.equal(res.result.affects_balance, false);
+    assert.deepEqual(res.result.balance.used, { days: 5, hours: 0 });
+    assert.deepEqual(res.result.balance.available, { days: 7, hours: 0 });
+    assert.deepEqual(res.result.balance.remaining, { days: 7, hours: 0 });
+  });
+
+  it('el saldo trae lo usado en días y horas y lo que quedaría', async () => {
+    const res = await call('EMPLOYEE', 'POST', '/notices/preview', vacation(MONDAY, MONDAY, {
+      absence_start_time: '13:00',
+      absence_end_time: '15:00',
+    }));
+
+    assert.deepEqual(res.result.balance.used, { days: 5, hours: 0 });
+    assert.deepEqual(res.result.balance.available, { days: 7, hours: 0 });
+    assert.deepEqual(res.result.balance.remaining, { days: 6, hours: 6 });
+  });
+
+  it('las horas ya tomadas ese día salen como ocupadas y no se pueden volver a pedir', async () => {
+    const hours = (from, to) => vacation(MONDAY, MONDAY, { absence_start_time: from, absence_end_time: to });
+
+    const first = await call('EMPLOYEE', 'POST', '/notices', hours('07:00', '12:00'));
+    const busy = await call('EMPLOYEE', 'POST', '/notices/preview', vacation(MONDAY));
+    const overlapping = await call('EMPLOYEE', 'POST', '/notices', hours('11:00', '13:00'));
+    const adjacent = await call('EMPLOYEE', 'POST', '/notices', hours('12:00', '14:00'));
+    const ignoring = await call('EMPLOYEE', 'POST', '/notices/preview', {
+      ...vacation(MONDAY),
+      ignore_notice_id: first.result.notice_id,
+    });
+
+    assert.equal(first.statusCode, 201);
+    assert.deepEqual(busy.result.busy_hours, [{ start: '07:00', end: '12:00' }]);
+    assert.equal(overlapping.statusCode, 409);
+    assert.equal(overlapping.result.error.code, 'HOURS_OVERLAP');
+    assert.equal(adjacent.statusCode, 201);
+    assert.deepEqual(ignoring.result.busy_hours, [{ start: '12:00', end: '14:00' }]);
+  });
+
+  it('un día completo ya pedido deja el día ocupado', async () => {
+    await call('EMPLOYEE', 'POST', '/notices', vacation(MONDAY));
+    const res = await call('EMPLOYEE', 'POST', '/notices', vacation(MONDAY, MONDAY, {
+      absence_start_time: '13:00',
+      absence_end_time: '14:00',
+    }));
+
+    assert.equal(res.statusCode, 409);
+    assert.equal(res.result.error.code, 'HOURS_OVERLAP');
+  });
+
   it('avisa cuando excede el saldo sin rechazar la vista previa', async () => {
     const res = await call('EMPLOYEE', 'POST', '/notices/preview', vacation(MONDAY, NEXT_FRIDAY));
 
@@ -144,7 +200,7 @@ describe('POST /notices/preview', () => {
     assert.equal(res.result.breakdown.days, 11);
     assert.deepEqual(res.result.error, {
       code: 'INSUFFICIENT_BALANCE',
-      message: 'Excede el saldo disponible de 7 días',
+      message: 'Excede los días de vacaciones disponibles: 7 días',
     });
   });
 });

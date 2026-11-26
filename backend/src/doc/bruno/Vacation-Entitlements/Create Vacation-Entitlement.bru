@@ -29,5 +29,5 @@ body:json {
 docs {
   Requeridos: `employee_id`, `period_year`, `years_of_service`, `rule_id`, `total_days`, `period_start`, `period_end` (de aniversario a aniversario). `used_days` y `used_hours` opcionales (default 0).
 
-  Errores: `422 INVALID_EMPLOYEE` / `INVALID_RULE` si los ids no existen; `409 VACATION_ENTITLEMENT_EXISTS` si ya existe un saldo para ese empleado en ese periodo.
+  Errores: `422 INVALID_EMPLOYEE` / `INVALID_RULE` si los ids no existen; `409 VACATION_ENTITLEMENT_EXISTS` si ya existen días de vacaciones para ese empleado en ese periodo.
 }
