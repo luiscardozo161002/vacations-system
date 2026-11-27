@@ -4,7 +4,6 @@ import { sdk } from '../services/sdk';
 import { getErrorMessage } from '../utils/get-error-message';
 import { TextField } from '../components/molecules/FormField';
 import { useAuth } from '../contexts/auth-context';
-import { DevAccounts } from '../features/auth/components/DevAccounts';
 import { Button } from '../components/atoms/Button';
 import { Checkbox } from '../components/atoms/Checkbox';
 import { LinkButton } from '../components/atoms/LinkButton';
@@ -176,16 +175,6 @@ export function LoginPage() {
           Entrar
         </Button>
       </form>
-
-      {import.meta.env.DEV && (
-        <DevAccounts
-          onPick={(pickedEmail, pickedPassword) => {
-            setEmail(pickedEmail);
-            setPassword(pickedPassword);
-            setError(null);
-          }}
-        />
-      )}
     </LoginCard>
   );
 }
