@@ -9,12 +9,18 @@ const NUMBER_PATTERN = new RegExp(`^\\d{${NUMBER_LENGTH}}$`);
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 
+export const MIN_AGE = 15;
+export const MAX_AGE = 100;
+
+export const yearsAgo = (today: string, years: number): string => `${Number(today.slice(0, 4)) - years}${today.slice(4)}`;
+
 export interface EmployeeValues {
   employee_name: string;
   employee_number: string;
   department_id: string;
   shift_id: string;
   start_date: string;
+  birth_date: string;
   email: string;
 }
 
@@ -42,6 +48,14 @@ const validDate = (value: string, today: string) => {
   if (value > today) return 'La fecha de ingreso no puede ser posterior a hoy';
 };
 
+const validBirthDate = (value: string, today: string) => {
+  if (!value) return undefined;
+  if (!DATE_PATTERN.test(value) || Number.isNaN(Date.parse(value))) return 'La fecha de nacimiento no es válida';
+  if (value > yearsAgo(today, MIN_AGE) || value < yearsAgo(today, MAX_AGE)) {
+    return `La fecha de nacimiento no es válida: el empleado debe tener entre ${MIN_AGE} y ${MAX_AGE} años`;
+  }
+};
+
 const validEmail = (value: string) => {
   const email = value.trim();
   if (!email) return undefined;
@@ -56,6 +70,7 @@ export const validateEmployee = (values: EmployeeValues, today: string): Employe
     department_id: values.department_id ? undefined : 'Selecciona un departamento de la lista',
     shift_id: values.shift_id ? undefined : 'Selecciona un turno de la lista',
     start_date: validDate(values.start_date, today),
+    birth_date: validBirthDate(values.birth_date, today),
     email: validEmail(values.email),
   };
   return Object.fromEntries(Object.entries(errors).filter(([, message]) => message)) as EmployeeErrors;

@@ -21,6 +21,7 @@ class Employee extends Model {
         employee_number: { type: 'string', pattern: '^\\d{4}$' },
         employee_name: { type: 'string', maxLength: 150 },
         start_date: { type: 'string', format: 'date' },
+        birth_date: { type: ['string', 'null'], format: 'date' },
         status: { type: 'string', enum: ['active', 'inactive'] },
         created_at: { type: 'string' },
         updated_at: { type: 'string' },

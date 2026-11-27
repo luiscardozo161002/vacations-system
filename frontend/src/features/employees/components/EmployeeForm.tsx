@@ -11,9 +11,12 @@ import { describedBy } from '../../../utils/described-by';
 import {
   EMAIL_MAX,
   NAME_MAX,
+  MAX_AGE,
+  MIN_AGE,
   NUMBER_LENGTH,
   cleanName,
   cleanNumber,
+  yearsAgo,
   validateEmployee,
   type EmployeeValues,
 } from '../validation';
@@ -33,6 +36,7 @@ const toValues = (employee: Employee | null, departments: Department[], shifts: 
   department_id: String(employee?.department_id ?? departments[0]?.department_id ?? ''),
   shift_id: String(employee?.shift_id ?? shifts[0]?.shift_id ?? ''),
   start_date: employee?.start_date.slice(0, 10) ?? todayIso(),
+  birth_date: employee?.birth_date?.slice(0, 10) ?? '',
   email: '',
 });
 
@@ -65,6 +69,7 @@ export function EmployeeForm({ employee, departments, shifts, onClose, onSaved }
       department_id: Number(form.department_id),
       shift_id: Number(form.shift_id),
       start_date: form.start_date,
+      birth_date: form.birth_date || undefined,
     };
 
     submit(async () => {
@@ -151,6 +156,17 @@ export function EmployeeForm({ employee, departments, shifts, onClose, onSaved }
           max={today}
           invalid={Boolean(errors.start_date)}
           describedBy={describedBy('f-start', undefined, errors.start_date)}
+        />
+      </FormField>
+      <FormField label="Fecha de nacimiento" htmlFor="f-birth" error={errors.birth_date} hint="Opcional.">
+        <DatePicker
+          id="f-birth"
+          value={form.birth_date}
+          onChange={(value) => setField('birth_date', value)}
+          min={yearsAgo(today, MAX_AGE)}
+          max={yearsAgo(today, MIN_AGE)}
+          invalid={Boolean(errors.birth_date)}
+          describedBy={describedBy('f-birth', 'Opcional.', errors.birth_date)}
         />
       </FormField>
       {!employee && (

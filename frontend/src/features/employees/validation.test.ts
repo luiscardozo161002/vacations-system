@@ -9,6 +9,7 @@ const valid: EmployeeValues = {
   department_id: '1',
   shift_id: '2',
   start_date: '2026-01-15',
+  birth_date: '',
   email: '',
 };
 
@@ -43,6 +44,15 @@ describe('validateEmployee', () => {
     expect(errorsFor({ start_date: '2026-11-20' }).start_date).toBe('La fecha de ingreso no puede ser posterior a hoy');
     expect(errorsFor({ start_date: '' }).start_date).toBe('Indica la fecha de ingreso');
     expect(errorsFor({ start_date: '2026-13-45' }).start_date).toBe('La fecha de ingreso no es válida');
+  });
+
+  it('la fecha de nacimiento es opcional y el empleado debe tener entre 15 y 100 años', () => {
+    expect(errorsFor({ birth_date: '' }).birth_date).toBeUndefined();
+    expect(errorsFor({ birth_date: '1990-06-15' }).birth_date).toBeUndefined();
+    expect(errorsFor({ birth_date: '2011-11-19' }).birth_date).toBeUndefined();
+    expect(errorsFor({ birth_date: '2011-11-20' }).birth_date).toMatch(/entre 15 y 100 años/);
+    expect(errorsFor({ birth_date: '1926-11-18' }).birth_date).toMatch(/entre 15 y 100 años/);
+    expect(errorsFor({ birth_date: '1990-13-45' }).birth_date).toBe('La fecha de nacimiento no es válida');
   });
 
   it('valida el formato del correo solo cuando se escribe', () => {

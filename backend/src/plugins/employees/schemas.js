@@ -33,6 +33,23 @@ const startDate = isoDate
     'string.base': 'La fecha de ingreso debe tener el formato AAAA-MM-DD',
   });
 
+const MIN_AGE = 15;
+const MAX_AGE = 100;
+
+const yearsAgo = (years) => `${Number(today().slice(0, 4)) - years}${today().slice(4)}`;
+
+const birthDate = isoDate
+  .allow(null)
+  .custom((value, helpers) =>
+    value !== null && (value > yearsAgo(MIN_AGE) || value < yearsAgo(MAX_AGE))
+      ? helpers.message({ custom: `La fecha de nacimiento no es válida: el empleado debe tener entre ${MIN_AGE} y ${MAX_AGE} años` })
+      : value
+  )
+  .messages({
+    'string.base': 'La fecha de nacimiento debe tener el formato AAAA-MM-DD',
+    'string.empty': 'La fecha de nacimiento debe tener el formato AAAA-MM-DD',
+  });
+
 const email = Joi.string()
   .trim()
   .lowercase()
@@ -70,6 +87,7 @@ const fields = {
       'string.pattern.base': 'El nombre solo admite letras, espacios, puntos, apóstrofos y guiones',
     }),
   start_date: startDate,
+  birth_date: birthDate,
   status: Joi.string().valid('active', 'inactive'),
 };
 
@@ -79,6 +97,7 @@ const create = Joi.object({
   employee_number: fields.employee_number.required(),
   employee_name: fields.employee_name.required(),
   start_date: fields.start_date.required(),
+  birth_date: fields.birth_date,
   status: fields.status.default('active'),
   email,
 }).unknown(false);

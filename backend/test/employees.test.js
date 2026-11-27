@@ -84,6 +84,16 @@ describe('POST /employees validaciones', () => {
     await rejects({ start_date: '2026-02-30' }, /fecha debe ser válida/);
   });
 
+  it('la fecha de nacimiento es opcional y debe dar entre 15 y 100 años', async () => {
+    const year = new Date().getFullYear();
+
+    await rejects({ birth_date: `${year - 10}-06-15` }, /entre 15 y 100 años/);
+    await rejects({ birth_date: `${year - 120}-06-15` }, /entre 15 y 100 años/);
+    await rejects({ birth_date: '1990-02-30' }, /fecha debe ser válida/);
+    assert.equal((await create({ ...VALID_EMPLOYEE, employee_number: '7002', birth_date: '1990-06-15' })).statusCode, 201);
+    assert.equal((await create({ ...VALID_EMPLOYEE, employee_number: '7003', employee_name: 'Sin Fecha Nacimiento' })).statusCode, 201);
+  });
+
   it('valida el correo', async () => {
     await rejects({ email: 'sin-arroba' }, /correo electrónico no es válido/);
   });

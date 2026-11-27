@@ -122,6 +122,11 @@ export function EmployeeProfile({ employee, departmentName, shiftName, onClose }
           <KeyValue label="Fecha de ingreso">{formatDate(employee.start_date)}</KeyValue>
           <KeyValue label="Estado"><StatusBadge status={employee.status} /></KeyValue>
           <KeyValue label="Antigüedad">{years} año{years === 1 ? '' : 's'}</KeyValue>
+          {employee.birth_date && (
+            <KeyValue label="Fecha de nacimiento">
+              {formatDate(employee.birth_date)} · {yearsSince(employee.birth_date)} años
+            </KeyValue>
+          )}
         </KeyValueGrid>
         <Divider />
         <CardTitle className="mb-2.5">

@@ -27,7 +27,7 @@ body:json {
 }
 
 docs {
-  Requeridos: `department_id`, `shift_id`, `employee_number`, `employee_name`, `start_date`.
+  Requeridos: `department_id`, `shift_id`, `employee_number`, `employee_name`, `start_date`. Opcional `birth_date` (AAAA-MM-DD, el empleado debe tener entre 15 y 100 años; `null` la quita).
   `status` y `email` son opcionales (`status` por defecto `active`).
 
   Validaciones: `employee_number` son exactamente 4 digitos; `employee_name` de 3 a 150 caracteres, solo letras, espacios, puntos, apostrofos y guiones; `start_date` no puede ser posterior a hoy; `email` con formato valido.

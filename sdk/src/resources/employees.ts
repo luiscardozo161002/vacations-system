@@ -11,6 +11,7 @@ export interface Employee {
   employee_number: string;
   employee_name: string;
   start_date: string;
+  birth_date: string | null;
   status: RecordStatus;
   created_at: string;
   updated_at: string;
@@ -51,6 +52,7 @@ export interface CreateEmployeeInput {
   employee_number: string;
   employee_name: string;
   start_date: string;
+  birth_date?: string | null;
   status?: RecordStatus;
   email?: string;
 }

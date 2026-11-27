@@ -63,6 +63,25 @@ describe('EmployeeProfile', () => {
     expect(screen.getByText('5 h')).toBeTruthy();
   });
 
+  it('muestra la fecha de nacimiento solo cuando se registró', async () => {
+    const { unmount } = render(
+      <QueryClientProvider client={queryClient}>
+        <EmployeeProfile employee={{ ...employee, birth_date: '1992-03-14' }} departmentName="Fletes" shiftName="Operaciones" onClose={vi.fn()} />
+      </QueryClientProvider>,
+    );
+
+    expect(await screen.findByText('Fecha de nacimiento')).toBeTruthy();
+    unmount();
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <EmployeeProfile employee={{ ...employee, birth_date: null }} departmentName="Fletes" shiftName="Operaciones" onClose={vi.fn()} />
+      </QueryClientProvider>,
+    );
+    await screen.findByText('Antigüedad');
+    expect(screen.queryByText('Fecha de nacimiento')).toBeNull();
+  });
+
   it('muestra el último aviso con su motivo y lo repite en el historial', async () => {
     notices.mockResolvedValue({
       data: [

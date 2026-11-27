@@ -58,6 +58,7 @@ class EmployeeRepository extends CrudRepository {
         'd.department_name',
         's.shift_name',
         'employees.start_date',
+        'employees.birth_date',
         'u.email',
         'employees.status'
       );
