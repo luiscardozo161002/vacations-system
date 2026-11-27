@@ -22,7 +22,10 @@ export function LoginCard({ title, subtitle, children }: LoginCardProps) {
             onError={(e) => e.currentTarget.remove()}
           />
           <div className="absolute bottom-0 left-0 w-[calc(100%-96px)] bg-linear-to-t from-white via-white/80 to-transparent px-6 pt-20 pb-8">
-            <p className="text-center text-3xl leading-none font-black tracking-wide text-transparent uppercase [-webkit-text-stroke:1.5px_rgb(0_0_0/0.6)] xl:text-4xl">
+            <p
+              className="bg-cover bg-bottom bg-clip-text text-center text-3xl leading-none font-black tracking-wide text-transparent uppercase grayscale [-webkit-text-stroke:1px_rgb(0_0_0/0.55)] xl:text-4xl"
+              style={{ backgroundImage: `linear-gradient(rgb(0 0 0 / 0.3), rgb(0 0 0 / 0.3)), url(${LOGIN_IMAGE})` }}
+            >
               Sistema de Vacaciones
             </p>
           </div>
