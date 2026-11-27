@@ -17,14 +17,23 @@ import { PageHeader } from '../components/molecules/PageHeader';
 import { StatusBadge } from '../components/atoms/StatusBadge';
 import { useToast } from '../hooks/use-toast';
 import { useAuth } from '../contexts/auth-context';
-import { useActiveEmployees } from '../features/employees/hooks/useActiveEmployees';
+import { useIsGlobal } from '../hooks/use-is-global';
+import { statusAction } from '../utils/status-action';
+import { Select } from '../components/atoms/Select';
 import { UserForm } from '../features/users/components/UserForm';
 import { UserAssignment } from '../features/users/components/UserAssignment';
 import { IconButton } from '../components/atoms/IconButton';
 import { Button } from '../components/atoms/Button';
-import { RowActions } from '../components/molecules/Toolbar';
+import { RowActions, Toolbar } from '../components/molecules/Toolbar';
 
-const FILTERS = {};
+const FILTERS = { estado: '' };
+
+const STATUS_OPTIONS = [
+  { value: '', label: 'Todos los estados' },
+  { value: 'active', label: 'Activo' },
+  { value: 'inactive', label: 'Inactivo' },
+  { value: 'locked', label: 'Bloqueado' },
+];
 
 const loadCatalogs = async (signal: AbortSignal) => {
   const params = { status: 'active' as const, pageSize: config.catalogPageSize };
@@ -46,24 +55,27 @@ const branchesLabel = (user: User): string => {
 export function UsersPage() {
   const showToast = useToast();
   const { can } = useAuth();
-  const { page, setPage } = usePageFilters(FILTERS);
-  const params = useMemo(() => ({ page, pageSize: config.pageSize, sort: 'username' }), [page]);
+  const isGlobal = useIsGlobal();
+  const { filters, page, setFilter, setPage } = usePageFilters(FILTERS);
+  const params = useMemo(
+    () => ({ page, pageSize: config.pageSize, sort: 'username', status: filters.estado || undefined }),
+    [page, filters.estado],
+  );
   const { data, loading, error } = usePagedList('users', sdk.users, params);
-  const { employees } = useActiveEmployees(can('users:create'));
   const catalogs = useApiQuery(['users', 'catalogs'], loadCatalogs).data ?? NO_CATALOGS;
   const createForm = useRecordForm();
   const assignment = useRecordForm<User>();
   const [statusTarget, setStatusTarget] = useState<User | null>(null);
+  const action = statusAction(isGlobal, statusTarget?.status !== 'inactive');
 
   const confirmStatusChange = async () => {
     if (!statusTarget) return;
-    const deactivate = statusTarget.status !== 'inactive';
     const name = statusTarget.employee_name ?? statusTarget.username;
     setStatusTarget(null);
     try {
-      if (deactivate) await sdk.users.remove(statusTarget.user_id);
-      else await sdk.users.update(statusTarget.user_id, { status: 'active' });
-      showToast(`${name} ${deactivate ? 'desactivado' : 'reactivado'}.`);
+      if (statusTarget.status === 'inactive') await sdk.users.update(statusTarget.user_id, { status: 'active' });
+      else await sdk.users.remove(statusTarget.user_id);
+      showToast(`${action.done} a ${name}.`);
       refreshData();
     } catch (err) {
       showToast(getErrorMessage(err));
@@ -75,7 +87,7 @@ export function UsersPage() {
     { header: 'Correo', render: (user) => user.email, className: 'text-[12.5px] text-muted' },
     { header: 'Rol', render: (user) => ROLE_LABELS[user.role_code ?? ''] ?? user.role_code },
     { header: 'Sedes', render: branchesLabel, className: 'text-[12.5px] text-muted' },
-    { header: 'Estado', render: (user) => <StatusBadge status={user.status} /> },
+    ...(isGlobal ? [{ header: 'Estado', render: (user: User) => <StatusBadge status={user.status} /> }] : []),
     {
       header: '',
       render: (user) => (
@@ -86,8 +98,8 @@ export function UsersPage() {
             </IconButton>
           )}
           {can('users:delete') && (
-            <IconButton title={user.status === 'inactive' ? 'Reactivar' : 'Desactivar'} onClick={() => setStatusTarget(user)}>
-              <Icon name={user.status === 'inactive' ? 'user-check' : 'user-x'} />
+            <IconButton title={statusAction(isGlobal, user.status !== 'inactive').label} onClick={() => setStatusTarget(user)}>
+              <Icon name={statusAction(isGlobal, user.status !== 'inactive').icon} />
             </IconButton>
           )}
         </RowActions>
@@ -105,6 +117,12 @@ export function UsersPage() {
         )}
       </PageHeader>
 
+      {isGlobal && (
+        <Toolbar>
+          <Select compact aria-label="Estado" value={filters.estado} onChange={(estado) => setFilter({ estado })} options={STATUS_OPTIONS} />
+        </Toolbar>
+      )}
+
       <DataTable
         columns={columns}
         data={data}
@@ -116,7 +134,7 @@ export function UsersPage() {
       />
 
       {createForm.isOpen && (
-        <UserForm roles={catalogs.roles} employees={employees} onClose={createForm.close} onSaved={createForm.saved} />
+        <UserForm roles={catalogs.roles} onClose={createForm.close} onSaved={createForm.saved} />
       )}
 
       {assignment.record && (
@@ -132,14 +150,14 @@ export function UsersPage() {
 
       {statusTarget && (
         <ConfirmDialog
-          title={statusTarget.status === 'inactive' ? 'Reactivar usuario' : 'Desactivar usuario'}
+          title={`${action.label} usuario`}
           message={
             <>
-              ¿Confirmas {statusTarget.status === 'inactive' ? 'reactivar a' : 'desactivar a'}{' '}
-              <strong>{statusTarget.employee_name ?? statusTarget.username}</strong>?
+              ¿Confirmas {action.label.toLowerCase()} a <strong>{statusTarget.employee_name ?? statusTarget.username}</strong>?
+              {isGlobal ? '' : ' Dejará de aparecer y no podrá iniciar sesión.'}
             </>
           }
-          confirmLabel={statusTarget.status === 'inactive' ? 'Reactivar' : 'Desactivar'}
+          confirmLabel={action.label}
           onConfirm={confirmStatusChange}
           onCancel={() => setStatusTarget(null)}
         />

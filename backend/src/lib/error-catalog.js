@@ -50,14 +50,17 @@ const BUSINESS_STATUS = {
   TEMPORARY_PASSWORD_EXPIRED: 403,
   EMAIL_REQUIRED: 422,
   ACCOUNT_NOT_EMPLOYEE: 409,
-  EMPLOYEE_INACTIVE: 409,
+  EMPLOYEE_ACCOUNT_FROM_EMPLOYEE: 422,
   INVALID_REFRESH_TOKEN: 401,
   INVALID_RESET_TOKEN: 401,
   INVALID_CURRENT_PASSWORD: 400,
 };
 
 const DB_ERRORS = {
-  employees_employee_number_unique: duplicate('EMPLOYEE_NUMBER_EXISTS', 'El número de empleado ya está registrado'),
+  employees_company_id_employee_number_unique: duplicate(
+    'EMPLOYEE_NUMBER_EXISTS',
+    'El número de empleado ya está registrado en esta empresa'
+  ),
   employees_department_id_foreign: missingReference('INVALID_DEPARTMENT', 'El departamento no existe'),
   employees_shift_id_foreign: missingReference('INVALID_SHIFT', 'El turno no existe'),
   uq_departments_branch_code: duplicate('DEPARTMENT_CODE_EXISTS', 'Ya existe un departamento con ese código en esa sede'),

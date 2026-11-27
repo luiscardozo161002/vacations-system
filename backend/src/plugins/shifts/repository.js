@@ -5,7 +5,7 @@ const { COLUMNS } = require('./fields');
 
 class ShiftRepository extends CrudRepository {
   constructor() {
-    super({ model: Shift, columns: COLUMNS, primaryKey: 'shift_id', hasUpdatedAt: true });
+    super({ model: Shift, columns: COLUMNS, primaryKey: 'shift_id', hasUpdatedAt: true, hidesInactive: true });
   }
 
   baseQuery() {

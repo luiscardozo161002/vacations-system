@@ -14,7 +14,7 @@ class UserRoutes extends CrudRoutes {
       description: 'List the branches assigned to a user',
       permission: this.permissions.view,
       validate: { params: this.schemas.params },
-      handler: (request) => this.service.findBranches(request.params.userId),
+      handler: (request) => this.service.findBranches(request.params.userId, this.scope(request)),
     });
   }
 
@@ -26,7 +26,8 @@ class UserRoutes extends CrudRoutes {
       description: 'Replace the branches assigned to a user',
       permission: this.permissions.update,
       validate: { params: this.schemas.params, payload: this.schemas.branches },
-      handler: (request) => this.service.replaceBranches(request.params.userId, request.payload.branch_ids),
+      handler: (request) =>
+        this.service.replaceBranches(request.params.userId, request.payload.branch_ids, this.scope(request)),
     });
   }
 }

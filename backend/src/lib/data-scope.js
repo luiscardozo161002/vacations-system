@@ -63,8 +63,14 @@ class DataScope {
     return this.restrict(query, column, this.departmentIdsQuery());
   }
 
+  get hidesInactive() {
+    return !this.isGlobal;
+  }
+
   restrictEmployees(query, column) {
-    return this.restrict(query, column, this.employeeIdsQuery());
+    this.restrict(query, column, this.employeeIdsQuery());
+    if (this.hidesInactive) query.whereIn(column, db('employees').where('status', 'active').select('employee_id'));
+    return query;
   }
 
   async allows(idsQuery, column, id) {

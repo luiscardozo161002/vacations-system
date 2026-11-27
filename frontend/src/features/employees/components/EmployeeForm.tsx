@@ -114,6 +114,7 @@ export function EmployeeForm({ employee, departments, shifts, onClose, onSaved }
         value={form.employee_number}
         onChange={(value) => setField('employee_number', cleanNumber(value))}
         placeholder="0000"
+        hint="Debe ser único dentro de la empresa."
         inputMode="numeric"
         maxLength={NUMBER_LENGTH}
         error={errors.employee_number}

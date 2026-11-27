@@ -2,36 +2,41 @@ const CrudService = require('../../lib/crud/crud-service');
 const repository = require('./repository');
 const db = require('../../db');
 const password = require('../../lib/password');
+const { AppError } = require('../../lib/app-error');
 const { EDITABLE_FIELDS } = require('./fields');
 
 class UserService extends CrudService {
-  async list(filters) {
-    const page = await super.list(filters);
+  async list(filters, scope) {
+    const page = await super.list(filters, scope);
     return { ...page, data: await this.describeAll(page.data) };
   }
 
-  async findById(id) {
-    return this.describe(await super.findById(id));
+  async findById(id, scope) {
+    return this.describe(await super.findById(id, scope));
   }
 
   async create(data) {
+    const role = await db('roles').where('role_id', data.role_id).first('role_code');
+    if (role?.role_code === 'EMPLOYEE') {
+      throw new AppError('EMPLOYEE_ACCOUNT_FROM_EMPLOYEE', 'Las cuentas de empleado se crean desde el perfil del empleado');
+    }
     const user = await this.repository.create({ ...this.pick(data), password_hash: await password.hash(data.password) });
     return this.describe(user);
   }
 
-  async update(id, data) {
+  async update(id, data, scope) {
     const changes = this.pick(data);
     if (data.password !== undefined) changes.password_hash = await password.hash(data.password);
-    return this.describe(this.found(await this.repository.update(id, changes)));
+    return this.describe(this.found(await this.repository.update(id, changes, scope)));
   }
 
-  async findBranches(id) {
-    await super.findById(id);
+  async findBranches(id, scope) {
+    await super.findById(id, scope);
     return this.repository.findBranches(id);
   }
 
-  async replaceBranches(id, branchIds) {
-    await super.findById(id);
+  async replaceBranches(id, branchIds, scope) {
+    await super.findById(id, scope);
     await this.repository.replaceBranches(id, [...new Set(branchIds)]);
     return this.repository.findBranches(id);
   }

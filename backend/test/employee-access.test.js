@@ -145,11 +145,11 @@ describe('POST /employees/{id}/access', () => {
     assert.equal(res.statusCode, 404);
   });
 
-  it('no envía acceso a empleados dados de baja', async () => {
+  it('no envía acceso a empleados eliminados', async () => {
     await db('employees').where('employee_id', 3).update({ status: 'inactive' });
     const res = await call('POST', '/api/v1/employees/3/access', { email: 'c.ramirez@thh.com.mx' });
-    assert.equal(res.statusCode, 409);
-    assert.equal(res.result.error.code, 'EMPLOYEE_INACTIVE');
+    await db('employees').where('employee_id', 3).update({ status: 'active' });
+    assert.equal(res.statusCode, 404);
   });
 
   it('un Empleado no puede enviar accesos', async () => {

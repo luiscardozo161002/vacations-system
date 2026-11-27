@@ -8,7 +8,7 @@ const BRANCH_COLUMNS = ['b.branch_id', 'b.company_id', 'b.code', 'b.branch_name'
 
 class UserRepository extends CrudRepository {
   constructor() {
-    super({ model: User, columns: SAFE_COLUMNS, primaryKey: 'user_id', hasUpdatedAt: true });
+    super({ model: User, columns: SAFE_COLUMNS, primaryKey: 'user_id', hasUpdatedAt: true, hidesInactive: true });
   }
 
   applyFilters(query, filters) {

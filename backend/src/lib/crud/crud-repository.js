@@ -2,11 +2,12 @@ const db = require('../../db');
 const { buildOrderBy, paginationMeta, whereAnyOf } = require('../list-query');
 
 class CrudRepository {
-  constructor({ model, columns, primaryKey, hasUpdatedAt = false }) {
+  constructor({ model, columns, primaryKey, hasUpdatedAt = false, hidesInactive = false }) {
     this.model = model;
     this.columns = columns;
     this.primaryKey = primaryKey;
     this.hasUpdatedAt = hasUpdatedAt;
+    this.hidesInactive = hidesInactive;
     this.defaultSort = [{ column: primaryKey, order: 'asc' }];
   }
 
@@ -18,13 +19,23 @@ class CrudRepository {
     return query;
   }
 
+  visibleTo(query, scope) {
+    this.restrictToScope(query, scope);
+    if (this.hidesInactive && scope?.hidesInactive) query.whereNot(`${this.model.tableName}.status`, 'inactive');
+    return query;
+  }
+
+  defaultSortFor() {
+    return this.defaultSort;
+  }
+
   applyFilters(query, filters) {
     return whereAnyOf(query, 'status', filters.status);
   }
 
   async list({ sort, page = 1, pageSize = 20, ...filters } = {}, scope) {
-    const query = this.baseQuery().orderBy(buildOrderBy(sort, this.columns, this.defaultSort));
-    this.restrictToScope(query, scope);
+    const query = this.baseQuery().orderBy(buildOrderBy(sort, this.columns, this.defaultSortFor(scope)));
+    this.visibleTo(query, scope);
     this.applyFilters(query, filters);
 
     const { results, total } = await query.page(page - 1, pageSize);
@@ -32,7 +43,7 @@ class CrudRepository {
   }
 
   findById(id, scope) {
-    return this.restrictToScope(this.baseQuery().where(this.primaryKey, id), scope).first();
+    return this.visibleTo(this.baseQuery().where(this.primaryKey, id), scope).first();
   }
 
   create(data) {
@@ -49,7 +60,7 @@ class CrudRepository {
 
   async patch(id, data, scope) {
     const changes = this.hasUpdatedAt ? { ...data, updated_at: db.fn.now() } : data;
-    const query = this.restrictToScope(this.model.query().where(this.primaryKey, id), scope);
+    const query = this.visibleTo(this.model.query().where(this.primaryKey, id), scope);
     const [row] = await query.patch(changes).returning(this.columns);
     return row ?? null;
   }
