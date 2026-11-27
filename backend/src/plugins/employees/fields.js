@@ -7,6 +7,7 @@ const EDITABLE_FIELDS = [
   'employee_number',
   'employee_name',
   'start_date',
+  'birth_date',
   'status',
 ];
 const COLUMNS = [ID_COLUMN, ...EDITABLE_FIELDS, 'created_at', 'updated_at'];

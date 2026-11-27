@@ -79,6 +79,7 @@ describe('Alta de empleado', () => {
     const payload = create.mock.calls[0][0];
     expect(payload).toMatchObject({ employee_name: 'Laura Hernández', employee_number: '1234', department_id: 1, shift_id: 2 });
     expect(payload).not.toHaveProperty('folio');
+    expect(payload.birth_date).toBeUndefined();
   });
 });
 
@@ -97,6 +98,20 @@ describe('Edición de empleado', () => {
 
     expect(screen.getByLabelText('Nombre completo').matches(':disabled')).toBe(false);
     expect(screen.queryByRole('button', { name: 'Editar' })).toBeNull();
+  });
+
+  it('muestra la fecha de nacimiento guardada y la conserva al guardar', async () => {
+    update.mockResolvedValue({});
+    renderForm({ ...employee, birth_date: '1992-03-14' });
+
+    expect(screen.getByText('14/03/1992')).toBeTruthy();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Editar' }));
+    type('Nombre completo', 'Juan Perez Lopez Jr');
+    fireEvent.click(screen.getByRole('button', { name: 'Guardar cambios' }));
+    fireEvent.click(screen.getAllByRole('button', { name: 'Guardar cambios' }).at(-1)!);
+
+    await waitFor(() => expect(update).toHaveBeenCalledWith(7, expect.objectContaining({ birth_date: '1992-03-14' })));
   });
 
   it('solo permite guardar cuando algo cambió y envía los datos', async () => {
