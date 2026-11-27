@@ -12,16 +12,18 @@ const LOGIN_IMAGE = 'https://i.pinimg.com/736x/be/09/e9/be09e90f18d72d5795b1d0ef
 export function LoginCard({ title, subtitle, children }: LoginCardProps) {
   return (
     <div id="login-screen" className="relative min-h-screen bg-surface">
-      <aside className="absolute inset-y-0 left-0 hidden w-[46%] overflow-hidden bg-backdrop md:block">
+      <aside className="absolute inset-y-0 left-0 hidden w-[calc(42%+96px)] overflow-hidden bg-white md:block">
         <img
           src={LOGIN_IMAGE}
           alt=""
           referrerPolicy="no-referrer"
-          className="h-full w-full object-cover opacity-70 grayscale"
+          className="h-full w-full object-cover opacity-50 grayscale"
           onError={(e) => e.currentTarget.remove()}
         />
-        <div className="absolute inset-x-0 bottom-0 bg-linear-to-t from-surface via-surface/80 to-transparent px-6 pt-16 pb-6">
-          <p className="text-center text-2xl font-extrabold tracking-wide text-fg uppercase">Sistema de Vacaciones</p>
+        <div className="absolute bottom-0 left-0 w-[42vw] bg-linear-to-t from-white via-white/80 to-transparent px-6 pt-20 pb-6">
+          <p className="text-center text-3xl leading-none xl:text-4xl font-black tracking-wide text-black uppercase">
+            Sistema de Vacaciones
+          </p>
         </div>
       </aside>
 
