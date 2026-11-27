@@ -48,14 +48,43 @@ describe('EmployeeProfile', () => {
     expect((await screen.findByText('C')).textContent).toBe('C');
   });
 
-  it('el saldo cuenta los días y las horas usadas y las disponibles', async () => {
+  it('los días de vacaciones separan días y horas, con las horas en 0 si no hay', async () => {
     render(
       <QueryClientProvider client={queryClient}>
         <EmployeeProfile employee={employee} departmentName="Fletes" shiftName="Operaciones" onClose={vi.fn()} />
       </QueryClientProvider>,
     );
 
-    expect(await screen.findByText('2 días y 3 horas')).toBeTruthy();
-    expect(screen.getByText('13 días y 5 horas')).toBeTruthy();
+    expect(await screen.findByText('16 días')).toBeTruthy();
+    expect(screen.getByText('0 h')).toBeTruthy();
+    expect(screen.getByText('2 días')).toBeTruthy();
+    expect(screen.getByText('3 h')).toBeTruthy();
+    expect(screen.getByText('13 días')).toBeTruthy();
+    expect(screen.getByText('5 h')).toBeTruthy();
+  });
+
+  it('muestra el último aviso con su motivo y lo repite en el historial', async () => {
+    notices.mockResolvedValue({
+      data: [
+        {
+          notice_id: 9,
+          reason_description: 'Permiso Personal',
+          status: 'approved',
+          absence_start_date: '2026-11-26',
+          absence_end_date: '2026-11-26',
+          absence_start_time: null,
+          absence_end_time: null,
+        },
+      ],
+    });
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <EmployeeProfile employee={employee} departmentName="Fletes" shiftName="Operaciones" onClose={vi.fn()} />
+      </QueryClientProvider>,
+    );
+
+    expect(await screen.findAllByText('Permiso Personal')).toHaveLength(2);
+    expect(screen.getByText('Último aviso')).toBeTruthy();
   });
 });

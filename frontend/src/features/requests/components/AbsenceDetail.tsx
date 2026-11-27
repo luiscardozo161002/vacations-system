@@ -4,7 +4,7 @@ import { sdk } from '../../../services/sdk';
 import { getErrorMessage } from '../../../utils/get-error-message';
 import { useApiQuery } from '../../../hooks/use-api-query';
 import { saveFile } from '../../../utils/save-file';
-import { absenceDates, absenceHours, formatAbsenceRange, formatDate, formatDaysHours, initial, todayIso } from '../../../utils/format';
+import { absenceDates, absenceHours, formatAbsenceRange, formatDate, formatDays, formatHours, initial, todayIso } from '../../../utils/format';
 import { Drawer } from '../../../components/organisms/Drawer';
 import { ConfirmDialog } from '../../../components/organisms/Dialog';
 import { Icon } from '../../../components/atoms/Icon';
@@ -12,6 +12,7 @@ import { StatusBadge } from '../../../components/atoms/StatusBadge';
 import { useToast } from '../../../hooks/use-toast';
 import { BreakdownBox } from './BreakdownBox';
 import { BalanceBadges } from './BalanceBadges';
+import { NoticeRow } from './NoticeRow';
 import { Button } from '../../../components/atoms/Button';
 import { KeyValue, KeyValueGrid } from '../../../components/molecules/KeyValue';
 import { Avatar } from '../../../components/atoms/Avatar';
@@ -86,6 +87,11 @@ export function AbsenceDetail({ notice, user, can, onClose, onChanged }: Absence
     can('balances:view'),
   );
   const balance = balances?.data[0] ?? null;
+
+  const { data: recent } = useApiQuery(['notices', 'last', notice.employee_id], (signal) =>
+    sdk.notices.list({ employee_id: notice.employee_id, sort: '-request_date', pageSize: 2 }, { signal }),
+  );
+  const lastNotice = recent?.data.find((item) => item.notice_id !== notice.notice_id) ?? null;
 
   const run = async (action: Action) => {
     setConfirming(null);
@@ -171,7 +177,8 @@ export function AbsenceDetail({ notice, user, can, onClose, onChanged }: Absence
           ) : (
             <KeyValue label="Fechas">{formatAbsenceRange(notice)}</KeyValue>
           )}
-          <KeyValue label={labels.days}>{formatDaysHours(notice.days_taken, notice.hours_taken)}</KeyValue>
+          <KeyValue label={labels.days}>{formatDays(notice.days_taken)}</KeyValue>
+          <KeyValue label="Horas">{formatHours(notice.hours_taken)}</KeyValue>
           <KeyValue label="Motivo">{notice.reason_description}</KeyValue>
           <KeyValue label="Estado"><StatusBadge status={notice.status} /></KeyValue>
         </KeyValueGrid>
@@ -186,6 +193,12 @@ export function AbsenceDetail({ notice, user, can, onClose, onChanged }: Absence
               used={{ days: balance.used_days, hours: balance.used_hours }}
               available={balance.available}
             />
+          </>
+        )}
+        {lastNotice && (
+          <>
+            <p className="mt-4 mb-1 text-xs font-semibold text-muted uppercase">Último aviso</p>
+            <NoticeRow notice={lastNotice} />
           </>
         )}
         {notice.remarks && (

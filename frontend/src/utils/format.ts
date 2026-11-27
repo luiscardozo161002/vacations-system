@@ -15,10 +15,14 @@ export const todayIso = (offsetDays = 0): string => {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 };
 
+export const formatDays = (days: number): string => `${days} día${days === 1 ? '' : 's'}`;
+
+export const formatHours = (hours: number): string => `${hours} hora${hours === 1 ? '' : 's'}`;
+
 export const formatDaysHours = (days: number, hours: number): string => {
   const parts = [];
-  if (days) parts.push(`${days} día${days === 1 ? '' : 's'}`);
-  if (hours) parts.push(`${hours} hora${hours === 1 ? '' : 's'}`);
+  if (days) parts.push(formatDays(days));
+  if (hours) parts.push(formatHours(hours));
   return parts.length ? parts.join(' y ') : '0 días';
 };
 

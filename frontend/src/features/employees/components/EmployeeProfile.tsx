@@ -5,7 +5,7 @@ import { config } from '../../../config';
 import { getErrorMessage } from '../../../utils/get-error-message';
 import { useApiQuery } from '../../../hooks/use-api-query';
 import { refreshData } from '../../../services/query-client';
-import { formatAbsenceRange, formatDate, formatDaysHours, initial } from '../../../utils/format';
+import { formatDate, initial } from '../../../utils/format';
 import { Drawer } from '../../../components/organisms/Drawer';
 import { ConfirmDialog } from '../../../components/organisms/Dialog';
 import { EmptyState } from '../../../components/atoms/EmptyState';
@@ -19,7 +19,8 @@ import { Button } from '../../../components/atoms/Button';
 import { KeyValue, KeyValueGrid } from '../../../components/molecules/KeyValue';
 import { Avatar } from '../../../components/atoms/Avatar';
 import { Divider } from '../../../components/atoms/Divider';
-import { ListRow } from '../../../components/molecules/ListRow';
+import { BalanceBadges } from '../../requests/components/BalanceBadges';
+import { NoticeRow } from '../../requests/components/NoticeRow';
 import { ProgressBar } from '../../../components/atoms/ProgressBar';
 import { CardTitle } from '../../../components/molecules/Card';
 
@@ -158,11 +159,11 @@ export function EmployeeProfile({ employee, departmentName, shiftName, onClose }
         </CardTitle>
         {balance ? (
           <>
-            <KeyValueGrid>
-              <KeyValue label="Otorgados">{balance.total_days}</KeyValue>
-              <KeyValue label="Usados">{formatDaysHours(balance.used_days, balance.used_hours)}</KeyValue>
-              <KeyValue label="Disponibles">{formatDaysHours(balance.available.days, balance.available.hours)}</KeyValue>
-            </KeyValueGrid>
+            <BalanceBadges
+              total={balance.total_days}
+              used={{ days: balance.used_days, hours: balance.used_hours }}
+              available={balance.available}
+            />
             <ProgressBar
               percent={balance.total_days ? ((balance.used_days + balance.used_hours / balance.daily_hours) / balance.total_days) * 100 : 0}
               className="mt-2.5"
@@ -173,12 +174,19 @@ export function EmployeeProfile({ employee, departmentName, shiftName, onClose }
         )}
         <Divider />
         <CardTitle className="mb-2.5">
+          Último aviso
+        </CardTitle>
+        {data?.history[0] ? (
+          <NoticeRow notice={data.history[0]} />
+        ) : (
+          <p className="text-[12.5px] text-muted">{data ? 'Sin avisos de ausencia todavía.' : 'Cargando...'}</p>
+        )}
+        <Divider />
+        <CardTitle className="mb-2.5">
           Historial de movimientos
         </CardTitle>
         {data?.history.length ? (
-          data.history.map((notice) => (
-            <ListRow key={notice.notice_id} title={formatAbsenceRange(notice)} subtitle={notice.reason_description} meta={<StatusBadge status={notice.status} />} />
-          ))
+          data.history.map((notice) => <NoticeRow key={notice.notice_id} notice={notice} />)
         ) : (
           <EmptyState message={data ? 'Sin movimientos registrados.' : 'Cargando...'} />
         )}
