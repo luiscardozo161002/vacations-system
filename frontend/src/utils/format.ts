@@ -15,25 +15,41 @@ export const todayIso = (offsetDays = 0): string => {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 };
 
+export const formatDays = (days: number): string => `${days} día${days === 1 ? '' : 's'}`;
+
+export const formatHours = (hours: number): string => `${hours} hora${hours === 1 ? '' : 's'}`;
+
 export const formatDaysHours = (days: number, hours: number): string => {
   const parts = [];
-  if (days) parts.push(`${days} día${days === 1 ? '' : 's'}`);
-  if (hours) parts.push(`${hours} hora${hours === 1 ? '' : 's'}`);
+  if (days) parts.push(formatDays(days));
+  if (hours) parts.push(formatHours(hours));
   return parts.length ? parts.join(' y ') : '0 días';
 };
 
 const shortTime = (time: string): string => time.slice(0, 5);
 
-export const formatAbsenceRange = (absence: {
+interface Absence {
   absence_start_date: string;
   absence_end_date: string;
   absence_start_time: string | null;
   absence_end_time: string | null;
-}): string => {
+}
+
+export const absenceHours = (absence: Absence): string | null =>
+  absence.absence_start_time || absence.absence_end_time
+    ? `${shortTime(absence.absence_start_time ?? '00:00')} – ${shortTime(absence.absence_end_time ?? '23:59')}`
+    : null;
+
+export const absenceDates = (absence: Absence): string => {
   const start = formatDate(absence.absence_start_date);
-  const end = formatDate(absence.absence_end_date);
-  if (!absence.absence_start_time && !absence.absence_end_time) return `${start} – ${end}`;
-  return `${start} ${shortTime(absence.absence_start_time ?? '00:00')} – ${end} ${shortTime(absence.absence_end_time ?? '23:59')}`;
+  return absence.absence_start_date === absence.absence_end_date ? start : `${start} – ${formatDate(absence.absence_end_date)}`;
+};
+
+export const formatAbsenceRange = (absence: Absence): string => {
+  const hours = absenceHours(absence);
+  if (!hours) return absenceDates(absence);
+  if (absence.absence_start_date === absence.absence_end_date) return `${absenceDates(absence)} · ${hours}`;
+  return `${formatDate(absence.absence_start_date)} ${shortTime(absence.absence_start_time ?? '00:00')} – ${formatDate(absence.absence_end_date)} ${shortTime(absence.absence_end_time ?? '23:59')}`;
 };
 
 export const formatDateTime = (iso: string): string =>

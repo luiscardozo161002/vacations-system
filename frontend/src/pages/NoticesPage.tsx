@@ -11,6 +11,7 @@ import { Icon } from '../components/atoms/Icon';
 import { DataTable, type Column } from '../components/organisms/DataTable';
 import { Select } from '../components/atoms/Select';
 import { PageHeader } from '../components/molecules/PageHeader';
+import { ClearFilters } from '../components/molecules/ClearFilters';
 import { PersonCell } from '../components/molecules/PersonCell';
 import { SearchInput } from '../components/molecules/SearchInput';
 import { OrgFilters } from '../features/organization/components/OrgFilters';
@@ -23,9 +24,9 @@ import { AbsenceForm } from '../features/requests/components/AbsenceForm';
 import { AbsenceDetail } from '../features/requests/components/AbsenceDetail';
 import { IconButton } from '../components/atoms/IconButton';
 import { Button } from '../components/atoms/Button';
-import { RowActions, Toolbar, ToolbarSpacer } from '../components/molecules/Toolbar';
+import { RowActions, Toolbar } from '../components/molecules/Toolbar';
 
-const FILTERS = { q: '', estado: '', ...ORG_FILTERS };
+const FILTERS = { q: '', estado: '', motivo: '', ...ORG_FILTERS };
 
 const STATUS_OPTIONS = [
   { value: '', label: 'Todos los estados' },
@@ -37,7 +38,7 @@ export function NoticesPage() {
   const { user, can } = useAuth();
   const canRegister = can('notices:create');
 
-  const { filters, page, setFilter, setPage } = usePageFilters(FILTERS);
+  const { filters, page, setFilter, setPage, clear, active } = usePageFilters(FILTERS);
   const form = useRecordForm();
   const [selected, setSelected] = useState<Notice | null>(null);
 
@@ -50,6 +51,7 @@ export function NoticesPage() {
       page,
       pageSize: config.pageSize,
       status: filters.estado ? (filters.estado as NoticeStatus) : undefined,
+      reason_id: filters.motivo ? Number(filters.motivo) : undefined,
       search: filters.q || undefined,
       ...orgParams(filters),
       sort: '-request_date',
@@ -58,6 +60,14 @@ export function NoticesPage() {
   );
 
   const { data, loading, error } = usePagedList('notices', sdk.notices, params);
+
+  const reasonOptions = useMemo(
+    () => [
+      { value: '', label: 'Todos los motivos' },
+      ...reasons.map((reason) => ({ value: String(reason.reason_id), label: reason.description })),
+    ],
+    [reasons],
+  );
 
   const columns: Column<Notice>[] = [
     { header: 'Empleado', render: (notice) => <PersonCell name={notice.employee_name} /> },
@@ -103,8 +113,9 @@ export function NoticesPage() {
           <SearchInput id="not-search" placeholder="Buscar por nombre o número..." value={filters.q} onSearch={(q) => setFilter({ q })} />
         )}
         <Select compact aria-label="Estado" value={filters.estado} onChange={(estado) => setFilter({ estado })} options={STATUS_OPTIONS} />
+        <Select compact aria-label="Motivo" value={filters.motivo} onChange={(motivo) => setFilter({ motivo })} options={reasonOptions} />
         {canRegister && <OrgFilters idPrefix="not" filters={filters} setFilter={setFilter} />}
-        <ToolbarSpacer />
+        <ClearFilters active={active} onClear={clear} />
       </Toolbar>
 
       <DataTable

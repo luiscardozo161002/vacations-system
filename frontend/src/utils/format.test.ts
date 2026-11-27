@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { formatAbsenceRange, formatDaysHours, initial } from './format';
+import { absenceDates, absenceHours, formatAbsenceRange, formatDaysHours, initial } from './format';
 
 describe('formatDaysHours', () => {
   it('junta días y horas con singular y plural', () => {
@@ -18,6 +18,17 @@ describe('formatAbsenceRange', () => {
     expect(formatAbsenceRange(days)).not.toContain(':');
     expect(formatAbsenceRange(hours)).toContain('13:00');
     expect(formatAbsenceRange(hours)).toContain('14:00');
+  });
+
+  it('un solo día se escribe una vez y las horas de un día no repiten la fecha', () => {
+    const oneDay = { absence_start_date: '2026-11-26', absence_end_date: '2026-11-26', absence_start_time: null, absence_end_time: null };
+    const hours = { ...oneDay, absence_start_time: '07:00:00', absence_end_time: '11:00:00' };
+
+    expect(formatAbsenceRange(oneDay)).toBe(absenceDates(oneDay));
+    expect(formatAbsenceRange(oneDay)).not.toContain('–');
+    expect(formatAbsenceRange(hours)).toBe(`${absenceDates(hours)} · 07:00 – 11:00`);
+    expect(absenceHours(hours)).toBe('07:00 – 11:00');
+    expect(absenceHours(oneDay)).toBeNull();
   });
 });
 

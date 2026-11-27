@@ -54,7 +54,7 @@ export interface CreateNoticeInput {
 
 export type UpdateNoticeInput = Partial<Omit<CreateNoticeInput, 'employee_id'>>;
 
-export type PreviewNoticeInput = Omit<CreateNoticeInput, 'remarks'>;
+export type PreviewNoticeInput = Omit<CreateNoticeInput, 'remarks'> & { ignore_notice_id?: number };
 
 export interface WorkHours {
   start: string;
@@ -63,6 +63,7 @@ export interface WorkHours {
 
 export interface NoticePreview {
   work_hours: WorkHours | null;
+  busy_hours: WorkHours[];
   working_weekdays: number[];
   breakdown: {
     days: number;
@@ -77,6 +78,7 @@ export interface NoticePreview {
     period_start: string;
     period_end: string;
     total_days: number;
+    used: DaysAndHours;
     available: DaysAndHours;
     remaining: DaysAndHours;
   } | null;

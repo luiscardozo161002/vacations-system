@@ -96,10 +96,10 @@ class NoticeService extends CrudService {
     return this.describe(await this.findInScope(id, scope));
   }
 
-  async preview(data, credentials) {
+  async preview({ ignore_notice_id: ignoreNoticeId, ...data }, credentials) {
     await this.ensureEmployeeInScope(credentials, data.employee_id);
     const evaluation = await this.balance.evaluate(db, data);
-    return { ...this.balance.toResponse(evaluation), ...(await this.balance.shiftInfo(db, data)) };
+    return { ...this.balance.toResponse(evaluation), ...(await this.balance.shiftInfo(db, data, ignoreNoticeId)) };
   }
 
   async create(data, credentials) {
@@ -109,6 +109,7 @@ class NoticeService extends CrudService {
     const notice = await db.transaction(async (trx) => {
       const evaluation = await this.balance.evaluate(trx, data, { lock: registersNotice });
       this.balance.assertValid(evaluation);
+      await this.balance.assertHoursFree(trx, data);
 
       const record = { ...this.pick(data, CREATE_FIELDS), ...takenFrom(evaluation), created_by: credentials.user_id };
 
@@ -147,6 +148,7 @@ class NoticeService extends CrudService {
 
     const evaluation = await this.balance.evaluate(db, { ...current, ...changes });
     this.balance.assertValid(evaluation);
+    await this.balance.assertHoursFree(db, { ...current, ...changes }, id);
     return this.describe(await this.repository.update(id, { ...changes, ...takenFrom(evaluation) }, scope));
   }
 

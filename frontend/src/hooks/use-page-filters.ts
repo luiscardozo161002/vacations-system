@@ -9,6 +9,8 @@ export function usePageFilters<T extends Record<string, string>>(defaults: T) {
 
   const setFilter = useCallback((changes: Partial<T>) => update({ ...changes, pagina: '1' } as Partial<Filters>), [update]);
   const setPage = useCallback((page: number) => update({ pagina: String(page) } as Partial<Filters>), [update]);
+  const clear = useCallback(() => update(withPage), [update, withPage]);
+  const active = (Object.keys(defaults) as (keyof T)[]).some((key) => filters[key] !== defaults[key]);
 
-  return { filters, page: Number(filters.pagina), setFilter, setPage };
+  return { filters, page: Number(filters.pagina), setFilter, setPage, clear, active };
 }

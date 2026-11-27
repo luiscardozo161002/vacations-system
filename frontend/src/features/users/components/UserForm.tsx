@@ -1,36 +1,25 @@
 import { useMemo, useState } from 'react';
-import type { Employee, Role } from '@vacations/sdk';
+import type { Role } from '@vacations/sdk';
 import { sdk } from '../../../services/sdk';
 import { config } from '../../../config';
 import { useFormSubmit } from '../../../hooks/use-form-submit';
 import { ROLE_LABELS } from '../../../layouts/navigation';
 import { FormDrawer } from '../../../components/organisms/FormDrawer';
-import { SearchSelect } from '../../../components/molecules/SearchSelect';
-import { FormField, SelectField, TextField } from '../../../components/molecules/FormField';
+import { SelectField, TextField } from '../../../components/molecules/FormField';
 
 interface UserFormProps {
   roles: Role[];
-  employees: Employee[];
   onClose: () => void;
   onSaved: (message: string) => void;
 }
 
-export function UserForm({ roles, employees, onClose, onSaved }: UserFormProps) {
+export function UserForm({ roles, onClose, onSaved }: UserFormProps) {
+  const adminRoles = useMemo(() => roles.filter((role) => role.role_code !== config.roles.employee), [roles]);
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [roleId, setRoleId] = useState(String(roles.find((role) => role.role_code === config.roles.employee)?.role_id ?? ''));
-  const [employeeId, setEmployeeId] = useState('');
+  const [roleId, setRoleId] = useState(String(adminRoles[0]?.role_id ?? ''));
   const { submitting, error, setError, submit } = useFormSubmit();
-
-  const employeeOptions = useMemo(
-    () =>
-      employees.map((employee) => ({
-        value: String(employee.employee_id),
-        label: `${employee.employee_number} · ${employee.employee_name}`,
-      })),
-    [employees],
-  );
 
   const handleSubmit = () => {
     if (password.length < config.passwordMinLength) {
@@ -44,7 +33,6 @@ export function UserForm({ roles, employees, onClose, onSaved }: UserFormProps) 
         email: email.trim(),
         password,
         role_id: Number(roleId),
-        employee_id: employeeId ? Number(employeeId) : null,
       });
       onSaved('Usuario creado.');
     });
@@ -75,19 +63,12 @@ export function UserForm({ roles, employees, onClose, onSaved }: UserFormProps) 
         label="Rol"
         value={roleId}
         onChange={setRoleId}
-        options={roles.map((role) => ({ value: role.role_id, label: ROLE_LABELS[role.role_code] ?? role.description }))}
+        options={adminRoles.map((role) => ({ value: role.role_id, label: ROLE_LABELS[role.role_code] ?? role.description }))}
         required
       />
-      <FormField label="Empleado vinculado" htmlFor="u-employee">
-        <SearchSelect
-          id="u-employee"
-          options={employeeOptions}
-          value={employeeId}
-          onChange={setEmployeeId}
-          placeholder="Opcional: buscar por número o nombre..."
-          fullWidth
-        />
-      </FormField>
+      <p className="text-[12.5px] text-muted">
+        Aquí se crean cuentas administrativas. Las cuentas de empleado se crean desde Empleados, con «Crear acceso».
+      </p>
     </FormDrawer>
   );
 }

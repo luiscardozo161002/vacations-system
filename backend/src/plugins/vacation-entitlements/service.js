@@ -59,5 +59,5 @@ class VacationEntitlementService extends CrudService {
 module.exports = new VacationEntitlementService({
   repository,
   editableFields: EDITABLE_FIELDS,
-  notFound: { code: 'VACATION_ENTITLEMENT_NOT_FOUND', message: 'El saldo de vacaciones no existe' },
+  notFound: { code: 'VACATION_ENTITLEMENT_NOT_FOUND', message: 'Los días de vacaciones no existen' },
 });

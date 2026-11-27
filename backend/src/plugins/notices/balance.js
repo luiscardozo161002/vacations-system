@@ -62,7 +62,7 @@ class NoticeBalance {
     if (requested > available + EPSILON) {
       return this.problem(
         'INSUFFICIENT_BALANCE',
-        `Excede el saldo disponible de ${describe(splitHours(available, dailyHours))}`
+        `Excede los días de vacaciones disponibles: ${describe(splitHours(available, dailyHours))}`
       );
     }
     return null;
@@ -119,43 +119,86 @@ class NoticeBalance {
       };
     }
 
+    const entitlement = await this.findOpenEntitlement(trx, request.employee_id, lock);
+
     if (!reason.affects_vacation_balance) {
-      return { breakdown, affects_balance: false, balance: null, error: null };
+      return { breakdown, affects_balance: false, balance: this.summary(entitlement, dailyHours, 0), error: null };
     }
 
-    const entitlement = await this.findOpenEntitlement(trx, request.employee_id, lock);
-    const total = entitlement ? entitlement.total_days * dailyHours : 0;
-    const available = entitlement ? total - toTotalHours(entitlement.used_days, entitlement.used_hours, dailyHours) : 0;
+    const available = this.availableHours(entitlement, dailyHours);
     const error = this.balanceProblem(employee, entitlement, request, requested, available, dailyHours);
 
     return {
       breakdown,
       affects_balance: true,
-      balance: entitlement
-        ? {
-            entitlement_id: entitlement.entitlement_id,
-            period_start: entitlement.period_start,
-            period_end: entitlement.period_end,
-            total_days: entitlement.total_days,
-            available: splitHours(available, dailyHours),
-            remaining: splitHours(Math.max(0, available - requested), dailyHours),
-          }
-        : null,
+      balance: this.summary(entitlement, dailyHours, requested),
       error,
       used: entitlement ? { entitlement, requested, dailyHours } : null,
     };
   }
 
-  async shiftInfo(trx, request) {
+  availableHours(entitlement, dailyHours) {
+    if (!entitlement) return 0;
+    return (
+      entitlement.total_days * dailyHours - toTotalHours(entitlement.used_days, entitlement.used_hours, dailyHours)
+    );
+  }
+
+  summary(entitlement, dailyHours, requested) {
+    if (!entitlement) return null;
+    const available = this.availableHours(entitlement, dailyHours);
+    return {
+      entitlement_id: entitlement.entitlement_id,
+      period_start: entitlement.period_start,
+      period_end: entitlement.period_end,
+      total_days: entitlement.total_days,
+      used: { days: entitlement.used_days, hours: Number(entitlement.used_hours) },
+      available: splitHours(available, dailyHours),
+      remaining: splitHours(Math.max(0, available - requested), dailyHours),
+    };
+  }
+
+  async busyHours(trx, employeeId, date, workHours, ignoreNoticeId) {
+    if (!workHours) return [];
+    const query = trx('notices')
+      .where('employee_id', employeeId)
+      .whereIn('status', ['pending', 'approved'])
+      .where('absence_start_date', '<=', date)
+      .where('absence_end_date', '>=', date);
+    if (ignoreNoticeId) query.whereNot('notice_id', ignoreNoticeId);
+
+    return (await query.select('absence_start_date', 'absence_end_date', 'absence_start_time', 'absence_end_time')).map((row) => ({
+      start: date === row.absence_start_date && row.absence_start_time ? row.absence_start_time.slice(0, 5) : workHours.start,
+      end: date === row.absence_end_date && row.absence_end_time ? row.absence_end_time.slice(0, 5) : workHours.end,
+    }));
+  }
+
+  async assertHoursFree(trx, request, ignoreNoticeId) {
+    const { absence_start_date: date, absence_start_time: start, absence_end_time: end } = request;
+    if (!start || !end || date !== request.absence_end_date) return;
+
+    const employee = await this.findEmployee(trx, request.employee_id);
+    const schedule = await this.findSchedule(trx, employee.shift_id);
+    const workHours = workHoursOn({ schedule, date, holidays: holidaysBetween(date, date).map((holiday) => holiday.date) });
+    const requested = { start: start.slice(0, 5), end: end.slice(0, 5) };
+    const overlaps = (await this.busyHours(trx, request.employee_id, date, workHours, ignoreNoticeId)).some(
+      (busy) => requested.start < busy.end && requested.end > busy.start
+    );
+    if (overlaps) throw new AppError('HOURS_OVERLAP', 'Ese horario ya está cubierto por otro aviso de ese día');
+  }
+
+  async shiftInfo(trx, request, ignoreNoticeId) {
     const employee = await this.findEmployee(trx, request.employee_id);
     const schedule = await this.findSchedule(trx, employee.shift_id);
     const date = request.absence_start_date;
+    const workHours = workHoursOn({
+      schedule,
+      date,
+      holidays: holidaysBetween(date, date).map((holiday) => holiday.date),
+    });
     return {
-      work_hours: workHoursOn({
-        schedule,
-        date,
-        holidays: holidaysBetween(date, date).map((holiday) => holiday.date),
-      }),
+      work_hours: workHours,
+      busy_hours: await this.busyHours(trx, request.employee_id, date, workHours, ignoreNoticeId),
       working_weekdays: workingWeekdays(schedule),
     };
   }

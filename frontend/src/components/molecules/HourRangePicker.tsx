@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import * as PopoverPrimitive from '@radix-ui/react-popover';
 import { cn } from '../../utils/cn';
-import { formatHours, hourMarks, toMinutes, type TimeRange } from '../../utils/time';
+import { formatHours, hourMarks, overlapsAny, toMinutes, type TimeRange } from '../../utils/time';
 import { Button } from '../atoms/Button';
 import { control } from '../atoms/control';
 import { Icon } from '../atoms/Icon';
@@ -10,6 +10,7 @@ interface HourRangePickerProps {
   id: string;
   value: TimeRange;
   workHours: TimeRange;
+  busy?: TimeRange[];
   onChange: (value: TimeRange) => void;
 }
 
@@ -20,11 +21,22 @@ interface Draft {
 
 const duration = ({ start, end }: Draft) => (end ? formatHours(toMinutes(end) - toMinutes(start)) : '—');
 
-export function HourRangePicker({ id, value, workHours, onChange }: HourRangePickerProps) {
+const NO_BUSY: TimeRange[] = [];
+
+export function HourRangePicker({ id, value, workHours, busy = NO_BUSY, onChange }: HourRangePickerProps) {
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState<Draft>(value);
   const [anchor, setAnchor] = useState<string | null>(null);
   const marks = hourMarks(workHours);
+
+  const isFree = (a: string, b: string) => !overlapsAny({ start: a < b ? a : b, end: a < b ? b : a }, busy);
+  const isTaken = (index: number) => {
+    const before = index > 0 && isFree(marks[index - 1], marks[index]);
+    const after = index < marks.length - 1 && isFree(marks[index], marks[index + 1]);
+    return !before && !after;
+  };
+  const isDisabled = (mark: string, index: number) =>
+    anchor === null ? isTaken(index) : mark !== anchor && !isFree(anchor, mark);
 
   const changeOpen = (opening: boolean) => {
     if (opening) {
@@ -84,8 +96,13 @@ export function HourRangePicker({ id, value, workHours, onChange }: HourRangePic
               <div className="text-xs text-muted">Fin</div>
             </div>
           </div>
+          {busy.length > 0 && (
+            <p className="mb-2 text-xs text-muted">
+              Ya tomadas ese día: {busy.map((taken) => `${taken.start} a ${taken.end}`).join(', ')}.
+            </p>
+          )}
           <div className="grid grid-cols-3 gap-1.5">
-            {marks.map((mark) => {
+            {marks.map((mark, index) => {
               const edge = mark === draft.start || mark === draft.end;
               const between = draft.end !== null && mark > draft.start && mark < draft.end;
               return (
@@ -93,9 +110,10 @@ export function HourRangePicker({ id, value, workHours, onChange }: HourRangePic
                   key={mark}
                   type="button"
                   aria-pressed={edge}
+                  disabled={isDisabled(mark, index)}
                   onClick={() => pick(mark)}
                   className={cn(
-                    'h-10 cursor-pointer rounded-md bg-subtle text-sm font-medium text-fg hover:bg-line',
+                    'h-10 cursor-pointer rounded-md bg-subtle text-sm font-medium text-fg hover:bg-line disabled:cursor-not-allowed disabled:text-faint disabled:line-through disabled:hover:bg-subtle',
                     between && 'bg-line',
                     edge && 'bg-primary font-semibold text-primary-fg hover:bg-primary',
                   )}

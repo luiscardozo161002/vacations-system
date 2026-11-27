@@ -45,14 +45,20 @@ class EmployeeService extends CrudService {
 
   async update(id, data, scope) {
     await this.checkReferences(data, scope);
-    return super.update(id, data, scope);
+    const employee = await super.update(id, data, scope);
+    if (data.status === 'active') await access.reopenAccount(id);
+    if (data.status === 'inactive') await access.closeAccount(id);
+    return employee;
+  }
+
+  async remove(id, scope) {
+    const employee = await super.remove(id, scope);
+    await access.closeAccount(id);
+    return employee;
   }
 
   async resendAccess(id, email, scope) {
-    const employee = await this.findById(id, scope);
-    if (employee.status !== 'active') {
-      throw new AppError('EMPLOYEE_INACTIVE', 'El empleado está dado de baja; reactívalo antes de enviarle acceso');
-    }
+    await this.findById(id, scope);
     return db.transaction((trx) => access.grantAccess(id, email, trx));
   }
 

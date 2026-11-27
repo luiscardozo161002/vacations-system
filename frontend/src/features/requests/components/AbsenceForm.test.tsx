@@ -19,6 +19,7 @@ const vacation: Reason = {
 
 const withoutBalance: NoticePreview = {
   work_hours: { start: '07:00', end: '15:00' },
+  busy_hours: [],
   working_weekdays: [1, 2, 3, 4, 5, 6],
   breakdown: { days: 5, hours: 0, rest_days: 2, holidays: 0, daily_hours: 8 },
   affects_balance: true,
@@ -27,6 +28,7 @@ const withoutBalance: NoticePreview = {
     period_start: '2026-03-01',
     period_end: '2027-02-28',
     total_days: 12,
+    used: { days: 10, hours: 0 },
     available: { days: 2, hours: 0 },
     remaining: { days: -3, hours: 0 },
   },
@@ -95,6 +97,33 @@ describe('Solicitud por horas', () => {
       ),
     );
   });
+
+  it('las horas que ya se tomaron ese día quedan bloqueadas y la propuesta empieza en la primera libre', async () => {
+    preview.mockResolvedValue({ ...withoutBalance, error: null, busy_hours: [{ start: '07:00', end: '12:00' }] });
+    renderForm();
+    await waitFor(() => expect(preview).toHaveBeenCalledTimes(1));
+
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Solo unas horas del día' }));
+    await waitFor(() => expect(preview).toHaveBeenCalledTimes(2));
+
+    expect(screen.getByLabelText('Horario de la ausencia').textContent).toContain('12:00 – 13:00');
+
+    fireEvent.click(screen.getByLabelText('Horario de la ausencia'));
+    expect(screen.getByText('Ya tomadas ese día: 07:00 a 12:00.')).toBeTruthy();
+    expect((screen.getByRole('button', { name: '09:00' }) as HTMLButtonElement).disabled).toBe(true);
+    expect((screen.getByRole('button', { name: '13:00' }) as HTMLButtonElement).disabled).toBe(false);
+  });
+
+  it('si el turno del día ya está cubierto avisa y no deja enviar', async () => {
+    preview.mockResolvedValue({ ...withoutBalance, error: null, busy_hours: [{ start: '07:00', end: '15:00' }] });
+    renderForm();
+    await waitFor(() => expect(preview).toHaveBeenCalledTimes(1));
+
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Solo unas horas del día' }));
+
+    expect(await screen.findByText(/Ese día ya no tiene horas libres/)).toBeTruthy();
+    expect((screen.getByRole('button', { name: 'Enviar solicitud' }) as HTMLButtonElement).disabled).toBe(true);
+  });
 });
 describe('Solicitud que excede el saldo', () => {
   beforeEach(() => {
@@ -112,8 +141,11 @@ describe('Solicitud que excede el saldo', () => {
     const submit = screen.getByRole('button', { name: 'Enviar solicitud' }) as HTMLButtonElement;
     await waitFor(() => expect(submit.disabled).toBe(true));
     const breakdown = screen.getByRole('alert').textContent ?? '';
-    expect(breakdown).toContain('Esta solicitud excede el saldo disponible.');
-    expect(breakdown).toContain('Saldo actual: 2 días');
+    expect(breakdown).toContain('Esta solicitud excede los días de vacaciones disponibles.');
+    expect(breakdown).toContain('Usados');
+    expect(breakdown).toContain('10 días');
+    expect(breakdown).toContain('Disponibles');
+    expect(breakdown).toContain('2 días');
 
     fireEvent.submit(submit.closest('form')!);
 

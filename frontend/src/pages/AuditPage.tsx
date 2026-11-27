@@ -11,6 +11,7 @@ import { Icon } from '../components/atoms/Icon';
 import { IconButton } from '../components/atoms/IconButton';
 import { Select } from '../components/atoms/Select';
 import { PageHeader } from '../components/molecules/PageHeader';
+import { ClearFilters } from '../components/molecules/ClearFilters';
 import { SearchInput } from '../components/molecules/SearchInput';
 import { StatusBadge } from '../components/atoms/StatusBadge';
 import { RowActions, Toolbar } from '../components/molecules/Toolbar';
@@ -31,7 +32,7 @@ const MODULE_OPTIONS = [
 ];
 
 export function AuditPage() {
-  const { filters, page, setFilter, setPage } = usePageFilters(FILTERS);
+  const { filters, page, setFilter, setPage, clear, active } = usePageFilters(FILTERS);
   const [selected, setSelected] = useState<AuditLogEntry | null>(null);
 
   const params = useMemo(
@@ -87,6 +88,7 @@ export function AuditPage() {
         <Select compact aria-label="Módulo" value={filters.modulo} onChange={(modulo) => setFilter({ modulo })} options={MODULE_OPTIONS} />
         <Select compact aria-label="Resultado" value={filters.resultado} onChange={(resultado) => setFilter({ resultado })} options={RESULT_OPTIONS} />
         <SearchInput placeholder="Buscar usuario o evento..." value={filters.q} onSearch={(q) => setFilter({ q })} />
+        <ClearFilters active={active} onClear={clear} />
       </Toolbar>
       <DataTable
         columns={columns}

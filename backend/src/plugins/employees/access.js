@@ -21,6 +21,21 @@ class EmployeeAccess {
       .first(ACCOUNT_COLUMNS);
   }
 
+  async closeAccount(employeeId) {
+    const accounts = db('users').where('employee_id', employeeId);
+    await db('user_sessions')
+      .whereIn('user_id', accounts.clone().select('user_id'))
+      .whereNull('revoked_at')
+      .update({ revoked_at: db.fn.now() });
+    await accounts.update({ status: 'inactive', updated_at: db.fn.now() });
+  }
+
+  async reopenAccount(employeeId) {
+    await db('users')
+      .where({ employee_id: employeeId, status: 'inactive' })
+      .update({ status: 'active', failed_login_attempts: 0, locked_until: null, updated_at: db.fn.now() });
+  }
+
   async grantAccess(employeeId, email, trx) {
     const account = await this.findAccount(employeeId, trx);
     if (!account && !email) throw new AppError('EMAIL_REQUIRED', 'Captura el correo del empleado para crear su acceso');

@@ -12,6 +12,7 @@ const BUSINESS_STATUS = {
   COMPANY_NOT_FOUND: 404,
   BRANCH_NOT_FOUND: 404,
   INVALID_BRANCH: 422,
+  HOURS_OVERLAP: 409,
   INVALID_COMPANY: 422,
   COMPANY_HAS_BRANCHES: 409,
   BRANCH_HAS_DEPARTMENTS: 409,
@@ -49,14 +50,17 @@ const BUSINESS_STATUS = {
   TEMPORARY_PASSWORD_EXPIRED: 403,
   EMAIL_REQUIRED: 422,
   ACCOUNT_NOT_EMPLOYEE: 409,
-  EMPLOYEE_INACTIVE: 409,
+  EMPLOYEE_ACCOUNT_FROM_EMPLOYEE: 422,
   INVALID_REFRESH_TOKEN: 401,
   INVALID_RESET_TOKEN: 401,
   INVALID_CURRENT_PASSWORD: 400,
 };
 
 const DB_ERRORS = {
-  employees_employee_number_unique: duplicate('EMPLOYEE_NUMBER_EXISTS', 'El número de empleado ya está registrado'),
+  employees_company_id_employee_number_unique: duplicate(
+    'EMPLOYEE_NUMBER_EXISTS',
+    'El número de empleado ya está registrado en esta empresa'
+  ),
   employees_department_id_foreign: missingReference('INVALID_DEPARTMENT', 'El departamento no existe'),
   employees_shift_id_foreign: missingReference('INVALID_SHIFT', 'El turno no existe'),
   uq_departments_branch_code: duplicate('DEPARTMENT_CODE_EXISTS', 'Ya existe un departamento con ese código en esa sede'),
@@ -77,7 +81,7 @@ const DB_ERRORS = {
   vacation_entitlements_rule_id_foreign: missingReference('INVALID_RULE', 'La regla de acumulación no existe'),
   uq_vacation_entitlements: duplicate(
     'VACATION_ENTITLEMENT_EXISTS',
-    'Ya existe un saldo de vacaciones para ese empleado en ese periodo'
+    'Ya existen días de vacaciones para ese empleado en ese periodo'
   ),
   notices_employee_id_foreign: missingReference('INVALID_EMPLOYEE', 'El empleado no existe'),
   notices_reason_id_foreign: missingReference('INVALID_REASON', 'El motivo no existe'),

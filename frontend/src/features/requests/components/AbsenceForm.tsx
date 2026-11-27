@@ -5,7 +5,7 @@ import { getErrorMessage } from '../../../utils/get-error-message';
 import { useFormSubmit } from '../../../hooks/use-form-submit';
 import { todayIso } from '../../../utils/format';
 import { countWorkingDays, nextWeekday } from '../../../utils/calendar';
-import { fitsWithin, firstHour, type TimeRange } from '../../../utils/time';
+import { fitsWithin, firstFreeHour, overlapsAny, type TimeRange } from '../../../utils/time';
 import { FormDrawer } from '../../../components/organisms/FormDrawer';
 import { Input, Textarea } from '../../../components/atoms/Input';
 import { SearchSelect } from '../../../components/molecules/SearchSelect';
@@ -42,6 +42,7 @@ interface FormState {
 }
 
 const SATURDAY = 6;
+const NO_BUSY: TimeRange[] = [];
 
 const toPreviewInput = (form: FormState, hours: TimeRange | null): PreviewNoticeInput | null => {
   if (!form.employee_id || !form.reason_id) return null;
@@ -80,7 +81,9 @@ export function AbsenceForm({ title, submitLabel, reasons, employee, employees =
   );
 
   const workHours = preview?.work_hours ?? null;
-  const hours = form.partial && workHours ? (form.hours && fitsWithin(form.hours, workHours) ? form.hours : firstHour(workHours)) : null;
+  const busy = preview?.busy_hours ?? NO_BUSY;
+  const keepsChosen = form.hours && workHours && fitsWithin(form.hours, workHours) && !overlapsAny(form.hours, busy);
+  const hours = form.partial && workHours ? (keepsChosen ? form.hours : firstFreeHour(workHours, busy)) : null;
 
   const input = toPreviewInput(form, hours);
   const inputKey = JSON.stringify(input);
@@ -133,7 +136,9 @@ export function AbsenceForm({ title, submitLabel, reasons, employee, employees =
       ? 'Elige un empleado para ver su horario.'
       : preview && !workHours
         ? 'Ese día no es laborable para el turno del empleado.'
-        : null;
+        : preview && !hours
+          ? 'Ese día ya no tiene horas libres: las del turno están cubiertas por otros avisos.'
+          : null;
 
   return (
     <FormDrawer
@@ -196,7 +201,7 @@ export function AbsenceForm({ title, submitLabel, reasons, employee, employees =
           htmlFor="af-hours"
           hint={`Horario del turno ese día: ${workHours.start} a ${workHours.end}.`}
         >
-          <HourRangePicker id="af-hours" value={hours} workHours={workHours} onChange={(range) => setValue('hours', range)} />
+          <HourRangePicker id="af-hours" value={hours} workHours={workHours} busy={busy} onChange={(range) => setValue('hours', range)} />
         </FormField>
       )}
       <BreakdownBox

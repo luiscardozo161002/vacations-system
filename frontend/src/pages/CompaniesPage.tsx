@@ -15,6 +15,8 @@ import { formatCode } from '../utils/format';
 import { refreshData } from '../services/query-client';
 import { useAuth } from '../contexts/auth-context';
 import { useToast } from '../hooks/use-toast';
+import { useIsGlobal } from '../hooks/use-is-global';
+import { statusAction } from '../utils/status-action';
 import { ColorBadge } from '../components/atoms/ColorBadge';
 import { Button } from '../components/atoms/Button';
 import { Icon } from '../components/atoms/Icon';
@@ -40,7 +42,7 @@ const TABS = [
 
 const STATUS_OPTIONS = [
   { value: 'active', label: 'Activas' },
-  { value: 'inactive', label: 'Dadas de baja' },
+  { value: 'inactive', label: 'Inactivas' },
 ];
 
 const FILTERS = { empresa: '', pestana: 'datos', estado: 'active' };
@@ -68,13 +70,15 @@ interface CompanyDataProps {
   company: Company;
   canEdit: boolean;
   canManage: boolean;
+  isGlobal: boolean;
   onEdit: () => void;
   onChangeStatus: () => void;
 }
 
-function CompanyData({ company, canEdit, canManage, onEdit, onChangeStatus }: CompanyDataProps) {
+function CompanyData({ company, canEdit, canManage, isGlobal, onEdit, onChangeStatus }: CompanyDataProps) {
   const showToast = useToast();
   const active = company.status === 'active';
+  const action = statusAction(isGlobal, active);
 
   return (
     <Card className="max-w-[520px]" accent={company.color}>
@@ -98,8 +102,8 @@ function CompanyData({ company, canEdit, canManage, onEdit, onChangeStatus }: Co
               <IconButton title="Editar empresa" onClick={onEdit}>
                 <Icon name="edit" />
               </IconButton>
-              <IconButton title={active ? 'Dar de baja la empresa' : 'Reactivar la empresa'} onClick={onChangeStatus}>
-                <Icon name={active ? 'user-x' : 'user-check'} />
+              <IconButton title={`${action.label} la empresa`} onClick={onChangeStatus}>
+                <Icon name={action.icon} />
               </IconButton>
             </>
           )}
@@ -121,12 +125,13 @@ interface CompanyBranchesProps {
   status: RecordStatus;
   canEdit: boolean;
   canManage: boolean;
+  isGlobal: boolean;
   onCreate: () => void;
   onEdit: (branch: Branch) => void;
   onChangeStatus: (branch: Branch) => void;
 }
 
-function CompanyBranches({ companyId, status, canEdit, canManage, onCreate, onEdit, onChangeStatus }: CompanyBranchesProps) {
+function CompanyBranches({ companyId, status, canEdit, canManage, isGlobal, onCreate, onEdit, onChangeStatus }: CompanyBranchesProps) {
   const showToast = useToast();
   const branches = useApiQuery(['branches', 'company', companyId, status], (signal) =>
     sdk.branches.list({ company_id: companyId, status, pageSize: config.catalogPageSize }, { signal }),
@@ -164,10 +169,10 @@ function CompanyBranches({ companyId, status, canEdit, canManage, onCreate, onEd
                       <Icon name="edit" />
                     </IconButton>
                     <IconButton
-                      title={branch.status === 'active' ? 'Dar de baja la sede' : 'Reactivar la sede'}
+                      title={`${statusAction(isGlobal, branch.status === 'active').label} la sede`}
                       onClick={() => onChangeStatus(branch)}
                     >
-                      <Icon name={branch.status === 'active' ? 'user-x' : 'user-check'} />
+                      <Icon name={statusAction(isGlobal, branch.status === 'active').icon} />
                     </IconButton>
                   </>
                 )}
@@ -227,8 +232,9 @@ export function CompaniesPage() {
   const showToast = useToast();
   const canEdit = can('companies:update');
   const canManage = can('companies:create');
+  const isGlobal = useIsGlobal();
   const [filters, setFilters] = useUrlFilters(FILTERS);
-  const status = filters.estado === 'inactive' ? 'inactive' : 'active';
+  const status = isGlobal && filters.estado === 'inactive' ? 'inactive' : 'active';
   const companyForm = useRecordForm<Company>();
   const branchForm = useRecordForm<Branch>();
   const [statusChange, setStatusChange] = useState<StatusChange | null>(null);
@@ -262,12 +268,14 @@ export function CompaniesPage() {
       } else {
         await sdk.branches.remove(id);
       }
-      showToast(`${name} ${activate ? 'reactivada' : 'dada de baja'}.`);
+      showToast(`${statusAction(isGlobal, !activate).done} a ${name}.`);
       refreshData();
     } catch (err) {
       showToast(getErrorMessage(err));
     }
   };
+
+  const action = statusAction(isGlobal, !statusChange?.activate);
 
   const changeCompanyStatus = () => {
     if (company) setStatusChange({ kind: 'company', id: company.company_id, name: company.company_name, activate: company.status !== 'active' });
@@ -296,7 +304,7 @@ export function CompaniesPage() {
             options={companies.map((item) => ({ value: item.company_id, label: `${item.folio} · ${item.company_name}` }))}
           />
         )}
-        {canManage && (
+        {canManage && isGlobal && (
           <Select
             compact
             aria-label="Estado"
@@ -324,6 +332,7 @@ export function CompaniesPage() {
                 company={company}
                 canEdit={canEdit}
                 canManage={canManage}
+                isGlobal={isGlobal}
                 onEdit={() => companyForm.open(company)}
                 onChangeStatus={changeCompanyStatus}
               />
@@ -334,6 +343,7 @@ export function CompaniesPage() {
                 status={status}
                 canEdit={canEdit}
                 canManage={canManage && company.status === 'active'}
+                isGlobal={isGlobal}
                 onCreate={() => branchForm.open()}
                 onEdit={(branch) => branchForm.open(branch)}
                 onChangeStatus={changeBranchStatus}
@@ -371,18 +381,18 @@ export function CompaniesPage() {
 
       {statusChange && (
         <ConfirmDialog
-          title={statusChange.activate ? 'Reactivar' : 'Dar de baja'}
+          title={action.label}
           message={
             <>
-              ¿{statusChange.activate ? 'Reactivar' : 'Dar de baja'} {statusChange.kind === 'company' ? 'la empresa' : 'la sede'}{' '}
+              ¿{action.label} {statusChange.kind === 'company' ? 'la empresa' : 'la sede'}{' '}
               <strong>{statusChange.name}</strong>?
               {!statusChange.activate &&
                 (statusChange.kind === 'company'
-                  ? ' Antes debes dar de baja sus sedes.'
-                  : ' Antes debes dar de baja sus departamentos.')}
+                  ? ' Antes debes desactivar sus sedes.'
+                  : ' Antes debes desactivar sus departamentos.')}
             </>
           }
-          confirmLabel={statusChange.activate ? 'Reactivar' : 'Dar de baja'}
+          confirmLabel={action.label}
           onConfirm={confirmStatusChange}
           onCancel={() => setStatusChange(null)}
         />

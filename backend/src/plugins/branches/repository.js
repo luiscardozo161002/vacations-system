@@ -4,7 +4,7 @@ const { COLUMNS } = require('./fields');
 
 class BranchRepository extends CrudRepository {
   constructor() {
-    super({ model: Branch, columns: COLUMNS, primaryKey: 'branch_id', hasUpdatedAt: true });
+    super({ model: Branch, columns: COLUMNS, primaryKey: 'branch_id', hasUpdatedAt: true, hidesInactive: true });
   }
 
   restrictToScope(query, scope) {

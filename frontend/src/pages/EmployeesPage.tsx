@@ -14,13 +14,16 @@ import { PersonCell } from '../components/molecules/PersonCell';
 import { saveFile } from '../utils/save-file';
 import { Icon } from '../components/atoms/Icon';
 import { DataTable, type Column } from '../components/organisms/DataTable';
-import { Select } from '../components/atoms/Select';
 import { ConfirmDialog } from '../components/organisms/Dialog';
 import { PageHeader } from '../components/molecules/PageHeader';
+import { ClearFilters } from '../components/molecules/ClearFilters';
+import { Select } from '../components/atoms/Select';
+import { StatusBadge } from '../components/atoms/StatusBadge';
+import { useIsGlobal } from '../hooks/use-is-global';
+import { statusAction } from '../utils/status-action';
 import { OrgFilters } from '../features/organization/components/OrgFilters';
 import { ORG_FILTERS, orgParams } from '../features/organization/org-filters';
 import { SearchInput } from '../components/molecules/SearchInput';
-import { StatusBadge } from '../components/atoms/StatusBadge';
 import { useToast } from '../hooks/use-toast';
 import { useDepartments } from '../features/departments/hooks/useDepartments';
 import { useShifts } from '../features/shifts/hooks/useShifts';
@@ -30,7 +33,7 @@ import { AccessDialog, type GrantedAccess } from '../features/employees/componen
 import { useAuth } from '../contexts/auth-context';
 import { IconButton } from '../components/atoms/IconButton';
 import { Button } from '../components/atoms/Button';
-import { RowActions, Toolbar, ToolbarSpacer } from '../components/molecules/Toolbar';
+import { RowActions, Toolbar } from '../components/molecules/Toolbar';
 
 const FILTERS = { q: '', ...ORG_FILTERS, estado: '', perfil: '' };
 
@@ -43,7 +46,8 @@ const STATUS_OPTIONS = [
 export function EmployeesPage() {
   const showToast = useToast();
   const { can } = useAuth();
-  const { filters, page, setFilter, setPage } = usePageFilters(FILTERS);
+  const isGlobal = useIsGlobal();
+  const { filters, page, setFilter, setPage, clear, active } = usePageFilters(FILTERS);
   const form = useRecordForm<Employee>();
 
   const { departments, error: departmentsError } = useDepartments();
@@ -63,6 +67,7 @@ export function EmployeesPage() {
   const { data, loading, error: listError } = usePagedList('employees', sdk.employees, employeesParams);
 
   const [statusTarget, setStatusTarget] = useState<Employee | null>(null);
+  const action = statusAction(isGlobal, statusTarget?.status !== 'inactive');
   const [createdAccess, setCreatedAccess] = useState<GrantedAccess | null>(null);
   const [exporting, setExporting] = useState(false);
   const [profileEmployee, setProfileEmployee] = useState<Employee | null>(null);
@@ -92,15 +97,11 @@ export function EmployeesPage() {
 
   const confirmStatusChange = async () => {
     if (!statusTarget) return;
-    const willDeactivate = statusTarget.status === 'active';
     setStatusTarget(null);
     try {
-      if (willDeactivate) {
-        await sdk.employees.remove(statusTarget.employee_id);
-      } else {
-        await sdk.employees.update(statusTarget.employee_id, { status: 'active' });
-      }
-      showToast(`${statusTarget.employee_name} ${willDeactivate ? 'dada de baja' : 'reactivada'}.`);
+      if (statusTarget.status === 'inactive') await sdk.employees.update(statusTarget.employee_id, { status: 'active' });
+      else await sdk.employees.remove(statusTarget.employee_id);
+      showToast(`${action.done} a ${statusTarget.employee_name}.`);
       refreshData();
     } catch (err) {
       showToast(getErrorMessage(err));
@@ -141,7 +142,7 @@ export function EmployeesPage() {
     },
     { header: 'Turno', render: (employee) => shiftNames.get(employee.shift_id) ?? '' },
     { header: 'Ingreso', render: (employee) => formatDate(employee.start_date) },
-    { header: 'Estado', render: (employee) => <StatusBadge status={employee.status} /> },
+    ...(isGlobal ? [{ header: 'Estado', render: (employee: Employee) => <StatusBadge status={employee.status} /> }] : []),
     {
       header: '',
       render: (employee) => (
@@ -155,8 +156,8 @@ export function EmployeesPage() {
             </IconButton>
           )}
           {can('employees:delete') && (
-            <IconButton title={employee.status === 'active' ? 'Dar de baja' : 'Reactivar'} onClick={() => setStatusTarget(employee)}>
-              <Icon name={employee.status === 'active' ? 'user-x' : 'user-check'} />
+            <IconButton title={statusAction(isGlobal, employee.status === 'active').label} onClick={() => setStatusTarget(employee)}>
+              <Icon name={statusAction(isGlobal, employee.status === 'active').icon} />
             </IconButton>
           )}
         </RowActions>
@@ -182,8 +183,10 @@ export function EmployeesPage() {
           onSearch={(q) => setFilter({ q })}
         />
         <OrgFilters idPrefix="emp" filters={filters} setFilter={setFilter} />
-        <Select compact aria-label="Estado" value={filters.estado} onChange={(estado) => setFilter({ estado })} options={STATUS_OPTIONS} />
-        <ToolbarSpacer />
+        {isGlobal && (
+          <Select compact aria-label="Estado" value={filters.estado} onChange={(estado) => setFilter({ estado })} options={STATUS_OPTIONS} />
+        )}
+        <ClearFilters active={active} onClear={clear} />
         <IconButton title="Exportar" onClick={exportCsv} disabled={exporting}>
           <Icon name="download" />
         </IconButton>
@@ -223,13 +226,14 @@ export function EmployeesPage() {
 
       {statusTarget && (
         <ConfirmDialog
-          title={statusTarget.status === 'active' ? 'Dar de baja empleado' : 'Reactivar empleado'}
+          title={`${action.label} empleado`}
           message={
             <>
-              ¿Confirmas {statusTarget.status === 'active' ? 'dar de baja a' : 'reactivar a'}{' '}
-              <strong>{statusTarget.employee_name}</strong>?
+              ¿Confirmas {action.label.toLowerCase()} a <strong>{statusTarget.employee_name}</strong>?
+              {isGlobal ? '' : ' Dejará de aparecer en el sistema y su cuenta de acceso se cerrará.'}
             </>
           }
+          confirmLabel={action.label}
           onConfirm={confirmStatusChange}
           onCancel={() => setStatusTarget(null)}
         />
